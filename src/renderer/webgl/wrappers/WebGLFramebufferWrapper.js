@@ -21,7 +21,7 @@ var errors = {
  * @property {GLenum} attachmentPoint - The attachment point for the attachment. This is a GLenum such as `gl.COLOR_ATTACHMENT0`, `gl.DEPTH_ATTACHMENT`, `gl.STENCIL_ATTACHMENT`, or `gl.DEPTH_STENCIL_ATTACHMENT`.
  * @property {Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper} [texture] - The texture for the attachment. Either a texture or a renderbuffer is required.
  * @property {WebGLRenderbuffer} [renderbuffer] - The renderbuffer for the attachment. Either a texture or a renderbuffer is required.
- * @property {GLenum} [internalFormat] - The internal format for the renderbuffer. This is a GLenum such as `gl.DEPTH_STENCIL`.
+ * @property {GLenum} [internalFormat] - The internal format for the renderbuffer. WebGL2 uses DEPTH24_STENCIL8 for combined depth-stencil, DEPTH_COMPONENT24 for depth-only. WebGL1 uses DEPTH_STENCIL and DEPTH_COMPONENT16.
  */
 
 /**
@@ -37,15 +37,20 @@ var errors = {
  * This also manages the attachments to the framebuffer,
  * including renderbuffer life cycle.
  *
+ * WebGL2 Optimizations:
+ * - Uses DEPTH24_STENCIL8 for combined depth-stencil (more efficient than separate buffers)
+ * - Uses DEPTH_COMPONENT24 for depth-only (higher precision than WebGL1's 16-bit)
+ * - Supports multiple color attachments (MRT - Multiple Render Targets)
+ *
  * @class WebGLFramebufferWrapper
  * @memberof Phaser.Renderer.WebGL.Wrappers
  * @constructor
  * @since 3.80.0
  *
  * @param {Phaser.Renderer.WebGL.WebGLRenderer} renderer - The renderer this WebGLFramebuffer belongs to.
- * @param {?Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper[]} colorAttachments - The color textures where the color pixels are written. If empty, the canvas will be used as the color attachment. Only the first color attachment is used in default WebGL1.
+ * @param {?Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper[]} colorAttachments - The color textures where the color pixels are written. If empty, the canvas will be used as the color attachment. WebGL2 supports multiple color attachments (MRT).
  * @param {boolean} [addStencilBuffer=false] - Whether to add a stencil buffer to the framebuffer. If the canvas is used as the color attachment, this will be ignored.
- * @param {boolean} [addDepthBuffer=false] - Whether to add a depth buffer to the framebuffer. If depth and stencil are both provided, they will be combined into a single depth-stencil buffer. If the canvas is used as the color attachment, this will be ignored.
+ * @param {boolean} [addDepthBuffer=false] - Whether to add a depth buffer to the framebuffer. If depth and stencil are both provided, they will be combined into a single DEPTH24_STENCIL8 buffer in WebGL2. If the canvas is used as the color attachment, this will be ignored.
  */
 var WebGLFramebufferWrapper = new Class({
 
@@ -147,16 +152,21 @@ var WebGLFramebufferWrapper = new Class({
             // so that the framebuffer is complete when they're attached.
             if (addDepthBuffer && addStencilBuffer)
             {
+                // WebGL2 uses DEPTH24_STENCIL8 for combined depth-stencil
+                // WebGL1 uses DEPTH_STENCIL
                 this.attachments.push({
                     attachmentPoint: gl.DEPTH_STENCIL_ATTACHMENT,
-                    internalFormat: gl.DEPTH_STENCIL
+                    internalFormat: renderer.isWebGL2 ? gl.DEPTH24_STENCIL8 : gl.DEPTH_STENCIL
                 });
             }
             else if (addDepthBuffer)
             {
+                // WebGL2 supports higher precision depth formats
+                // DEPTH_COMPONENT24 (24-bit) or DEPTH_COMPONENT32F (32-bit float)
+                // WebGL1 uses DEPTH_COMPONENT16 (16-bit)
                 this.attachments.push({
                     attachmentPoint: gl.DEPTH_ATTACHMENT,
-                    internalFormat: gl.DEPTH_COMPONENT16
+                    internalFormat: renderer.isWebGL2 ? gl.DEPTH_COMPONENT24 : gl.DEPTH_COMPONENT16
                 });
             }
             else if (addStencilBuffer)
