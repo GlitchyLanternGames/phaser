@@ -1,4 +1,5 @@
-#version 100
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 #pragma phaserTemplate(extensions)
@@ -10,6 +11,8 @@ precision highp float;
 #else
 precision mediump float;
 #endif
+
+out vec4 fragColorOutput;
 
 /* Redefine MAX_ANIM_FRAMES to support animations with different frame numbers. */
 #define MAX_ANIM_FRAMES 0
@@ -31,8 +34,8 @@ uniform sampler2D uAnimSampler;
 uniform vec2 uAnimResolution;
 #endif
 
-varying vec2 outTexCoord;
-varying vec2 outTileStride;
+in vec2 outTexCoord;
+in vec2 outTileStride;
 
 #pragma phaserTemplate(outVariables)
 
@@ -67,7 +70,7 @@ Tile getLayerData (vec2 coord)
     // Invert Y, as textures are flipped in GL.
     uv.y = 1.0 - uv.y;
 
-    vec4 texel = texture2D(uLayerSampler, (tile + 0.5) / uLayerResolution) * 255.0;
+    vec4 texel = texture(uLayerSampler, (tile + 0.5) / uLayerResolution) * 255.0;
 
     float flags = texel.a;
 
@@ -134,9 +137,9 @@ float animationIndex (float index)
     // Get initial animation data.
     float animTextureWidth = uAnimResolution.x;
     vec2 index2D = vec2(mod(index, animTextureWidth), floor(index / animTextureWidth));
-    vec4 animDurationTexel = texture2D(uAnimSampler, (index2D + 0.5) / uAnimResolution);
+    vec4 animDurationTexel = texture(uAnimSampler, (index2D + 0.5) / uAnimResolution);
     index2D = vec2(mod(index + 1.0, animTextureWidth), floor((index + 1.0) / animTextureWidth));
-    vec4 animIndexTexel = texture2D(uAnimSampler, (index2D + 0.5) / uAnimResolution);
+    vec4 animIndexTexel = texture(uAnimSampler, (index2D + 0.5) / uAnimResolution);
 
     float animDuration = floatTexel(animDurationTexel);
     float animIndex = floatTexel(animIndexTexel);
@@ -147,7 +150,7 @@ float animationIndex (float index)
     for (int i = 0; i < MAX_ANIM_FRAMES; i++)
     {
         index2D = vec2(mod(animIndex, animTextureWidth), floor(animIndex / animTextureWidth));
-        animDurationTexel = texture2D(uAnimSampler, (index2D + 0.5) / uAnimResolution);
+        animDurationTexel = texture(uAnimSampler, (index2D + 0.5) / uAnimResolution);
         float frameDuration = floatTexel(animDurationTexel);
         animTimeAccum += frameDuration;
         if (animTime <= animTimeAccum)
@@ -164,7 +167,7 @@ float animationIndex (float index)
 
     // Derive the animation frame index.
     index2D = vec2(mod(animIndex, animTextureWidth), floor(animIndex / animTextureWidth));
-    animIndexTexel = texture2D(uAnimSampler, (index2D + 0.5) / uAnimResolution);
+    animIndexTexel = texture(uAnimSampler, (index2D + 0.5) / uAnimResolution);
     float animFrameIndex = floatTexel(animIndexTexel);
 
     return animFrameIndex;
@@ -207,7 +210,7 @@ Samples getColorSamples (vec2 texCoord)
     // samples.color = vec4(texCoord, 0.0, 1.0);
     // return samples;
 
-    samples.color = texture2D(
+    samples.color = texture(
         uMainSampler,
         // Flip Y to convert from texel space to GL texture space.
         vec2(texCoord.x, 1.0 - texCoord.y)
@@ -310,5 +313,5 @@ void main ()
 
     fragColor *= uAlpha;
 
-    gl_FragColor = fragColor;
+    fragColorOutput = fragColor;
 }

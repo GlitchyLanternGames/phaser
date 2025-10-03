@@ -1,3 +1,5 @@
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 #pragma phaserTemplate(extensions)
@@ -16,11 +18,11 @@ uniform mat4 uProjectionMatrix;
 uniform vec2 uResolution;
 uniform vec4 uTileWidthHeightMarginSpacing;
 
-attribute vec2 inPosition;
-attribute vec2 inTexCoord;
+in vec2 inPosition;
+in vec2 inTexCoord;
 
-varying vec2 outTexCoord;
-varying vec2 outTileStride;
+out vec2 outTexCoord;
+out vec2 outTileStride;
 
 #pragma phaserTemplate(outVariables)
 

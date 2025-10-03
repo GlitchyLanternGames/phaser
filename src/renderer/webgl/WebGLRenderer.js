@@ -718,14 +718,33 @@ var WebGLRenderer = new Class({
         }
         else
         {
-            if (typeof WebGL2RenderingContext !== 'undefined')
-            {
-                gl = canvas.getContext('webgl2', config.contextCreation);
-            }
+            var renderType = game.config.renderType;
 
-            if (!gl)
+            // If WEBGL2 is explicitly requested, only try WebGL2
+            if (renderType === CONST.WEBGL2)
             {
-                gl = canvas.getContext('webgl', config.contextCreation) || canvas.getContext('experimental-webgl', config.contextCreation);
+                if (typeof WebGL2RenderingContext !== 'undefined')
+                {
+                    gl = canvas.getContext('webgl2', config.contextCreation);
+                }
+
+                if (!gl)
+                {
+                    throw new Error('WebGL2 was requested but is not supported by this browser');
+                }
+            }
+            // If WEBGL is requested, try WebGL2 first, then fall back to WebGL1
+            else if (renderType === CONST.WEBGL)
+            {
+                if (typeof WebGL2RenderingContext !== 'undefined')
+                {
+                    gl = canvas.getContext('webgl2', config.contextCreation);
+                }
+
+                if (!gl)
+                {
+                    gl = canvas.getContext('webgl', config.contextCreation) || canvas.getContext('experimental-webgl', config.contextCreation);
+                }
             }
         }
 
@@ -1820,24 +1839,20 @@ var WebGLRenderer = new Class({
     },
 
     /**
-     * Converts GLSL ES 1.00 shader source to GLSL ES 3.00 when running under WebGL2.
-     * The original source is returned unchanged when using a WebGL1 context.
+     * Validates shader source for WebGL2.
+     * All shaders are now pre-converted to GLSL ES 3.00 format, so this function
+     * only performs validation and returns the source unchanged.
      *
      * @method Phaser.Renderer.WebGL.WebGLRenderer#convertShaderSourceToWebGL2
      * @since 3.80.0
      *
-     * @param {string} source - The original shader source.
+     * @param {string} source - The shader source (already in GLSL ES 3.00 format).
      * @param {boolean} isVertexShader - Set to `true` when converting a vertex shader.
      *
-     * @return {string} The transformed shader source.
+     * @return {string} The validated shader source.
      */
     convertShaderSourceToWebGL2: function (source, isVertexShader)
     {
-        if (!this.isWebGL2)
-        {
-            return source;
-        }
-
         // Validate that source is a string and not undefined/null
         if (typeof source !== 'string')
         {
@@ -1861,66 +1876,9 @@ var WebGLRenderer = new Class({
             throw new Error('Shader source is the literal string "' + source.trim() + '", this indicates a bug in shader source handling');
         }
 
-        var output = source.replace(/^\s+/, '');
-
-        if (/^#version\s+/m.test(output))
-        {
-            output = output.replace(/^#version\s+\d+\s+\w+/m, '#version 300 es');
-        }
-        else
-        {
-            output = '#version 300 es\n' + output;
-        }
-
-        if (isVertexShader)
-        {
-            output = output.replace(/\battribute\b/g, 'in');
-            output = output.replace(/\bvarying\b/g, 'out');
-        }
-        else
-        {
-            output = output.replace(/\bvarying\b/g, 'in');
-
-            if (output.indexOf('gl_FragColor') > -1)
-            {
-                output = output.replace(/\bgl_FragColor\b/g, 'fragColorOutput');
-
-                if (!/out\s+vec4\s+fragColorOutput\s*;/.test(output))
-                {
-                    var lines = output.split('\n');
-                    var insertIndex = lines.length;
-
-                    for (var i = 0; i < lines.length; i++)
-                    {
-                        var trimmed = lines[i].trim();
-
-                        if (!trimmed ||
-                            trimmed.indexOf('#version') === 0 ||
-                            trimmed.indexOf('#define') === 0 ||
-                            trimmed.indexOf('#ifdef') === 0 ||
-                            trimmed.indexOf('#ifndef') === 0 ||
-                            trimmed.indexOf('#else') === 0 ||
-                            trimmed.indexOf('#endif') === 0 ||
-                            trimmed.indexOf('#pragma') === 0 ||
-                            trimmed.indexOf('precision') === 0)
-                        {
-                            continue;
-                        }
-
-                        insertIndex = i;
-                        break;
-                    }
-
-                    lines.splice(insertIndex, 0, 'out vec4 fragColorOutput;');
-                    output = lines.join('\n');
-                }
-            }
-        }
-
-        output = output.replace(/\btexture2D\b/g, 'texture');
-        output = output.replace(/\btextureCube\b/g, 'texture');
-
-        return output;
+        // All shaders are now pre-converted to WebGL2 format
+        // Just return the source as-is
+        return source;
     },
 
     /**

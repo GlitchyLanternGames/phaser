@@ -1,4 +1,6 @@
 // GLOW_FS
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 #define DISTANCE 10.0
@@ -8,9 +10,11 @@
 
 precision mediump float;
 
+out vec4 fragColorOutput;
+
 uniform sampler2D uMainSampler;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 uniform float outerStrength;
 uniform float innerStrength;
@@ -73,10 +77,10 @@ void main ()
     {
         float resultAlpha = outerGlowAlpha + innerGlowAlpha;
 
-        gl_FragColor = vec4(glowColor.rgb * resultAlpha, resultAlpha);
+        fragColorOutput = vec4(glowColor.rgb * resultAlpha, resultAlpha);
     }
     else
     {
-        gl_FragColor = innerColor + outerGlowColor;
+        fragColorOutput = innerColor + outerGlowColor;
     }
 }

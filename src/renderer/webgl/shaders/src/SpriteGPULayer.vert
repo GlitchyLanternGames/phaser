@@ -1,3 +1,5 @@
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 #pragma phaserTemplate(extensions)
@@ -29,27 +31,27 @@ uniform float uGravity;
 // Vertex buffer attributes
 
 // 0 - BL, 1 - TL, 2 - BR, 3 - TR
-attribute float inVertex;
+in float inVertex;
 
 // Instance buffer attributes
-attribute vec4 inPositionX;
-attribute vec4 inPositionY;
-attribute vec4 inRotation;
-attribute vec4 inScaleX;
-attribute vec4 inScaleY;
-attribute vec4 inAlpha;
-attribute vec4 inFrame;
-attribute vec4 inTintBlend;
-attribute vec4 inTintTL;
-attribute vec4 inTintTR;
-attribute vec4 inTintBL;
-attribute vec4 inTintBR;
-attribute vec4 inOriginAndTintFillAndCreationTime;
-attribute vec2 inScrollFactor;
+in vec4 inPositionX;
+in vec4 inPositionY;
+in vec4 inRotation;
+in vec4 inScaleX;
+in vec4 inScaleY;
+in vec4 inAlpha;
+in vec4 inFrame;
+in vec4 inTintBlend;
+in vec4 inTintTL;
+in vec4 inTintTR;
+in vec4 inTintBL;
+in vec4 inTintBR;
+in vec4 inOriginAndTintFillAndCreationTime;
+in vec2 inScrollFactor;
 
-varying vec2 outTexCoord;
-varying float outTintEffect;
-varying vec4 outTint;
+out vec2 outTexCoord;
+out float outTintEffect;
+out vec4 outTint;
 
 #pragma phaserTemplate(outVariables)
 
@@ -518,7 +520,7 @@ Frame getFrame (float frame)
     float x = mod(index1, width);
     float y = floor(index1 / width);
 
-    vec4 texelUV = texture2D(
+    vec4 texelUV = texture(
         uFrameDataTexture,
         vec2(x + 0.5, y + 0.5) / uFrameDataResolution
     );
@@ -526,7 +528,7 @@ Frame getFrame (float frame)
     x = mod(index2, width);
     y = floor(index2 / width);
 
-    vec4 texelWH = texture2D(
+    vec4 texelWH = texture(
         uFrameDataTexture,
         vec2(x + 0.5, y + 0.5) / uFrameDataResolution
     );
@@ -534,7 +536,7 @@ Frame getFrame (float frame)
     x = mod(index3, width);
     y = floor(index3 / width);
 
-    vec4 texelOrigin = texture2D(
+    vec4 texelOrigin = texture(
         uFrameDataTexture,
         vec2(x + 0.5, y + 0.5) / uFrameDataResolution
     );

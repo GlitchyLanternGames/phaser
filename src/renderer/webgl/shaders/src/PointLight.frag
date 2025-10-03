@@ -1,3 +1,5 @@
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 #pragma phaserTemplate(extensions)
@@ -8,13 +10,15 @@ precision mediump float;
 
 #pragma phaserTemplate(fragmentDefine)
 
+out vec4 fragColorOutput;
+
 uniform vec2 uResolution;
 uniform float uCameraZoom;
 
-varying vec4 lightPosition;
-varying vec4 lightColor;
-varying float lightRadius;
-varying float lightAttenuation;
+in vec4 lightPosition;
+in vec4 lightColor;
+in float lightRadius;
+in float lightAttenuation;
 
 #pragma phaserTemplate(outVariables)
 
@@ -34,5 +38,5 @@ void main ()
 
     #pragma phaserTemplate(fragmentProcess)
 
-    gl_FragColor = vec4(color.rgb * lightColor.a, color.a);
+    fragColorOutput = vec4(color.rgb * lightColor.a, color.a);
 }

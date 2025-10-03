@@ -5,13 +5,13 @@
  * @property {(number|string)} [width=1024] - The width of the game, in game pixels.
  * @property {(number|string)} [height=768] - The height of the game, in game pixels.
  * @property {number} [zoom=1] - Simple scale applied to the game canvas. 2 is double size, 0.5 is half size, etc.
- * @property {number} [type=CONST.AUTO] - Which renderer to use. Phaser.AUTO, Phaser.CANVAS, Phaser.HEADLESS, or Phaser.WEBGL. AUTO picks WEBGL if available, otherwise CANVAS.
+ * @property {number} [type=CONST.AUTO] - Which renderer to use. Phaser.AUTO, Phaser.CANVAS, Phaser.HEADLESS, Phaser.WEBGL, or Phaser.WEBGL2. AUTO picks WEBGL if available, otherwise CANVAS. WEBGL2 forces a WebGL2 context (throws error if not supported).
  * @property {(number|boolean)} [stableSort=-1] - `true` or `1` = Use the built-in StableSort (needed for older browsers), `false` or `0` = Rely on ES2019 Array.sort being stable (modern browsers only), or `-1` = Try and determine this automatically based on browser inspection (not guaranteed to work, errs on side of caution).
  * @property {(HTMLElement|string|null)} [parent=undefined] - The DOM element that will contain the game canvas, or its `id`. If undefined, or if the named element doesn't exist, the game canvas is appended to the document body. If `null` no parent will be used and you are responsible for adding the canvas to the dom.
  * @property {HTMLCanvasElement} [canvas=null] - Provide your own Canvas element for Phaser to use instead of creating one.
  * @property {string} [canvasStyle=null] - CSS styles to apply to the game canvas instead of Phasers default styles.
  * @property {boolean}[customEnvironment=false] - Is Phaser running under a custom (non-native web) environment? If so, set this to `true` to skip internal Feature detection. If `true` the `renderType` cannot be left as `AUTO`.
- * @property {CanvasRenderingContext2D} [context] - Provide your own Canvas Context for Phaser to use, instead of creating one.
+ * @property {(CanvasRenderingContext2D|WebGLRenderingContext|WebGL2RenderingContext)} [context] - Provide your own Canvas or WebGL Context for Phaser to use, instead of creating one.
  * @property {(Phaser.Types.Scenes.SceneType|Phaser.Types.Scenes.SceneType[])} [scene=null] - A scene or scenes to add to the game. If several are given, the first is started; the remainder are started only if they have `{ active: true }`. See the `sceneConfig` argument in `Phaser.Scenes.SceneManager#add`.
  * @property {string[]} [seed] - Seed for the random number generator.
  * @property {string} [title=''] - The title of the game. Shown in the browser console.

@@ -1,4 +1,6 @@
 // Shader Quad fragment shader
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 #pragma phaserTemplate(extensions)
@@ -16,7 +18,9 @@ precision mediump float;
 // The position of the fragment within the quad.
 // This is a value between 0 and 1 across the quad.
 // 0,1 is the top-left, 1,0 is the bottom right.
-varying vec2 outTexCoord;
+out vec4 fragColorOutput;
+
+in vec2 outTexCoord;
 
 #pragma phaserTemplate(outVariables)
 
@@ -28,5 +32,5 @@ void main ()
 
     #pragma phaserTemplate(fragmentProcess)
 
-    gl_FragColor = fragColor;
+    fragColorOutput = fragColor;
 }

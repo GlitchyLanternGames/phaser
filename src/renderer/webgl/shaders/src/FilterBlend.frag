@@ -1,14 +1,18 @@
 // FILTER_BLEND_FS
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 uniform sampler2D uMainSampler2;
 uniform float amount;
 uniform vec4 color;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 vec4 NORMAL (vec4 base, vec4 blend)
 {
@@ -301,5 +305,5 @@ void main ()
 
     vec4 blended = BLEND(base, blend);
 
-    gl_FragColor = mix(base, blended, amount);
+    fragColorOutput = mix(base, blended, amount);
 }

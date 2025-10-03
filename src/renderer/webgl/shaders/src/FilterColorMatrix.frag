@@ -1,21 +1,25 @@
 // COLORMATRIX_FS
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 uniform float uColorMatrix[20];
 uniform float uAlpha;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 void main ()
 {
-    vec4 c = texture2D(uMainSampler, outTexCoord);
+    vec4 c = texture(uMainSampler, outTexCoord);
 
     if (uAlpha == 0.0)
     {
-        gl_FragColor = c;
+        fragColorOutput = c;
 
         return;
     }
@@ -36,5 +40,5 @@ void main ()
 
     rgb *= result.a;
 
-    gl_FragColor = vec4(rgb, result.a);
+    fragColorOutput = vec4(rgb, result.a);
 }

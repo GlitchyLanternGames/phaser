@@ -653,7 +653,11 @@ var Config = new Class({
 
         if (window)
         {
-            if (window.FORCE_WEBGL)
+            if (window.FORCE_WEBGL2)
+            {
+                this.renderType = CONST.WEBGL2;
+            }
+            else if (window.FORCE_WEBGL)
             {
                 this.renderType = CONST.WEBGL;
             }

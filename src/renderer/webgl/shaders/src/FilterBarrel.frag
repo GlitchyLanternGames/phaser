@@ -1,13 +1,17 @@
 // BARREL_FS
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 
 uniform float amount;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 #pragma phaserTemplate(fragmentHeader)
 
@@ -31,6 +35,6 @@ void main()
         texCoord = Distort(xy);
     }
 
-    // gl_FragColor = texture2D(uMainSampler, texCoord);
-    gl_FragColor = boundedSampler(uMainSampler, texCoord);
+    // fragColorOutput = texture(uMainSampler, texCoord);
+    fragColorOutput = boundedSampler(uMainSampler, texCoord);
 }

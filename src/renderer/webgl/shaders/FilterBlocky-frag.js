@@ -1,14 +1,16 @@
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform vec2 resolution;',
     'uniform vec4 uSizeAndOffset;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'void main()',
     '{',
     '    vec2 gridCell = floor((outTexCoord * resolution + uSizeAndOffset.zw) / uSizeAndOffset.xy) * uSizeAndOffset.xy - uSizeAndOffset.zw;',
     '    vec2 texCoord = gridCell / resolution;',
-    '    gl_FragColor = texture2D(uMainSampler, texCoord);',
+    '    fragColorOutput = texture(uMainSampler, texCoord);',
     '}',
 ].join('\n');

@@ -1,4 +1,5 @@
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
@@ -9,9 +10,9 @@ module.exports = [
     '#endif',
     '#pragma phaserTemplate(vertexDefine)',
     'uniform mat4 uProjectionMatrix;',
-    'attribute vec2 inPosition;',
-    'attribute vec2 inTexCoord;',
-    'varying vec2 outTexCoord;',
+    'in vec2 inPosition;',
+    'in vec2 inTexCoord;',
+    'out vec2 outTexCoord;',
     '#pragma phaserTemplate(outVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',

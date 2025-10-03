@@ -1,4 +1,5 @@
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
@@ -8,13 +9,14 @@ module.exports = [
     'precision mediump float;',
     '#endif',
     '#pragma phaserTemplate(fragmentDefine)',
-    'varying vec2 outTexCoord;',
+    'out vec4 fragColorOutput;',
+    'in vec2 outTexCoord;',
     '#pragma phaserTemplate(outVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
     '    vec4 fragColor = vec4(outTexCoord.xyx, 1.0);',
     '    #pragma phaserTemplate(fragmentProcess)',
-    '    gl_FragColor = fragColor;',
+    '    fragColorOutput = fragColor;',
     '}',
 ].join('\n');

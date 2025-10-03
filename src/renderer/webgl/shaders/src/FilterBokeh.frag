@@ -1,4 +1,6 @@
 // BOKEH_FS
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
@@ -7,6 +9,8 @@ precision mediump float;
 #define ONEOVER_ITR 1.0 / ITERATIONS
 #define PI 3.141596
 #define GOLDEN_ANGLE 2.39996323
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 
@@ -19,7 +23,7 @@ uniform bool isTiltShift;
 uniform float strength;
 uniform vec2 blur;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 vec2 Sample (in float theta, inout float r)
 {
@@ -67,5 +71,5 @@ void main ()
         shift = length(uv * blur * strength) * centerStrength;
     }
 
-    gl_FragColor = vec4(Bokeh(uMainSampler, outTexCoord * vec2(1.0, 1.0), radius * shift), 0.0);
+    fragColorOutput = vec4(Bokeh(uMainSampler, outTexCoord * vec2(1.0, 1.0), radius * shift), 0.0);
 }

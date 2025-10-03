@@ -1,3 +1,5 @@
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 #pragma phaserTemplate(extensions)
@@ -12,9 +14,11 @@ precision mediump float;
 
 #pragma phaserTemplate(fragmentDefine)
 
+out vec4 fragColorOutput;
+
 uniform vec2 uResolution;
 
-varying vec4 outTint;
+in vec4 outTint;
 
 #pragma phaserTemplate(outVariables)
 
@@ -26,5 +30,5 @@ void main ()
 
     #pragma phaserTemplate(fragmentProcess)
 
-    gl_FragColor = fragColor;
+    fragColorOutput = fragColor;
 }

@@ -20,7 +20,7 @@ var CONST = {
      * @type {string}
      * @since 3.0.0
      */
-    VERSION: '4.0.0 RC5',
+    VERSION: '4.0.0-RC5-glitchy-webgl2',
 
     /**
      * Phaser Release Version as displayed in the console.log header URL.
@@ -69,6 +69,18 @@ var CONST = {
      * @since 3.0.0
      */
     WEBGL: 2,
+
+    /**
+     * Forces Phaser to use the WebGL2 Renderer. If the browser does not support WebGL2, there is
+     * no fallback to WebGL1 or Canvas with this setting, so you should trap it and display a suitable
+     * message to the user. This will create a WebGL2 rendering context.
+     *
+     * @name Phaser.WEBGL2
+     * @const
+     * @type {number}
+     * @since 4.0.0
+     */
+    WEBGL2: 4,
 
     /**
      * A Headless Renderer doesn't create either a Canvas or WebGL Renderer. However, it still

@@ -1,13 +1,17 @@
 // PIXELATE_FS
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 uniform vec2 resolution;
 uniform float amount;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 void main ()
 {
@@ -20,12 +24,12 @@ void main ()
     vec2 corner3 = center + pixelSize * vec2(+0.5, +0.5);
     vec2 corner4 = center + pixelSize * vec2(-0.5, +0.5);
 
-    vec4 pixel = 0.4 * texture2D(uMainSampler, center / resolution);
+    vec4 pixel = 0.4 * texture(uMainSampler, center / resolution);
 
-    pixel += 0.15 * texture2D(uMainSampler, corner1 / resolution);
-    pixel += 0.15 * texture2D(uMainSampler, corner2 / resolution);
-    pixel += 0.15 * texture2D(uMainSampler, corner3 / resolution);
-    pixel += 0.15 * texture2D(uMainSampler, corner4 / resolution);
+    pixel += 0.15 * texture(uMainSampler, corner1 / resolution);
+    pixel += 0.15 * texture(uMainSampler, corner2 / resolution);
+    pixel += 0.15 * texture(uMainSampler, corner3 / resolution);
+    pixel += 0.15 * texture(uMainSampler, corner4 / resolution);
 
-    gl_FragColor = pixel;
+    fragColorOutput = pixel;
 }

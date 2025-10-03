@@ -1,7 +1,11 @@
 // BLUR_MED_FS
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 uniform vec2 resolution;
@@ -9,7 +13,7 @@ uniform vec2 offset;
 uniform float strength;
 uniform vec3 color;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 #pragma phaserTemplate(fragmentHeader)
 
@@ -28,5 +32,5 @@ void main ()
     col += boundedSampler(uMainSampler, uv + (off2 / resolution)) * 0.0702702703;
     col += boundedSampler(uMainSampler, uv - (off2 / resolution)) * 0.0702702703;
 
-    gl_FragColor = col * vec4(color, 1.0);
+    fragColorOutput = col * vec4(color, 1.0);
 }

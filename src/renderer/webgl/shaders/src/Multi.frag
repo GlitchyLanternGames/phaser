@@ -1,3 +1,5 @@
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 #pragma phaserTemplate(extensions)
@@ -12,12 +14,14 @@ precision mediump float;
 
 #pragma phaserTemplate(fragmentDefine)
 
+out vec4 fragColorOutput;
+
 uniform vec2 uResolution;
 
-varying vec2 outTexCoord;
-varying float outTexDatum;
-varying float outTintEffect;
-varying vec4 outTint;
+in vec2 outTexCoord;
+in float outTexDatum;
+in float outTintEffect;
+in vec4 outTint;
 
 #pragma phaserTemplate(outVariables)
 
@@ -28,5 +32,5 @@ void main ()
     #pragma phaserTemplate(fragmentProcess)
 
     // The fragment process must insert `fragColor`, e.g. `vec4 fragColor = getTexture();`.
-    gl_FragColor = fragColor;
+    fragColorOutput = fragColor;
 }

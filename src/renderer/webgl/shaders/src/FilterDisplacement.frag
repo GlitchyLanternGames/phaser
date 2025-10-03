@@ -1,20 +1,24 @@
 // DISPLACEMENT_FS
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 uniform sampler2D uDisplacementSampler;
 
 uniform vec2 amount;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 #pragma phaserTemplate(fragmentHeader)
 
 void main ()
 {
-    vec2 disp = (-vec2(0.5, 0.5) + texture2D(uDisplacementSampler, outTexCoord).rg) * amount;
+    vec2 disp = (-vec2(0.5, 0.5) + texture(uDisplacementSampler, outTexCoord).rg) * amount;
 
-    gl_FragColor = boundedSampler(uMainSampler, outTexCoord + disp).rgba;
+    fragColorOutput = boundedSampler(uMainSampler, outTexCoord + disp).rgba;
 }

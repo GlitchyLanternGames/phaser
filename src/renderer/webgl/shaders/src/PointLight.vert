@@ -1,3 +1,5 @@
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 #pragma phaserTemplate(extensions)
@@ -10,16 +12,16 @@ precision mediump float;
 
 uniform mat4 uProjectionMatrix;
 
-attribute vec2 inPosition;
-attribute vec2 inLightPosition;
-attribute vec4 inLightColor;
-attribute float inLightRadius;
-attribute float inLightAttenuation;
+in vec2 inPosition;
+in vec2 inLightPosition;
+in vec4 inLightColor;
+in float inLightRadius;
+in float inLightAttenuation;
 
-varying vec4 lightPosition;
-varying vec4 lightColor;
-varying float lightRadius;
-varying float lightAttenuation;
+out vec4 lightPosition;
+out vec4 lightColor;
+out float lightRadius;
+out float lightAttenuation;
 
 #pragma phaserTemplate(outVariables)
 

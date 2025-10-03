@@ -1,8 +1,10 @@
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'uniform vec2 lightPosition;',
     'uniform vec4 color;',
     'uniform float decay;',
@@ -26,6 +28,6 @@ module.exports = [
     '        shadow += boundedSampler(uMainSampler, outTexCoord + float(i) * decay / limit * pc).a * power;',
     '    }',
     '    float mask = 1.0 - texture.a;',
-    '    gl_FragColor = mix(texture, color, clamp(shadow * mask, 0.0, 1.0));',
+    '    fragColorOutput = mix(texture, color, clamp(shadow * mask, 0.0, 1.0));',
     '}',
 ].join('\n');

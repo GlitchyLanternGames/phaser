@@ -36,7 +36,7 @@ var CreateRenderer = function (game)
             config.renderType = Features.webGL ? CONST.WEBGL : CONST.CANVAS;
         }
 
-        if (config.renderType === CONST.WEBGL)
+        if (config.renderType === CONST.WEBGL || config.renderType === CONST.WEBGL2)
         {
             if (!Features.webGL) { throw new Error('Cannot create WebGL context, aborting.'); }
         }
@@ -44,7 +44,7 @@ var CreateRenderer = function (game)
         {
             if (!Features.canvas) { throw new Error('Cannot create Canvas context, aborting.'); }
         }
-        else
+        else if (config.renderType !== CONST.AUTO)
         {
             throw new Error('Unknown value for renderer type: ' + config.renderType);
         }
@@ -101,7 +101,7 @@ var CreateRenderer = function (game)
         WebGLRenderer = require('../renderer/webgl/WebGLRenderer');
 
         //  Let the config pick the renderer type, as both are included
-        if (config.renderType === CONST.WEBGL)
+        if (config.renderType === CONST.WEBGL || config.renderType === CONST.WEBGL2)
         {
             game.renderer = new WebGLRenderer(game);
         }
@@ -117,7 +117,11 @@ var CreateRenderer = function (game)
         WebGLRenderer = require('../renderer/webgl/WebGLRenderer');
 
         //  Force the type to WebGL, regardless what was requested
-        config.renderType = CONST.WEBGL;
+        //  If WEBGL2 was requested, keep it as WEBGL2
+        if (config.renderType !== CONST.WEBGL2)
+        {
+            config.renderType = CONST.WEBGL;
+        }
 
         game.renderer = new WebGLRenderer(game);
     }

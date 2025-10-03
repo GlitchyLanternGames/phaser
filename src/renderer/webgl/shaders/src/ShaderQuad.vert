@@ -1,4 +1,6 @@
 // ShaderQuad vertex shader
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 #pragma phaserTemplate(extensions)
@@ -15,13 +17,13 @@ precision mediump float;
 
 uniform mat4 uProjectionMatrix;
 
-attribute vec2 inPosition;
-attribute vec2 inTexCoord;
+in vec2 inPosition;
+in vec2 inTexCoord;
 
 // The position of the fragment within the quad.
 // This is a value between 0 and 1 across the quad.
 // 0,1 is the top-left, 1,0 is the bottom right.
-varying vec2 outTexCoord;
+out vec2 outTexCoord;
 
 #pragma phaserTemplate(outVariables)
 

@@ -1,15 +1,17 @@
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
 
-attribute vec2 inPosition;
-attribute vec2 inTexCoord;
+in vec2 inPosition;
+in vec2 inTexCoord;
 
 // Normalized screen space coordinates
-varying vec2 outFragCoord;
+out vec2 outFragCoord;
 
 // Texture coordinates
-varying vec2 outTexCoord;
+out vec2 outTexCoord;
 
 void main ()
 {

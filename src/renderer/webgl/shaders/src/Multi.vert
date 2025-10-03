@@ -1,3 +1,5 @@
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 #pragma phaserTemplate(extensions)
@@ -15,16 +17,16 @@ precision mediump float;
 uniform mat4 uProjectionMatrix;
 uniform vec2 uResolution;
 
-attribute vec2 inPosition;
-attribute vec2 inTexCoord;
-attribute float inTexDatum;
-attribute float inTintEffect;
-attribute vec4 inTint;
+in vec2 inPosition;
+in vec2 inTexCoord;
+in float inTexDatum;
+in float inTintEffect;
+in vec4 inTint;
 
-varying vec2 outTexCoord;
-varying float outTexDatum;
-varying float outTintEffect;
-varying vec4 outTint;
+out vec2 outTexCoord;
+out float outTexDatum;
+out float outTintEffect;
+out vec4 outTint;
 
 #pragma phaserTemplate(outVariables)
 
