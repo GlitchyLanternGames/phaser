@@ -995,11 +995,6 @@ var WebGLRenderer = new Class({
             var colorBufferFloatString = 'EXT_color_buffer_float';
             this.colorBufferFloatExtension = (exts.indexOf(colorBufferFloatString) > -1) ? gl.getExtension(colorBufferFloatString) : null;
 
-            if (!this.colorBufferFloatExtension)
-            {
-                console.warn('WebGL2: EXT_color_buffer_float not supported. HDR rendering and float framebuffers will not be available.');
-            }
-
             // EXT_texture_filter_anisotropic - Better texture filtering
             var anisotropicString = 'EXT_texture_filter_anisotropic';
             this.textureFilterAnisotropicExtension = (exts.indexOf(anisotropicString) > -1) ? gl.getExtension(anisotropicString) : null;
@@ -1007,21 +1002,11 @@ var WebGLRenderer = new Class({
             if (this.textureFilterAnisotropicExtension)
             {
                 this.maxAnisotropy = gl.getParameter(this.textureFilterAnisotropicExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-                console.log('WebGL2: Anisotropic filtering available. Max level:', this.maxAnisotropy);
-            }
-            else
-            {
-                console.warn('WebGL2: EXT_texture_filter_anisotropic not supported. Anisotropic filtering will not be available.');
             }
 
             // WEBGL_compressed_texture_s3tc - S3TC/DXT compressed textures
             var s3tcString = 'WEBGL_compressed_texture_s3tc';
             this.compressedTextureS3TCExtension = (exts.indexOf(s3tcString) > -1) ? gl.getExtension(s3tcString) : null;
-
-            if (!this.compressedTextureS3TCExtension)
-            {
-                console.warn('WebGL2: WEBGL_compressed_texture_s3tc not supported. S3TC/DXT compressed textures will not be available.');
-            }
 
             return;
         }
