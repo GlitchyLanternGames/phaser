@@ -5170,6 +5170,13 @@ declare namespace Phaser {
     const WEBGL: number;
 
     /**
+     * Forces Phaser to use the WebGL2 Renderer. If the browser does not support WebGL2, there is
+     * no fallback to WebGL1 or Canvas with this setting, so you should trap it and display a suitable
+     * message to the user. This will create a WebGL2 rendering context.
+     */
+    const WEBGL2: number;
+
+    /**
      * A Headless Renderer doesn't create either a Canvas or WebGL Renderer. However, it still
      * absolutely relies on the DOM being present and available. This mode is meant for unit testing,
      * not for running Phaser on the server, which is something you really shouldn't do.
@@ -74963,7 +74970,7 @@ declare namespace Phaser {
                  */
                 zoom?: number;
                 /**
-                 * Which renderer to use. Phaser.AUTO, Phaser.CANVAS, Phaser.HEADLESS, or Phaser.WEBGL. AUTO picks WEBGL if available, otherwise CANVAS.
+                 * Which renderer to use. Phaser.AUTO, Phaser.CANVAS, Phaser.HEADLESS, Phaser.WEBGL, or Phaser.WEBGL2. AUTO picks WEBGL if available, otherwise CANVAS. WEBGL2 forces a WebGL2 context (throws error if not supported).
                  */
                 type?: number;
                 /**
@@ -74987,9 +74994,9 @@ declare namespace Phaser {
                  */
                 customEnvironment?: boolean;
                 /**
-                 * Provide your own Canvas Context for Phaser to use, instead of creating one.
+                 * Provide your own Canvas or WebGL Context for Phaser to use, instead of creating one.
                  */
-                context?: CanvasRenderingContext2D;
+                context?: CanvasRenderingContext2D | WebGLRenderingContext | WebGL2RenderingContext;
                 /**
                  * A scene or scenes to add to the game. If several are given, the first is started; the remainder are started only if they have `{ active: true }`. See the `sceneConfig` argument in `Phaser.Scenes.SceneManager#add`.
                  */
@@ -99451,9 +99458,10 @@ declare namespace Phaser {
                 createFramebuffer(renderTexture: Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper | Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper[] | null, addStencilBuffer?: boolean, addDepthBuffer?: boolean): Phaser.Renderer.WebGL.Wrappers.WebGLFramebufferWrapper;
 
                 /**
-                 * Converts GLSL ES 1.00 shader source to GLSL ES 3.00 when running under WebGL2.
-                 * The original source is returned unchanged when using a WebGL1 context.
-                 * @param source The original shader source.
+                 * Validates shader source for WebGL2.
+                 * All shaders are now pre-converted to GLSL ES 3.00 format, so this function
+                 * only performs validation and returns the source unchanged.
+                 * @param source The shader source (already in GLSL ES 3.00 format).
                  * @param isVertexShader Set to `true` when converting a vertex shader.
                  */
                 convertShaderSourceToWebGL2(source: string, isVertexShader: boolean): string;
