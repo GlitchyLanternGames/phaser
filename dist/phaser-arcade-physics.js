@@ -175755,10 +175755,26 @@ var WebGLRenderer = new Class({
         }
 
         // Validate that source is a string and not undefined/null
-        if (typeof source !== 'string' || !source)
+        if (typeof source !== 'string')
         {
-            console.error('Invalid shader source:', source);
+            console.error('convertShaderSourceToWebGL2: Invalid shader source type:', typeof source, 'Value:', source);
+            console.trace();
+            throw new Error('Shader source must be a string, got: ' + typeof source);
+        }
+
+        if (!source || source.trim() === '')
+        {
+            console.error('convertShaderSourceToWebGL2: Empty shader source');
+            console.trace();
             throw new Error('Shader source must be a non-empty string');
+        }
+
+        // Check if source contains the literal string "undefined" or "null"
+        if (source.trim() === 'undefined' || source.trim() === 'null')
+        {
+            console.error('convertShaderSourceToWebGL2: Shader source is the literal string "' + source.trim() + '"');
+            console.trace();
+            throw new Error('Shader source is the literal string "' + source.trim() + '", this indicates a bug in shader source handling');
         }
 
         var output = source.replace(/^\s+/, '');
