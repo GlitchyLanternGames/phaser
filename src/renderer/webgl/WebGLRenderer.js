@@ -602,7 +602,8 @@ var WebGLRenderer = new Class({
          * NEAREST_MIPMAP_LINEAR
          * LINEAR_MIPMAP_LINEAR
          *
-         * Mipmaps only work with textures that are fully power-of-two in size.
+         * In WebGL1, mipmaps only work with textures that are fully power-of-two in size.
+         * In WebGL2, mipmaps work with any texture size (NPOT textures fully supported).
          *
          * For more details see https://webglfundamentals.org/webgl/lessons/webgl-3d-textures.html
          *
@@ -1723,7 +1724,7 @@ var WebGLRenderer = new Class({
      * @param {number} width - The width of the texture.
      * @param {number} height - The height of the texture.
      * @param {number} scaleMode - The scale mode to be used by the texture.
-     * @param {boolean} [forceClamp=false] - Force the texture to use the CLAMP_TO_EDGE wrap mode, even if a power of two?
+     * @param {boolean} [forceClamp=false] - Force the texture to use the CLAMP_TO_EDGE wrap mode. In WebGL2, NPOT textures support REPEAT wrapping.
      * @param {boolean} [flipY=true] - Sets the `UNPACK_FLIP_Y_WEBGL` flag the WebGL Texture uses during upload.
      *
      * @return {?Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper} The WebGLTextureWrapper that was created, or `null` if it couldn't be created.
@@ -1743,7 +1744,9 @@ var WebGLRenderer = new Class({
 
         var pow = IsSizePowerOfTwo(width, height);
 
-        if (pow && !forceClamp)
+        // WebGL2 supports NPOT textures with REPEAT wrapping
+        // WebGL1 requires POT for REPEAT wrapping
+        if (!forceClamp && (this.isWebGL2 || pow))
         {
             wrap = gl.REPEAT;
         }
@@ -1751,12 +1754,14 @@ var WebGLRenderer = new Class({
         if (scaleMode === CONST.ScaleModes.LINEAR && this.config.antialias)
         {
             var isCompressed = source && source.compressed;
-            var isMip = (!isCompressed && pow) || (isCompressed && source.mipmaps.length > 1);
+
+            // WebGL2 supports mipmaps on NPOT textures
+            // WebGL1 requires POT for mipmaps
+            var isMip = (!isCompressed && (this.isWebGL2 || pow)) || (isCompressed && source.mipmaps.length > 1);
 
             // Filters above LINEAR only work with MIPmaps.
-            // These are only generated for power of two (POT) textures.
-            // Compressed textures with mipmaps are always POT,
-            // but POT compressed textures might not have mipmaps.
+            // In WebGL2, mipmaps can be generated for any texture size.
+            // In WebGL1, mipmaps only work with power of two (POT) textures.
             minFilter = (this.mipmapFilter && isMip) ? this.mipmapFilter : gl.LINEAR;
             magFilter = gl.LINEAR;
         }
@@ -2402,7 +2407,8 @@ var WebGLRenderer = new Class({
 
         var pow = IsSizePowerOfTwo(width, height);
 
-        if (!noRepeat && pow)
+        // WebGL2 supports NPOT textures with REPEAT wrapping
+        if (!noRepeat && (this.isWebGL2 || pow))
         {
             wrapping = gl.REPEAT;
         }
@@ -2497,14 +2503,16 @@ var WebGLRenderer = new Class({
 
         var pow = IsSizePowerOfTwo(width, height);
 
-        if (!noRepeat && pow)
+        // WebGL2 supports NPOT textures with REPEAT wrapping
+        if (!noRepeat && (this.isWebGL2 || pow))
         {
             wrapping = gl.REPEAT;
         }
 
         if (this.config.antialias)
         {
-            minFilter = (pow && this.mipmapFilter) ? this.mipmapFilter : gl.LINEAR;
+            // WebGL2 supports mipmaps on NPOT textures
+            minFilter = ((this.isWebGL2 || pow) && this.mipmapFilter) ? this.mipmapFilter : gl.LINEAR;
             magFilter = gl.LINEAR;
         }
 
@@ -2586,7 +2594,8 @@ var WebGLRenderer = new Class({
 
         var pow = IsSizePowerOfTwo(width, height);
 
-        if (pow)
+        // WebGL2 supports NPOT textures with REPEAT wrapping
+        if (this.isWebGL2 || pow)
         {
             wrap = gl.REPEAT;
         }
