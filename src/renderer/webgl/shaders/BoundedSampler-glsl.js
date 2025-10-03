@@ -5,6 +5,6 @@ module.exports = [
     '    {',
     '        return vec4(0.0, 0.0, 0.0, 0.0);',
     '    }',
-    '    return texture2D(sampler, uv);',
+    '    return texture(sampler, uv);',
     '}',
 ].join('\n');

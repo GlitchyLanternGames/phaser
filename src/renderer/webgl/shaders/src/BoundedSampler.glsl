@@ -7,5 +7,5 @@ vec4 boundedSampler(sampler2D sampler, vec2 uv)
         return vec4(0.0, 0.0, 0.0, 0.0);
     }
 
-    return texture2D(sampler, uv);
+    return texture(sampler, uv);
 }
