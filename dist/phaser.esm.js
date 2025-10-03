@@ -141930,11 +141930,9 @@ var ShaderQuad = new Class({
 
         if (typeof vertexSource === 'string')
         {
-            var trimmedVertex = vertexSource.trim();
-            if (trimmedVertex === '' || trimmedVertex === 'undefined' || trimmedVertex === 'null')
-            {
-                vertexSource = '';
-            }
+            var trimmedVertex = vertexSource.trimStart();
+            trimmedVertex = trimmedVertex.replace(/^(?:undefined|null)\b/, '').trimStart();
+            vertexSource = trimmedVertex;
         }
 
         if (!vertexSource)
@@ -141958,11 +141956,9 @@ var ShaderQuad = new Class({
 
         if (typeof fragmentSource === 'string')
         {
-            var trimmedFragment = fragmentSource.trim();
-            if (trimmedFragment === '' || trimmedFragment === 'undefined' || trimmedFragment === 'null')
-            {
-                fragmentSource = '';
-            }
+            var trimmedFragment = fragmentSource.trimStart();
+            trimmedFragment = trimmedFragment.replace(/^(?:undefined|null)\b/, '').trimStart();
+            fragmentSource = trimmedFragment;
         }
 
         if (!fragmentSource)
