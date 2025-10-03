@@ -99044,6 +99044,43 @@ declare namespace Phaser {
                 standardDerivativesExtension: OES_standard_derivatives;
 
                 /**
+                 * If the browser supports the `EXT_color_buffer_float` extension (WebGL2),
+                 * this property will hold a reference to it.
+                 * 
+                 * This extension allows rendering to floating-point color buffers.
+                 * Required for HDR rendering and some post-processing effects.
+                 * 
+                 * This is populated in the `setExtensions` method.
+                 */
+                colorBufferFloatExtension: EXT_color_buffer_float;
+
+                /**
+                 * If the browser supports the `EXT_texture_filter_anisotropic` extension,
+                 * this property will hold a reference to it.
+                 * 
+                 * This extension provides anisotropic filtering for better texture quality.
+                 * 
+                 * This is populated in the `setExtensions` method.
+                 */
+                textureFilterAnisotropicExtension: EXT_texture_filter_anisotropic;
+
+                /**
+                 * If the browser supports the `WEBGL_compressed_texture_s3tc` extension,
+                 * this property will hold a reference to it.
+                 * 
+                 * This extension provides S3TC compressed texture support (DXT1/3/5).
+                 * 
+                 * This is populated in the `setExtensions` method.
+                 */
+                compressedTextureS3TCExtension: WEBGL_compressed_texture_s3tc;
+
+                /**
+                 * Maximum anisotropic filtering level supported by the GPU.
+                 * Only available if `EXT_texture_filter_anisotropic` is supported.
+                 */
+                maxAnisotropy: number;
+
+                /**
                  * If the browser supports the `OES_vertex_array_object` extension, this property will hold
                  * a reference to the glExtension for it.
                  * 
@@ -99119,7 +99156,8 @@ declare namespace Phaser {
                  * NEAREST_MIPMAP_LINEAR
                  * LINEAR_MIPMAP_LINEAR
                  * 
-                 * Mipmaps only work with textures that are fully power-of-two in size.
+                 * In WebGL1, mipmaps only work with textures that are fully power-of-two in size.
+                 * In WebGL2, mipmaps work with any texture size (NPOT textures fully supported).
                  * 
                  * For more details see https://webglfundamentals.org/webgl/lessons/webgl-3d-textures.html
                  * 
@@ -99177,6 +99215,29 @@ declare namespace Phaser {
                  * Called automatically during the `init` method.
                  */
                 setExtensions(): void;
+
+                /**
+                 * Checks if a specific WebGL extension is supported.
+                 * @param extensionName The name of the extension to check (e.g., 'EXT_color_buffer_float').
+                 */
+                hasExtension(extensionName: string): boolean;
+
+                /**
+                 * Checks if floating-point color buffers are supported (WebGL2 only).
+                 * Required for HDR rendering and some post-processing effects.
+                 */
+                supportsFloatColorBuffers(): boolean;
+
+                /**
+                 * Checks if anisotropic filtering is supported.
+                 * Provides better texture quality at oblique angles.
+                 */
+                supportsAnisotropicFiltering(): boolean;
+
+                /**
+                 * Checks if S3TC/DXT compressed textures are supported.
+                 */
+                supportsS3TCTextures(): boolean;
 
                 /**
                  * Sets the handlers that are called when WebGL context is lost or restored by the browser.
@@ -99376,12 +99437,6 @@ declare namespace Phaser {
                 resetProjectionMatrix(): this;
 
                 /**
-                 * Checks if a WebGL extension is supported
-                 * @param extensionName Name of the WebGL extension
-                 */
-                hasExtension(extensionName: string): boolean;
-
-                /**
                  * Loads a WebGL extension
                  * @param extensionName The name of the extension to load.
                  */
@@ -99425,7 +99480,7 @@ declare namespace Phaser {
                  * @param width The width of the texture.
                  * @param height The height of the texture.
                  * @param scaleMode The scale mode to be used by the texture.
-                 * @param forceClamp Force the texture to use the CLAMP_TO_EDGE wrap mode, even if a power of two? Default false.
+                 * @param forceClamp Force the texture to use the CLAMP_TO_EDGE wrap mode. In WebGL2, NPOT textures support REPEAT wrapping. Default false.
                  * @param flipY Sets the `UNPACK_FLIP_Y_WEBGL` flag the WebGL Texture uses during upload. Default true.
                  */
                 createTextureFromSource(source: object, width: number, height: number, scaleMode: number, forceClamp?: boolean, flipY?: boolean): Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper | null;
@@ -102017,14 +102072,19 @@ declare namespace Phaser {
                  * 
                  * This also manages the attachments to the framebuffer,
                  * including renderbuffer life cycle.
+                 * 
+                 * WebGL2 Optimizations:
+                 * - Uses DEPTH24_STENCIL8 for combined depth-stencil (more efficient than separate buffers)
+                 * - Uses DEPTH_COMPONENT24 for depth-only (higher precision than WebGL1's 16-bit)
+                 * - Supports multiple color attachments (MRT - Multiple Render Targets)
                  */
                 class WebGLFramebufferWrapper {
                     /**
                      * 
                      * @param renderer The renderer this WebGLFramebuffer belongs to.
-                     * @param colorAttachments The color textures where the color pixels are written. If empty, the canvas will be used as the color attachment. Only the first color attachment is used in default WebGL1.
+                     * @param colorAttachments The color textures where the color pixels are written. If empty, the canvas will be used as the color attachment. WebGL2 supports multiple color attachments (MRT).
                      * @param addStencilBuffer Whether to add a stencil buffer to the framebuffer. If the canvas is used as the color attachment, this will be ignored. Default false.
-                     * @param addDepthBuffer Whether to add a depth buffer to the framebuffer. If depth and stencil are both provided, they will be combined into a single depth-stencil buffer. If the canvas is used as the color attachment, this will be ignored. Default false.
+                     * @param addDepthBuffer Whether to add a depth buffer to the framebuffer. If depth and stencil are both provided, they will be combined into a single DEPTH24_STENCIL8 buffer in WebGL2. If the canvas is used as the color attachment, this will be ignored. Default false.
                      */
                     constructor(renderer: Phaser.Renderer.WebGL.WebGLRenderer, colorAttachments: Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper[] | undefined, addStencilBuffer?: boolean, addDepthBuffer?: boolean);
 
@@ -102732,6 +102792,112 @@ declare namespace Phaser {
 
                     /**
                      * Deletes the WebGLTexture from the GPU, if it has not been already.
+                     */
+                    destroy(): void;
+
+                }
+
+                /**
+                 * Wrapper for a WebGL2 Uniform Buffer Object (UBO).
+                 * 
+                 * UBOs allow you to group multiple uniforms into a single buffer, which can be
+                 * updated more efficiently than individual uniforms. This is especially useful
+                 * when you have many uniforms that are updated together (e.g., camera matrices,
+                 * lighting data, material properties).
+                 * 
+                 * Benefits of UBOs:
+                 * - Faster uniform updates (single buffer update vs. multiple uniform calls)
+                 * - Shared uniform data across multiple shaders
+                 * - Better driver optimization
+                 * - Reduced CPU overhead
+                 * 
+                 * Note: UBOs are only available in WebGL2. This wrapper will throw an error
+                 * if used with a WebGL1 context.
+                 */
+                class WebGLUniformBufferWrapper {
+                    /**
+                     * 
+                     * @param renderer The WebGLRenderer instance that owns this wrapper.
+                     * @param bindingPoint The binding point index for this UBO (0-based).
+                     * @param data Optional initial data for the buffer.
+                     * @param usage The usage pattern for the buffer. Default gl.DYNAMIC_DRAW.
+                     */
+                    constructor(renderer: Phaser.Renderer.WebGL.WebGLRenderer, bindingPoint: number, data?: ArrayBuffer | ArrayBufferView, usage?: number);
+
+                    /**
+                     * The WebGLRenderer instance that owns this wrapper.
+                     */
+                    renderer: Phaser.Renderer.WebGL.WebGLRenderer;
+
+                    /**
+                     * The WebGL context.
+                     */
+                    gl: WebGL2RenderingContext;
+
+                    /**
+                     * The WebGLBuffer being wrapped by this class.
+                     * 
+                     * This property could change at any time.
+                     * Therefore, you should never store a reference to this value.
+                     * It should only be passed directly to the WebGL API.
+                     */
+                    buffer: WebGLBuffer | null;
+
+                    /**
+                     * The binding point index for this UBO.
+                     * This should be unique across all UBOs in use.
+                     */
+                    bindingPoint: number;
+
+                    /**
+                     * The usage pattern for this buffer.
+                     * Defaults to gl.DYNAMIC_DRAW for frequently updated data.
+                     */
+                    usage: number;
+
+                    /**
+                     * The size of the buffer in bytes.
+                     */
+                    byteLength: number;
+
+                    /**
+                     * Creates a new WebGLBuffer for uniform data.
+                     */
+                    createResource(): void;
+
+                    /**
+                     * Binds this UBO to its binding point.
+                     */
+                    bind(): void;
+
+                    /**
+                     * Unbinds this UBO.
+                     */
+                    unbind(): void;
+
+                    /**
+                     * Sets the data for this UBO.
+                     * @param data The data to upload to the buffer.
+                     * @param offset The offset in bytes where the data should be written. Default 0.
+                     */
+                    setData(data: ArrayBuffer | ArrayBufferView, offset?: number): void;
+
+                    /**
+                     * Updates a portion of the buffer data.
+                     * @param data The data to upload.
+                     * @param offset The offset in bytes where the data should be written.
+                     */
+                    updateData(data: ArrayBuffer | ArrayBufferView, offset: number): void;
+
+                    /**
+                     * Binds this UBO to a specific uniform block in a shader program.
+                     * @param program The shader program.
+                     * @param blockName The name of the uniform block in the shader.
+                     */
+                    bindToProgram(program: WebGLProgram, blockName: string): void;
+
+                    /**
+                     * Destroys this UBO and frees its resources.
                      */
                     destroy(): void;
 
@@ -121473,7 +121639,7 @@ declare type Attachment = {
      */
     renderbuffer?: WebGLRenderbuffer;
     /**
-     * The internal format for the renderbuffer. This is a GLenum such as `gl.DEPTH_STENCIL`.
+     * The internal format for the renderbuffer. WebGL2 uses DEPTH24_STENCIL8 for combined depth-stencil, DEPTH_COMPONENT24 for depth-only. WebGL1 uses DEPTH_STENCIL and DEPTH_COMPONENT16.
      */
     internalFormat?: GLenum;
 };
