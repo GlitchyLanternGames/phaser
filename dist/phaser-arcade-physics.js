@@ -132497,6 +132497,16 @@ var ShaderQuad = new Class({
         var gl = this.renderer.gl;
 
         var vertexSource = config.vertexSource;
+
+        if (typeof vertexSource === 'string')
+        {
+            var trimmedVertex = vertexSource.trim();
+            if (trimmedVertex === '' || trimmedVertex === 'undefined' || trimmedVertex === 'null')
+            {
+                vertexSource = '';
+            }
+        }
+
         if (!vertexSource)
         {
             var vertexKey = config.vertexKey;
@@ -132515,6 +132525,16 @@ var ShaderQuad = new Class({
         }
 
         var fragmentSource = config.fragmentSource;
+
+        if (typeof fragmentSource === 'string')
+        {
+            var trimmedFragment = fragmentSource.trim();
+            if (trimmedFragment === '' || trimmedFragment === 'undefined' || trimmedFragment === 'null')
+            {
+                fragmentSource = '';
+            }
+        }
+
         if (!fragmentSource)
         {
             var fragmentKey = config.fragmentKey;
