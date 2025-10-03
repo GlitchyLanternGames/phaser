@@ -37574,6 +37574,9 @@ var ShaderProgramFactory = new Class({
         vertexSource = vertexSource.replace(rePragma, '');
         fragmentSource = fragmentSource.replace(rePragma, '');
 
+        vertexSource = this.renderer.convertShaderSourceToWebGL2(vertexSource, true);
+        fragmentSource = this.renderer.convertShaderSourceToWebGL2(fragmentSource, false);
+
         var program = this.renderer.createProgram(vertexSource, fragmentSource);
 
         this.programs[name] = program;
@@ -174254,11 +174257,21 @@ var WebGLRenderer = new Class({
          * The underlying WebGL context of the renderer.
          *
          * @name Phaser.Renderer.WebGL.WebGLRenderer#gl
-         * @type {WebGLRenderingContext}
+         * @type {(WebGLRenderingContext|WebGL2RenderingContext)}
          * @default null
          * @since 3.0.0
          */
         this.gl = null;
+
+        /**
+         * True if this renderer is using a WebGL2 rendering context.
+         *
+         * @name Phaser.Renderer.WebGL.WebGLRenderer#isWebGL2
+         * @type {boolean}
+         * @default false
+         * @since 3.80.0
+         */
+        this.isWebGL2 = false;
 
         /**
          * The current WebGLRenderingContext state.
@@ -174565,10 +174578,18 @@ var WebGLRenderer = new Class({
         }
         else
         {
-            gl = canvas.getContext('webgl', config.contextCreation) || canvas.getContext('experimental-webgl', config.contextCreation);
+            if (typeof WebGL2RenderingContext !== 'undefined')
+            {
+                gl = canvas.getContext('webgl2', config.contextCreation);
+            }
+
+            if (!gl)
+            {
+                gl = canvas.getContext('webgl', config.contextCreation) || canvas.getContext('experimental-webgl', config.contextCreation);
+            }
         }
 
-        if (!gl || gl.isContextLost())
+        if (!gl || (typeof gl.isContextLost === 'function' && gl.isContextLost()))
         {
             this.contextLost = true;
 
@@ -174576,6 +174597,7 @@ var WebGLRenderer = new Class({
         }
 
         this.gl = gl;
+        this.isWebGL2 = (typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext);
 
         this.setExtensions();
 
@@ -174722,18 +174744,17 @@ var WebGLRenderer = new Class({
         var gl = this.gl;
         var game = this.game;
 
-        var exts = gl.getSupportedExtensions();
+        var exts = gl.getSupportedExtensions() || [];
 
         this.supportedExtensions = exts;
 
         var angleString = 'ANGLE_instanced_arrays';
-
-        this.instancedArraysExtension = (exts.indexOf(angleString) > -1) ? gl.getExtension(angleString) : null;
+        var vaoString = 'OES_vertex_array_object';
+        var stdDerivativesString = 'OES_standard_derivatives';
+        var parallelShaderCompileString = 'KHR_parallel_shader_compile';
 
         if (game.config.skipUnreadyShaders)
         {
-            var parallelShaderCompileString = 'KHR_parallel_shader_compile';
-
             this.parallelShaderCompileExtension = (exts.indexOf(parallelShaderCompileString) > -1) ? gl.getExtension(parallelShaderCompileString) : null;
 
             if (!this.parallelShaderCompileExtension)
@@ -174743,20 +174764,26 @@ var WebGLRenderer = new Class({
             }
         }
 
-        var vaoString = 'OES_vertex_array_object';
+        if (this.isWebGL2)
+        {
+            // Native WebGL2 context already provides instancing and VAOs.
+            this.instancedArraysExtension = null;
+            this.vaoExtension = null;
+            this.standardDerivativesExtension = null;
 
+            return;
+        }
+
+        this.instancedArraysExtension = (exts.indexOf(angleString) > -1) ? gl.getExtension(angleString) : null;
         this.vaoExtension = (exts.indexOf(vaoString) > -1) ? gl.getExtension(vaoString) : null;
 
         if (game.config.smoothPixelArt)
         {
-            var stdDerivativesString = 'OES_standard_derivatives';
-
             this.standardDerivativesExtension = (exts.indexOf(stdDerivativesString) > -1) ? gl.getExtension(stdDerivativesString) : null;
         }
 
         // Make WebGL2 core features which were extensions available on the WebGL1 context.
-        // This allows us to use a WebGL2 context.
-        if (gl instanceof WebGLRenderingContext)
+        if (!this.isWebGL2)
         {
             // Incorporate instanced arrays.
             if (this.instancedArraysExtension)
@@ -175650,6 +175677,87 @@ var WebGLRenderer = new Class({
         this.glFramebufferWrappers.push(framebuffer);
 
         return framebuffer;
+    },
+
+    /**
+     * Converts GLSL ES 1.00 shader source to GLSL ES 3.00 when running under WebGL2.
+     * The original source is returned unchanged when using a WebGL1 context.
+     *
+     * @method Phaser.Renderer.WebGL.WebGLRenderer#convertShaderSourceToWebGL2
+     * @since 3.80.0
+     *
+     * @param {string} source - The original shader source.
+     * @param {boolean} isVertexShader - Set to `true` when converting a vertex shader.
+     *
+     * @return {string} The transformed shader source.
+     */
+    convertShaderSourceToWebGL2: function (source, isVertexShader)
+    {
+        if (!this.isWebGL2)
+        {
+            return source;
+        }
+
+        var output = source.replace(/^\s+/, '');
+
+        if (/^#version\s+/m.test(output))
+        {
+            output = output.replace(/^#version\s+\d+\s+\w+/m, '#version 300 es');
+        }
+        else
+        {
+            output = '#version 300 es\n' + output;
+        }
+
+        if (isVertexShader)
+        {
+            output = output.replace(/\battribute\b/g, 'in');
+            output = output.replace(/\bvarying\b/g, 'out');
+        }
+        else
+        {
+            output = output.replace(/\bvarying\b/g, 'in');
+
+            if (output.indexOf('gl_FragColor') > -1)
+            {
+                output = output.replace(/\bgl_FragColor\b/g, 'fragColorOutput');
+
+                if (!/out\s+vec4\s+fragColorOutput\s*;/.test(output))
+                {
+                    var lines = output.split('\n');
+                    var insertIndex = lines.length;
+
+                    for (var i = 0; i < lines.length; i++)
+                    {
+                        var trimmed = lines[i].trim();
+
+                        if (!trimmed ||
+                            trimmed.indexOf('#version') === 0 ||
+                            trimmed.indexOf('#define') === 0 ||
+                            trimmed.indexOf('#ifdef') === 0 ||
+                            trimmed.indexOf('#ifndef') === 0 ||
+                            trimmed.indexOf('#else') === 0 ||
+                            trimmed.indexOf('#endif') === 0 ||
+                            trimmed.indexOf('#pragma') === 0 ||
+                            trimmed.indexOf('precision') === 0)
+                        {
+                            continue;
+                        }
+
+                        insertIndex = i;
+                        break;
+                    }
+
+                    lines.splice(insertIndex, 0, 'out vec4 fragColorOutput;');
+                    output = lines.join('\n');
+                }
+            }
+        }
+
+        output = output.replace(/\btexture2D\b/g, 'texture');
+        output = output.replace(/\btextureCube\b/g, 'texture');
+
+        return output;
     },
 
     /**

@@ -213,6 +213,9 @@ var ShaderProgramFactory = new Class({
         vertexSource = vertexSource.replace(rePragma, '');
         fragmentSource = fragmentSource.replace(rePragma, '');
 
+        vertexSource = this.renderer.convertShaderSourceToWebGL2(vertexSource, true);
+        fragmentSource = this.renderer.convertShaderSourceToWebGL2(fragmentSource, false);
+
         var program = this.renderer.createProgram(vertexSource, fragmentSource);
 
         this.programs[name] = program;
