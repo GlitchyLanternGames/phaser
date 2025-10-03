@@ -46,6 +46,18 @@ var WebGLProgramWrapper = new Class({
 
     function WebGLProgramWrapper (renderer, vertexSource, fragmentSource)
     {
+        // Validate shader sources
+        if (typeof vertexSource !== 'string' || !vertexSource)
+        {
+            console.error('Invalid vertex shader source:', vertexSource);
+            throw new Error('Vertex shader source must be a non-empty string');
+        }
+        if (typeof fragmentSource !== 'string' || !fragmentSource)
+        {
+            console.error('Invalid fragment shader source:', fragmentSource);
+            throw new Error('Fragment shader source must be a non-empty string');
+        }
+
         /**
          * The WebGLRenderer instance that owns this wrapper.
          *

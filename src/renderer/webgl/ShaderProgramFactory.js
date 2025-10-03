@@ -189,9 +189,9 @@ var ShaderProgramFactory = new Class({
             }
         }
 
-        if (features)
+        var featureDefines = '';
+        if (features && features.length > 0)
         {
-            var featureDefines = '';
             var reInvalid = /[^a-zA-Z0-9]/g;
 
             for (i = 0; i < features.length; i++)
@@ -199,17 +199,17 @@ var ShaderProgramFactory = new Class({
                 var feature = features[i].toUpperCase().replace(reInvalid, '_');
                 featureDefines += '#define FEATURE_' + feature + '\n';
             }
-
-            vertexSource = vertexSource.replace('#pragma phaserTemplate(features)', featureDefines);
-            fragmentSource = fragmentSource.replace('#pragma phaserTemplate(features)', featureDefines);
         }
+
+        vertexSource = vertexSource.replace('#pragma phaserTemplate(features)', featureDefines);
+        fragmentSource = fragmentSource.replace('#pragma phaserTemplate(features)', featureDefines);
 
         // Name the program after the key.
         vertexSource = vertexSource.replace('#pragma phaserTemplate(shaderName)', '#define SHADER_NAME ' + name + '__VERTEX');
         fragmentSource = fragmentSource.replace('#pragma phaserTemplate(shaderName)', '#define SHADER_NAME ' + name + '__FRAGMENT');
 
         // Remove any remaining template directives.
-        var rePragma = /\s*#pragma phaserTemplate\(.*/g;
+        var rePragma = /\s*#pragma phaserTemplate\([^)]*\)[^\n]*/g;
         vertexSource = vertexSource.replace(rePragma, '');
         fragmentSource = fragmentSource.replace(rePragma, '');
 

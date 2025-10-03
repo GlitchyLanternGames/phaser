@@ -2231,6 +2231,18 @@ var WebGLProgramWrapper = new Class({
 
     function WebGLProgramWrapper (renderer, vertexSource, fragmentSource)
     {
+        // Validate shader sources
+        if (typeof vertexSource !== 'string' || !vertexSource)
+        {
+            console.error('Invalid vertex shader source:', vertexSource);
+            throw new Error('Vertex shader source must be a non-empty string');
+        }
+        if (typeof fragmentSource !== 'string' || !fragmentSource)
+        {
+            console.error('Invalid fragment shader source:', fragmentSource);
+            throw new Error('Fragment shader source must be a non-empty string');
+        }
+
         /**
          * The WebGLRenderer instance that owns this wrapper.
          *
@@ -38625,9 +38637,9 @@ var ShaderProgramFactory = new Class({
             }
         }
 
-        if (features)
+        var featureDefines = '';
+        if (features && features.length > 0)
         {
-            var featureDefines = '';
             var reInvalid = /[^a-zA-Z0-9]/g;
 
             for (i = 0; i < features.length; i++)
@@ -38635,17 +38647,17 @@ var ShaderProgramFactory = new Class({
                 var feature = features[i].toUpperCase().replace(reInvalid, '_');
                 featureDefines += '#define FEATURE_' + feature + '\n';
             }
-
-            vertexSource = vertexSource.replace('#pragma phaserTemplate(features)', featureDefines);
-            fragmentSource = fragmentSource.replace('#pragma phaserTemplate(features)', featureDefines);
         }
+
+        vertexSource = vertexSource.replace('#pragma phaserTemplate(features)', featureDefines);
+        fragmentSource = fragmentSource.replace('#pragma phaserTemplate(features)', featureDefines);
 
         // Name the program after the key.
         vertexSource = vertexSource.replace('#pragma phaserTemplate(shaderName)', '#define SHADER_NAME ' + name + '__VERTEX');
         fragmentSource = fragmentSource.replace('#pragma phaserTemplate(shaderName)', '#define SHADER_NAME ' + name + '__FRAGMENT');
 
         // Remove any remaining template directives.
-        var rePragma = /\s*#pragma phaserTemplate\(.*/g;
+        var rePragma = /\s*#pragma phaserTemplate\([^)]*\)[^\n]*/g;
         vertexSource = vertexSource.replace(rePragma, '');
         fragmentSource = fragmentSource.replace(rePragma, '');
 
@@ -141928,11 +141940,25 @@ var ShaderQuad = new Class({
 
         var vertexSource = config.vertexSource;
 
-        if (typeof vertexSource === 'string')
+        // Handle cases where vertexSource might be undefined, null, or the string "undefined"/"null"
+        if (vertexSource === undefined || vertexSource === null || vertexSource === 'undefined' || vertexSource === 'null')
         {
-            var trimmedVertex = vertexSource.trimStart();
-            trimmedVertex = trimmedVertex.replace(/^(?:undefined|null)\b/, '').trimStart();
-            vertexSource = trimmedVertex;
+            vertexSource = null;
+        }
+        else if (typeof vertexSource === 'string')
+        {
+            var trimmedVertex = vertexSource.trim();
+            // Check if the string is just "undefined" or "null" after trimming
+            if (trimmedVertex === 'undefined' || trimmedVertex === 'null' || trimmedVertex === '')
+            {
+                vertexSource = null;
+            }
+            else
+            {
+                // Remove "undefined" or "null" from the beginning of the string
+                trimmedVertex = trimmedVertex.replace(/^(?:undefined|null)\s*/, '');
+                vertexSource = trimmedVertex || null;
+            }
         }
 
         if (!vertexSource)
@@ -141954,11 +141980,25 @@ var ShaderQuad = new Class({
 
         var fragmentSource = config.fragmentSource;
 
-        if (typeof fragmentSource === 'string')
+        // Handle cases where fragmentSource might be undefined, null, or the string "undefined"/"null"
+        if (fragmentSource === undefined || fragmentSource === null || fragmentSource === 'undefined' || fragmentSource === 'null')
         {
-            var trimmedFragment = fragmentSource.trimStart();
-            trimmedFragment = trimmedFragment.replace(/^(?:undefined|null)\b/, '').trimStart();
-            fragmentSource = trimmedFragment;
+            fragmentSource = null;
+        }
+        else if (typeof fragmentSource === 'string')
+        {
+            var trimmedFragment = fragmentSource.trim();
+            // Check if the string is just "undefined" or "null" after trimming
+            if (trimmedFragment === 'undefined' || trimmedFragment === 'null' || trimmedFragment === '')
+            {
+                fragmentSource = null;
+            }
+            else
+            {
+                // Remove "undefined" or "null" from the beginning of the string
+                trimmedFragment = trimmedFragment.replace(/^(?:undefined|null)\s*/, '');
+                fragmentSource = trimmedFragment || null;
+            }
         }
 
         if (!fragmentSource)
@@ -192166,6 +192206,13 @@ var WebGLRenderer = new Class({
         if (!this.isWebGL2)
         {
             return source;
+        }
+
+        // Validate that source is a string and not undefined/null
+        if (typeof source !== 'string' || !source)
+        {
+            console.error('Invalid shader source:', source);
+            throw new Error('Shader source must be a non-empty string');
         }
 
         var output = source.replace(/^\s+/, '');

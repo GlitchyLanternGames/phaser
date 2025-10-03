@@ -150,11 +150,25 @@ var ShaderQuad = new Class({
 
         var vertexSource = config.vertexSource;
 
-        if (typeof vertexSource === 'string')
+        // Handle cases where vertexSource might be undefined, null, or the string "undefined"/"null"
+        if (vertexSource === undefined || vertexSource === null || vertexSource === 'undefined' || vertexSource === 'null')
         {
-            var trimmedVertex = vertexSource.trimStart();
-            trimmedVertex = trimmedVertex.replace(/^(?:undefined|null)\b/, '').trimStart();
-            vertexSource = trimmedVertex;
+            vertexSource = null;
+        }
+        else if (typeof vertexSource === 'string')
+        {
+            var trimmedVertex = vertexSource.trim();
+            // Check if the string is just "undefined" or "null" after trimming
+            if (trimmedVertex === 'undefined' || trimmedVertex === 'null' || trimmedVertex === '')
+            {
+                vertexSource = null;
+            }
+            else
+            {
+                // Remove "undefined" or "null" from the beginning of the string
+                trimmedVertex = trimmedVertex.replace(/^(?:undefined|null)\s*/, '');
+                vertexSource = trimmedVertex || null;
+            }
         }
 
         if (!vertexSource)
@@ -176,11 +190,25 @@ var ShaderQuad = new Class({
 
         var fragmentSource = config.fragmentSource;
 
-        if (typeof fragmentSource === 'string')
+        // Handle cases where fragmentSource might be undefined, null, or the string "undefined"/"null"
+        if (fragmentSource === undefined || fragmentSource === null || fragmentSource === 'undefined' || fragmentSource === 'null')
         {
-            var trimmedFragment = fragmentSource.trimStart();
-            trimmedFragment = trimmedFragment.replace(/^(?:undefined|null)\b/, '').trimStart();
-            fragmentSource = trimmedFragment;
+            fragmentSource = null;
+        }
+        else if (typeof fragmentSource === 'string')
+        {
+            var trimmedFragment = fragmentSource.trim();
+            // Check if the string is just "undefined" or "null" after trimming
+            if (trimmedFragment === 'undefined' || trimmedFragment === 'null' || trimmedFragment === '')
+            {
+                fragmentSource = null;
+            }
+            else
+            {
+                // Remove "undefined" or "null" from the beginning of the string
+                trimmedFragment = trimmedFragment.replace(/^(?:undefined|null)\s*/, '');
+                fragmentSource = trimmedFragment || null;
+            }
         }
 
         if (!fragmentSource)

@@ -1838,6 +1838,13 @@ var WebGLRenderer = new Class({
             return source;
         }
 
+        // Validate that source is a string and not undefined/null
+        if (typeof source !== 'string' || !source)
+        {
+            console.error('Invalid shader source:', source);
+            throw new Error('Shader source must be a non-empty string');
+        }
+
         var output = source.replace(/^\s+/, '');
 
         if (/^#version\s+/m.test(output))
