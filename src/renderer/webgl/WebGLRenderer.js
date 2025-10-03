@@ -485,6 +485,63 @@ var WebGLRenderer = new Class({
         this.standardDerivativesExtension = null;
 
         /**
+         * If the browser supports the `EXT_color_buffer_float` extension (WebGL2),
+         * this property will hold a reference to it.
+         *
+         * This extension allows rendering to floating-point color buffers.
+         * Required for HDR rendering and some post-processing effects.
+         *
+         * This is populated in the `setExtensions` method.
+         *
+         * @name Phaser.Renderer.WebGL.WebGLRenderer#colorBufferFloatExtension
+         * @type {EXT_color_buffer_float}
+         * @default null
+         * @since 4.0.0
+         */
+        this.colorBufferFloatExtension = null;
+
+        /**
+         * If the browser supports the `EXT_texture_filter_anisotropic` extension,
+         * this property will hold a reference to it.
+         *
+         * This extension provides anisotropic filtering for better texture quality.
+         *
+         * This is populated in the `setExtensions` method.
+         *
+         * @name Phaser.Renderer.WebGL.WebGLRenderer#textureFilterAnisotropicExtension
+         * @type {EXT_texture_filter_anisotropic}
+         * @default null
+         * @since 4.0.0
+         */
+        this.textureFilterAnisotropicExtension = null;
+
+        /**
+         * If the browser supports the `WEBGL_compressed_texture_s3tc` extension,
+         * this property will hold a reference to it.
+         *
+         * This extension provides S3TC compressed texture support (DXT1/3/5).
+         *
+         * This is populated in the `setExtensions` method.
+         *
+         * @name Phaser.Renderer.WebGL.WebGLRenderer#compressedTextureS3TCExtension
+         * @type {WEBGL_compressed_texture_s3tc}
+         * @default null
+         * @since 4.0.0
+         */
+        this.compressedTextureS3TCExtension = null;
+
+        /**
+         * Maximum anisotropic filtering level supported by the GPU.
+         * Only available if `EXT_texture_filter_anisotropic` is supported.
+         *
+         * @name Phaser.Renderer.WebGL.WebGLRenderer#maxAnisotropy
+         * @type {number}
+         * @default 1
+         * @since 4.0.0
+         */
+        this.maxAnisotropy = 1;
+
+        /**
          * If the browser supports the `OES_vertex_array_object` extension, this property will hold
          * a reference to the glExtension for it.
          *
@@ -931,6 +988,41 @@ var WebGLRenderer = new Class({
             this.vaoExtension = null;
             this.standardDerivativesExtension = null;
 
+            // Check for optional WebGL2 extensions
+            // These are NOT guaranteed to be available even in WebGL2!
+
+            // EXT_color_buffer_float - Required for rendering to float textures (HDR, etc.)
+            var colorBufferFloatString = 'EXT_color_buffer_float';
+            this.colorBufferFloatExtension = (exts.indexOf(colorBufferFloatString) > -1) ? gl.getExtension(colorBufferFloatString) : null;
+
+            if (!this.colorBufferFloatExtension)
+            {
+                console.warn('WebGL2: EXT_color_buffer_float not supported. HDR rendering and float framebuffers will not be available.');
+            }
+
+            // EXT_texture_filter_anisotropic - Better texture filtering
+            var anisotropicString = 'EXT_texture_filter_anisotropic';
+            this.textureFilterAnisotropicExtension = (exts.indexOf(anisotropicString) > -1) ? gl.getExtension(anisotropicString) : null;
+
+            if (this.textureFilterAnisotropicExtension)
+            {
+                this.maxAnisotropy = gl.getParameter(this.textureFilterAnisotropicExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+                console.log('WebGL2: Anisotropic filtering available. Max level:', this.maxAnisotropy);
+            }
+            else
+            {
+                console.warn('WebGL2: EXT_texture_filter_anisotropic not supported. Anisotropic filtering will not be available.');
+            }
+
+            // WEBGL_compressed_texture_s3tc - S3TC/DXT compressed textures
+            var s3tcString = 'WEBGL_compressed_texture_s3tc';
+            this.compressedTextureS3TCExtension = (exts.indexOf(s3tcString) > -1) ? gl.getExtension(s3tcString) : null;
+
+            if (!this.compressedTextureS3TCExtension)
+            {
+                console.warn('WebGL2: WEBGL_compressed_texture_s3tc not supported. S3TC/DXT compressed textures will not be available.');
+            }
+
             return;
         }
 
@@ -983,8 +1075,59 @@ var WebGLRenderer = new Class({
     },
 
     /**
+     * Checks if a specific WebGL extension is supported.
+     *
+     * @method Phaser.Renderer.WebGL.WebGLRenderer#hasExtension
+     * @since 4.0.0
+     * @param {string} extensionName - The name of the extension to check (e.g., 'EXT_color_buffer_float').
+     * @return {boolean} True if the extension is supported, false otherwise.
+     */
+    hasExtension: function (extensionName)
+    {
+        return this.supportedExtensions && this.supportedExtensions.indexOf(extensionName) > -1;
+    },
+
+    /**
+     * Checks if floating-point color buffers are supported (WebGL2 only).
+     * Required for HDR rendering and some post-processing effects.
+     *
+     * @method Phaser.Renderer.WebGL.WebGLRenderer#supportsFloatColorBuffers
+     * @since 4.0.0
+     * @return {boolean} True if EXT_color_buffer_float is supported.
+     */
+    supportsFloatColorBuffers: function ()
+    {
+        return this.isWebGL2 && this.colorBufferFloatExtension !== null;
+    },
+
+    /**
+     * Checks if anisotropic filtering is supported.
+     * Provides better texture quality at oblique angles.
+     *
+     * @method Phaser.Renderer.WebGL.WebGLRenderer#supportsAnisotropicFiltering
+     * @since 4.0.0
+     * @return {boolean} True if EXT_texture_filter_anisotropic is supported.
+     */
+    supportsAnisotropicFiltering: function ()
+    {
+        return this.textureFilterAnisotropicExtension !== null;
+    },
+
+    /**
+     * Checks if S3TC/DXT compressed textures are supported.
+     *
+     * @method Phaser.Renderer.WebGL.WebGLRenderer#supportsS3TCTextures
+     * @since 4.0.0
+     * @return {boolean} True if WEBGL_compressed_texture_s3tc is supported.
+     */
+    supportsS3TCTextures: function ()
+    {
+        return this.compressedTextureS3TCExtension !== null;
+    },
+
+    /**
      * Sets the handlers that are called when WebGL context is lost or restored by the browser.
-     * 
+     *
      * The default handlers are referenced via the properties `WebGLRenderer.contextLostHandler` and `WebGLRenderer.contextRestoredHandler`.
      * By default, these map to the methods `WebGLRenderer.dispatchContextLost` and `WebGLRenderer.dispatchContextRestored`.
      * 
