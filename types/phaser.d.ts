@@ -127638,10 +127638,6 @@ declare type DebugGraphNode = {
     parent: DebugGraphNode;
 };
 
-declare function MakeAnimLength(): void;
-
-declare function MakeDefineTexCount(): void;
-
 declare type Attachment = {
     /**
      * The attachment point for the attachment. This is a GLenum such as `gl.COLOR_ATTACHMENT0`, `gl.DEPTH_ATTACHMENT`, `gl.STENCIL_ATTACHMENT`, or `gl.DEPTH_STENCIL_ATTACHMENT`.
@@ -127677,6 +127673,18 @@ declare type TilemapFindCallback = (value: Phaser.GameObjects.GameObject, index:
 declare type FindTileCallback = (value: Phaser.Tilemaps.Tile, index: number, array: Phaser.Tilemaps.Tile[])=>boolean;
 
 declare type EachTileCallback = (value: Phaser.Tilemaps.Tile, index: number, array: Phaser.Tilemaps.Tile[])=>void;
+
+/**
+ * Phaser.Class
+ */
+declare class Class {
+    /**
+     * 
+     * @param definition a dictionary of functions for the class
+     */
+    constructor(definition: Object);
+
+}
 
 declare type integer = number;
 
