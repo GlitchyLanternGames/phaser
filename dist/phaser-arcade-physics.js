@@ -77533,7 +77533,13 @@ var Circle = __webpack_require__(75836);
  * @return {Phaser.Geom.CircleSection} A clone of the source CircleSection.
  */
 var Clone = function (source) {
-    return new Circle(source.x, source.y, source.radius, source.arcAngle);
+    return new Circle(
+        source.x,
+        source.y,
+        source.radius,
+        source.arcAngle,
+        source.startAngle
+    );
 };
 
 module.exports = Clone;
@@ -90194,8 +90200,12 @@ var CircumferencePoint = function (circleSection, angle, out) {
         out = new Vector2();
     }
 
-    out.x = circleSection.x + circleSection.radius * Math.cos(angle);
-    out.y = circleSection.y + circleSection.radius * Math.sin(angle);
+    out.x =
+        circleSection.x +
+        circleSection.radius * Math.cos(angle + circleSection.startAngle);
+    out.y =
+        circleSection.y +
+        circleSection.radius * Math.sin(angle + circleSection.startAngle);
 
     return out;
 };
@@ -95429,7 +95439,13 @@ module.exports = Base64Decode;
  * @return {Phaser.Geom.CircleSection} The destination CircleSection.
  */
 var CopyFrom = function (source, dest) {
-    return dest.setTo(source.x, source.y, source.radius, source.arcAngle);
+    return dest.setTo(
+        source.x,
+        source.y,
+        source.radius,
+        source.arcAngle,
+        source.startAngle
+    );
 };
 
 module.exports = CopyFrom;
@@ -101515,7 +101531,8 @@ var Graphics = new Class({
             circleSection.x,
             circleSection.y,
             circleSection.radius,
-            circleSection.arcAngle
+            circleSection.arcAngle,
+            circleSection.startAngle
         );
     },
 
@@ -101534,7 +101551,8 @@ var Graphics = new Class({
             circleSection.x,
             circleSection.y,
             circleSection.radius,
-            circleSection.arcAngle
+            circleSection.arcAngle,
+            circleSection.startAngle
         );
     },
 
@@ -101548,13 +101566,18 @@ var Graphics = new Class({
      * @param {number} y - The y coordinate of the center of the circle.
      * @param {number} radius - The radius of the circle.
      * @param {number} arcAngle - The arc angle of the circle section, in radians.
+     * @param {number} [startAngle=0] - The start angle of the circle section, in radians.
      *
      * @return {this} This Game Object.
      */
-    fillCircleSection: function (x, y, radius, arcAngle) {
+    fillCircleSection: function (x, y, radius, arcAngle, startAngle) {
+        if (startAngle === undefined) {
+            startAngle = 0;
+        }
+
         this.beginPath();
         this.moveTo(x, y);
-        this.arc(x, y, radius, 0, arcAngle);
+        this.arc(x, y, radius, startAngle, arcAngle);
         this.lineTo(x, y);
         this.fillPath();
 
@@ -101571,13 +101594,18 @@ var Graphics = new Class({
      * @param {number} y - The y coordinate of the center of the circle.
      * @param {number} radius - The radius of the circle.
      * @param {number} arcAngle - The arc angle of the circle section, in radians.
+     * @param {number} [startAngle=0] - The start angle of the circle section, in radians.
      *
      * @return {this} This Game Object.
      */
-    strokeCircleSection: function (x, y, radius, arcAngle) {
+    strokeCircleSection: function (x, y, radius, arcAngle, startAngle) {
+        if (startAngle === undefined) {
+            startAngle = 0;
+        }
+
         this.beginPath();
         this.moveTo(x, y);
-        this.arc(x, y, radius, 0, arcAngle);
+        this.arc(x, y, radius, startAngle, arcAngle);
         this.lineTo(x, y);
         this.strokePath();
 
@@ -160195,7 +160223,7 @@ var Random = function (circleSection, out) {
         out = new Vector2();
     }
 
-    var t = circleSection.arcAngle * Math.random() - Math.DegToRad(90);
+    var t = circleSection.startAngle + circleSection.arcAngle * Math.random();
     var u = Math.random() + Math.random();
     var r = u > 1 ? 2 - u : u;
     var x = r * Math.cos(t);
@@ -178231,9 +178259,10 @@ var Random = __webpack_require__(68984);
  * @param {number} [y=0] - The y position of the center of the circle.
  * @param {number} [radius=0] - The radius of the circle.
  * @param {number} [arcAngle=2 * Math.PI] - The arc angle of the circle section in radians.
+ * @param {number} [startAngle=0] - The start angle of the circle section in radians. (Not yet implemented)
  */
 var CircleSection = new Class({
-    initialize: function CircleSection(x, y, radius, arcAngle) {
+    initialize: function CircleSection(x, y, radius, arcAngle, startAngle) {
         if (x === undefined) {
             x = 0;
         }
@@ -178245,6 +178274,9 @@ var CircleSection = new Class({
         }
         if (arcAngle === undefined) {
             arcAngle = 2 * Math.PI;
+        }
+        if (startAngle === undefined) {
+            startAngle = 0;
         }
         if (arcAngle < 0 || arcAngle > Math.PI * 2) {
             throw new Error("Arc angle must be in the range 0 to 2 * Math.PI");
@@ -178300,6 +178332,15 @@ var CircleSection = new Class({
          * @since 4.0.0
          */
         this._arcAngle = arcAngle;
+
+        /**
+         * The internal start angle (radians) of the circle section.
+         * @name Phaser.Geom.CircleSection#_startAngle
+         * @type {number}
+         * @private
+         * @since 4.0.0
+         */
+        this._startAngle = startAngle;
     },
 
     /**
@@ -178362,14 +178403,16 @@ var CircleSection = new Class({
      * @param {number} [y=0] - The y position of the center of the circle.
      * @param {number} [radius=0] - The radius of the circle.
      * @param {number} [arcAngle=2 * Math.PI] - The arc angle of the circle section in radians.
+     * @param {number} [startAngle=0] - The start angle of the circle section in radians. (Not yet implemented)
      *
      * @return {this} This Circle object.
      */
-    setTo: function (x, y, radius, arcAngle) {
+    setTo: function (x, y, radius, arcAngle, startAngle) {
         this.x = x;
         this.y = y;
         this._radius = radius;
         this._arcAngle = arcAngle;
+        this._startAngle = startAngle;
 
         return this;
     },
@@ -178460,6 +178503,22 @@ var CircleSection = new Class({
                 );
             }
             this._arcAngle = value;
+        },
+    },
+
+    /**
+     * The start angle of the CircleSection.
+     *
+     * @name Phaser.Geom.CircleSection#startAngle
+     * @type {number}
+     * @since 4.0.0
+     */
+    startAngle: {
+        get: function () {
+            return this._startAngle;
+        },
+        set: function (value) {
+            this._startAngle = value;
         },
     },
 });
@@ -215056,14 +215115,15 @@ module.exports = GetPoint;
  * @param {Phaser.Geom.CircleSection} circleSection - The first CircleSection to compare.
  * @param {Phaser.Geom.CircleSection} toCompare - The second CircleSection to compare.
  *
- * @return {boolean} `true` if the two Circles equal each other, otherwise `false`.
+ * @return {boolean} `true` if the two Circles sections equal each other, otherwise `false`.
  */
 var Equals = function (circleSection, toCompare) {
     return (
         circleSection.x === toCompare.x &&
         circleSection.y === toCompare.y &&
         circleSection.radius === toCompare.radius &&
-        circleSection.arcAngle === toCompare.arcAngle
+        circleSection.arcAngle === toCompare.arcAngle &&
+        circleSection.startAngle === toCompare.startAngle
     );
 };
 
@@ -220835,7 +220895,7 @@ var Contains = function (circleSection, x, y) {
     angleToPoint = (angleToPoint + 2 * Math.PI) % (2 * Math.PI); // Normalize to [0, 2 * Math.PI)
 
     // Step 4: Define arc start and end angles
-    var startAngle = (-Math.PI / 2 + 2 * Math.PI) % (2 * Math.PI);
+    var startAngle = (circleSection.startAngle + 2 * Math.PI) % (2 * Math.PI);
     var endAngle = (startAngle + circleSection.arcAngle) % (2 * Math.PI);
 
     // Step 5: Check if angleToPoint is within arc (clockwise)

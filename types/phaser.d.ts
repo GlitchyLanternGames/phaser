@@ -24545,9 +24545,10 @@ declare namespace Phaser {
              * @param y The y coordinate of the center of the circle.
              * @param radius The radius of the circle.
              * @param arcAngle The arc angle of the circle section, in radians.
+             * @param startAngle The start angle of the circle section, in radians. Default 0.
              * @returns This Game Object.
              */
-            fillCircleSection(x: number, y: number, radius: number, arcAngle: number): this;
+            fillCircleSection(x: number, y: number, radius: number, arcAngle: number, startAngle?: number): this;
 
             /**
              * Stroke a circle section with the given position, radius and arc angle.
@@ -24555,9 +24556,10 @@ declare namespace Phaser {
              * @param y The y coordinate of the center of the circle.
              * @param radius The radius of the circle.
              * @param arcAngle The arc angle of the circle section, in radians.
+             * @param startAngle The start angle of the circle section, in radians. Default 0.
              * @returns This Game Object.
              */
-            strokeCircleSection(x: number, y: number, radius: number, arcAngle: number): this;
+            strokeCircleSection(x: number, y: number, radius: number, arcAngle: number, startAngle?: number): this;
 
             /**
              * Fill the given rectangle.
@@ -63666,8 +63668,9 @@ declare namespace Phaser {
              * @param y The y position of the center of the circle. Default 0.
              * @param radius The radius of the circle. Default 0.
              * @param arcAngle The arc angle of the circle section in radians. Default 2 * Math.PI.
+             * @param startAngle The start angle of the circle section in radians. (Not yet implemented) Default 0.
              */
-            constructor(x?: number, y?: number, radius?: number, arcAngle?: number);
+            constructor(x?: number, y?: number, radius?: number, arcAngle?: number, startAngle?: number);
 
             /**
              * Calculates the area of the circle.
@@ -63723,9 +63726,10 @@ declare namespace Phaser {
              * @param y The y position of the center of the circle. Default 0.
              * @param radius The radius of the circle. Default 0.
              * @param arcAngle The arc angle of the circle section in radians. Default 2 * Math.PI.
+             * @param startAngle The start angle of the circle section in radians. (Not yet implemented) Default 0.
              * @returns This Circle object.
              */
-            setTo(x?: number, y?: number, radius?: number, arcAngle?: number): this;
+            setTo(x?: number, y?: number, radius?: number, arcAngle?: number, startAngle?: number): this;
 
             /**
              * Sets this CircleSection to be empty with a radius of zero.
@@ -63757,6 +63761,11 @@ declare namespace Phaser {
              * The arc angle of the CircleSection.
              */
             arcAngle: number;
+
+            /**
+             * The start angle of the CircleSection.
+             */
+            startAngle: number;
 
             /**
              * Returns the circumference of the given Circle.
@@ -63820,7 +63829,7 @@ declare namespace Phaser {
              * Returns `true` if they all match, otherwise returns `false`.
              * @param circleSection The first CircleSection to compare.
              * @param toCompare The second CircleSection to compare.
-             * @returns `true` if the two Circles equal each other, otherwise `false`.
+             * @returns `true` if the two Circles sections equal each other, otherwise `false`.
              */
             static Equals(circleSection: Phaser.Geom.CircleSection, toCompare: Phaser.Geom.CircleSection): boolean;
 
