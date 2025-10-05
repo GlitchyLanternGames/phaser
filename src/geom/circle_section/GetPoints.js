@@ -21,18 +21,20 @@ var GetPoints = function (circleSection, quantity, stepRate, out) {
         out = [];
     }
 
-    //  If quantity is a falsey value (false, null, 0, undefined, etc) or less than 3 then we calculate it based on the stepRate instead.
-    if (quantity < 3 && stepRate > 0) {
+    //  If quantity is a falsey value (false, null, 0, undefined, etc) or less than 4 then we calculate it based on the stepRate instead.
+    if (quantity < 4 && stepRate > 0) {
         quantity = Circumference(circle) / stepRate;
     }
 
     out.push({ x: circleSection.x, y: circleSection.y });
 
-    for (var i = 0; i < quantity - 1; i++) {
+    for (var i = 0; i < quantity - 2; i++) {
         var angle = FromPercent(i / quantity, 0, circleSection.arcAngle);
 
         out.push(CircumferencePoint(circleSection, angle));
     }
+
+    out.push({ x: circleSection.x, y: circleSection.y });
 
     return out;
 };
