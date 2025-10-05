@@ -27,7 +27,11 @@ var GetCircumferencePoints = function (circleSection, quantity, stepRate, out) {
     }
 
     for (var i = 0; i < quantity; i++) {
-        var angle = FromPercent(i / (quantity - 1), 0, circleSection.arcAngle);
+        var angle = FromPercent(
+            i / (quantity - 1),
+            circleSection.startAngle,
+            circleSection.endAngle
+        );
 
         out.push(CircumferencePoint(circleSection, angle));
     }

@@ -627,8 +627,8 @@ var Graphics = new Class({
             circleSection.x,
             circleSection.y,
             circleSection.radius,
-            circleSection.arcAngle,
-            circleSection.startAngle
+            circleSection.startAngle,
+            circleSection.endAngle
         );
     },
 
@@ -647,8 +647,8 @@ var Graphics = new Class({
             circleSection.x,
             circleSection.y,
             circleSection.radius,
-            circleSection.arcAngle,
-            circleSection.startAngle
+            circleSection.startAngle,
+            circleSection.endAngle
         );
     },
 
@@ -661,19 +661,23 @@ var Graphics = new Class({
      * @param {number} x - The x coordinate of the center of the circle.
      * @param {number} y - The y coordinate of the center of the circle.
      * @param {number} radius - The radius of the circle.
-     * @param {number} arcAngle - The arc angle of the circle section, in radians.
      * @param {number} [startAngle=0] - The start angle of the circle section, in radians.
+     * @param {number} [endAngle=TAU] - The end angle of the circle section, in radians.
      *
      * @return {this} This Game Object.
      */
-    fillCircleSection: function (x, y, radius, arcAngle, startAngle) {
+    fillCircleSection: function (x, y, radius, startAngle, endAngle) {
         if (startAngle === undefined) {
             startAngle = 0;
         }
 
+        if (endAngle === undefined) {
+            endAngle = MATH_CONST.TAU;
+        }
+
         this.beginPath();
         this.moveTo(x, y);
-        this.arc(x, y, radius, startAngle, startAngle + arcAngle);
+        this.arc(x, y, radius, startAngle, endAngle);
         this.lineTo(x, y);
         this.fillPath();
 
@@ -689,19 +693,23 @@ var Graphics = new Class({
      * @param {number} x - The x coordinate of the center of the circle.
      * @param {number} y - The y coordinate of the center of the circle.
      * @param {number} radius - The radius of the circle.
-     * @param {number} arcAngle - The arc angle of the circle section, in radians.
      * @param {number} [startAngle=0] - The start angle of the circle section, in radians.
+     * @param {number} [endAngle=TAU] - The end angle of the circle section, in radians.
      *
      * @return {this} This Game Object.
      */
-    strokeCircleSection: function (x, y, radius, arcAngle, startAngle) {
+    strokeCircleSection: function (x, y, radius, startAngle, endAngle) {
         if (startAngle === undefined) {
             startAngle = 0;
         }
 
+        if (endAngle === undefined) {
+            endAngle = MATH_CONST.TAU;
+        }
+
         this.beginPath();
         this.moveTo(x, y);
-        this.arc(x, y, radius, startAngle, startAngle + arcAngle);
+        this.arc(x, y, radius, startAngle, endAngle);
         this.lineTo(x, y);
         this.strokePath();
 

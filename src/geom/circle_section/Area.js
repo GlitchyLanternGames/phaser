@@ -11,7 +11,7 @@
 var Area = function (circleSection) {
     return circleSection.radius > 0
         ? (1 / Math.PI) *
-              circleSection.arcAngle *
+              (circleSection.endAngle - circleSection.startAngle) *
               circleSection.radius *
               circleSection.radius
         : 0;

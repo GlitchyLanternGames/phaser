@@ -9,7 +9,10 @@
  * @return {number} The circumference of the CircleSection.
  */
 var Circumference = function (circleSection) {
-    return circleSection.arcAngle * circleSection.radius;
+    return (
+        (circleSection.endAngle - circleSection.startAngle) *
+        circleSection.radius
+    );
 };
 
 module.exports = Circumference;

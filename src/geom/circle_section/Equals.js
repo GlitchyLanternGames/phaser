@@ -15,8 +15,8 @@ var Equals = function (circleSection, toCompare) {
         circleSection.x === toCompare.x &&
         circleSection.y === toCompare.y &&
         circleSection.radius === toCompare.radius &&
-        circleSection.arcAngle === toCompare.arcAngle &&
-        circleSection.startAngle === toCompare.startAngle
+        circleSection.startAngle === toCompare.startAngle &&
+        circleSection.endAngle === toCompare.endAngle
     );
 };
 

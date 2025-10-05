@@ -10,7 +10,8 @@
  */
 var Perimeter = function (circleSection) {
     return (
-        circleSection.radius * (2 + circleSection.arcAngle) // circleSection.radius * 2 + arc length
+        circleSection.radius *
+        (2 + circleSection.endAngle - circleSection.startAngle) // circleSection.radius * 2 + arc length
     );
 };
 

@@ -21,11 +21,11 @@ var Random = require("./Random");
  * @param {number} [x=0] - The x position of the center of the circle.
  * @param {number} [y=0] - The y position of the center of the circle.
  * @param {number} [radius=0] - The radius of the circle.
- * @param {number} [arcAngle=2 * Math.PI] - The arc angle of the circle section in radians.
- * @param {number} [startAngle=0] - The start angle of the circle section in radians. (Not yet implemented)
+ * @param {number} [startAngle=0] - The start angle of the circle section in radians.
+ * @param {number} [endAngle=2*Math.PI] - The end angle of the circle section in radians.
  */
 var CircleSection = new Class({
-    initialize: function CircleSection(x, y, radius, arcAngle, startAngle) {
+    initialize: function CircleSection(x, y, radius, startAngle, endAngle) {
         if (x === undefined) {
             x = 0;
         }
@@ -35,14 +35,11 @@ var CircleSection = new Class({
         if (radius === undefined) {
             radius = 0;
         }
-        if (arcAngle === undefined) {
-            arcAngle = 2 * Math.PI;
-        }
         if (startAngle === undefined) {
             startAngle = 0;
         }
-        if (arcAngle < 0 || arcAngle > Math.PI * 2) {
-            throw new Error("Arc angle must be in the range 0 to 2 * Math.PI");
+        if (endAngle === undefined) {
+            endAngle = 2 * Math.PI;
         }
 
         /**
@@ -87,16 +84,6 @@ var CircleSection = new Class({
         this._radius = radius;
 
         /**
-         * The internal arc angle (radians) of the circle section.
-         *
-         * @name Phaser.Geom.CircleSection#_arcAngle
-         * @type {number}
-         * @private
-         * @since 4.0.0
-         */
-        this._arcAngle = arcAngle;
-
-        /**
          * The internal start angle (radians) of the circle section.
          * @name Phaser.Geom.CircleSection#_startAngle
          * @type {number}
@@ -104,6 +91,15 @@ var CircleSection = new Class({
          * @since 4.0.0
          */
         this._startAngle = startAngle;
+
+        /**
+         * The internal end angle (radians) of the circle section.
+         * @name Phaser.Geom.CircleSection#_endAngle
+         * @type {number}
+         * @private
+         * @since 4.0.0
+         */
+        this._endAngle = endAngle;
     },
 
     /**
@@ -182,17 +178,17 @@ var CircleSection = new Class({
      * @param {number} [x=0] - The x position of the center of the circle.
      * @param {number} [y=0] - The y position of the center of the circle.
      * @param {number} [radius=0] - The radius of the circle.
-     * @param {number} [arcAngle=2 * Math.PI] - The arc angle of the circle section in radians.
      * @param {number} [startAngle=0] - The start angle of the circle section in radians. (Not yet implemented)
+     * @param {number} [endAngle=Math.PI * 2] - The end angle of the circle section in radians. (Not yet implemented)
      *
      * @return {this} This Circle object.
      */
-    setTo: function (x, y, radius, arcAngle, startAngle) {
+    setTo: function (x, y, radius, startAngle, endAngle) {
         this.x = x;
         this.y = y;
         this._radius = radius;
-        this._arcAngle = arcAngle;
         this._startAngle = startAngle;
+        this._endAngle = endAngle;
 
         return this;
     },
@@ -208,7 +204,8 @@ var CircleSection = new Class({
      */
     setEmpty: function () {
         this._radius = 0;
-        this._arcAngle = 0;
+        this._startAngle = 0;
+        this._endAngle = 0;
 
         return this;
     },
@@ -244,7 +241,7 @@ var CircleSection = new Class({
      * @return {boolean} True if the CircleSection is empty, otherwise false.
      */
     isEmpty: function () {
-        return this._radius <= 0 || this._arcAngle === 0;
+        return this._radius <= 0;
     },
 
     /**
@@ -265,28 +262,6 @@ var CircleSection = new Class({
     },
 
     /**
-     * The arc angle of the CircleSection.
-     *
-     * @name Phaser.Geom.CircleSection#arcAngle
-     * @type {number}
-     * @since 4.0.0
-     */
-    arcAngle: {
-        get: function () {
-            return this._arcAngle;
-        },
-
-        set: function (value) {
-            if (value < 0 || value > 2 * Math.PI) {
-                throw new Error(
-                    "Arc angle must be in the range 0 to 2 * Math.PI"
-                );
-            }
-            this._arcAngle = value;
-        },
-    },
-
-    /**
      * The start angle of the CircleSection.
      *
      * @name Phaser.Geom.CircleSection#startAngle
@@ -299,6 +274,22 @@ var CircleSection = new Class({
         },
         set: function (value) {
             this._startAngle = value;
+        },
+    },
+
+    /**
+     * The end angle of the CircleSection.
+     *
+     * @name Phaser.Geom.CircleSection#endAngle
+     * @type {number}
+     * @since 4.0.0
+     */
+    endAngle: {
+        get: function () {
+            return this._endAngle;
+        },
+        set: function (value) {
+            this._endAngle = value;
         },
     },
 });

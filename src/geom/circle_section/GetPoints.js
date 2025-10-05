@@ -29,7 +29,11 @@ var GetPoints = function (circleSection, quantity, stepRate, out) {
     out.push({ x: circleSection.x, y: circleSection.y });
 
     for (var i = 0; i < quantity - 2; i++) {
-        var angle = FromPercent(i / (quantity - 3), 0, circleSection.arcAngle);
+        var angle = FromPercent(
+            i / (quantity - 3),
+            circleSection.startAngle,
+            circleSection.endAngle
+        );
 
         out.push(CircumferencePoint(circleSection, angle));
     }

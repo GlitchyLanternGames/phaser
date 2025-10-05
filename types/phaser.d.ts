@@ -24544,22 +24544,22 @@ declare namespace Phaser {
              * @param x The x coordinate of the center of the circle.
              * @param y The y coordinate of the center of the circle.
              * @param radius The radius of the circle.
-             * @param arcAngle The arc angle of the circle section, in radians.
              * @param startAngle The start angle of the circle section, in radians. Default 0.
+             * @param endAngle The end angle of the circle section, in radians. Default TAU.
              * @returns This Game Object.
              */
-            fillCircleSection(x: number, y: number, radius: number, arcAngle: number, startAngle?: number): this;
+            fillCircleSection(x: number, y: number, radius: number, startAngle?: number, endAngle?: number): this;
 
             /**
              * Stroke a circle section with the given position, radius and arc angle.
              * @param x The x coordinate of the center of the circle.
              * @param y The y coordinate of the center of the circle.
              * @param radius The radius of the circle.
-             * @param arcAngle The arc angle of the circle section, in radians.
              * @param startAngle The start angle of the circle section, in radians. Default 0.
+             * @param endAngle The end angle of the circle section, in radians. Default TAU.
              * @returns This Game Object.
              */
-            strokeCircleSection(x: number, y: number, radius: number, arcAngle: number, startAngle?: number): this;
+            strokeCircleSection(x: number, y: number, radius: number, startAngle?: number, endAngle?: number): this;
 
             /**
              * Fill the given rectangle.
@@ -63667,10 +63667,10 @@ declare namespace Phaser {
              * @param x The x position of the center of the circle. Default 0.
              * @param y The y position of the center of the circle. Default 0.
              * @param radius The radius of the circle. Default 0.
-             * @param arcAngle The arc angle of the circle section in radians. Default 2 * Math.PI.
-             * @param startAngle The start angle of the circle section in radians. (Not yet implemented) Default 0.
+             * @param startAngle The start angle of the circle section in radians. Default 0.
+             * @param endAngle The end angle of the circle section in radians. Default 2*Math.PI.
              */
-            constructor(x?: number, y?: number, radius?: number, arcAngle?: number, startAngle?: number);
+            constructor(x?: number, y?: number, radius?: number, startAngle?: number, endAngle?: number);
 
             /**
              * Calculates the area of the circle.
@@ -63735,11 +63735,11 @@ declare namespace Phaser {
              * @param x The x position of the center of the circle. Default 0.
              * @param y The y position of the center of the circle. Default 0.
              * @param radius The radius of the circle. Default 0.
-             * @param arcAngle The arc angle of the circle section in radians. Default 2 * Math.PI.
              * @param startAngle The start angle of the circle section in radians. (Not yet implemented) Default 0.
+             * @param endAngle The end angle of the circle section in radians. (Not yet implemented) Default Math.PI * 2.
              * @returns This Circle object.
              */
-            setTo(x?: number, y?: number, radius?: number, arcAngle?: number, startAngle?: number): this;
+            setTo(x?: number, y?: number, radius?: number, startAngle?: number, endAngle?: number): this;
 
             /**
              * Sets this CircleSection to be empty with a radius of zero.
@@ -63768,14 +63768,14 @@ declare namespace Phaser {
             radius: number;
 
             /**
-             * The arc angle of the CircleSection.
-             */
-            arcAngle: number;
-
-            /**
              * The start angle of the CircleSection.
              */
             startAngle: number;
+
+            /**
+             * The end angle of the CircleSection.
+             */
+            endAngle: number;
 
             /**
              * Returns the circumference of the given Circle.

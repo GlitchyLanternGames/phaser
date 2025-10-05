@@ -15,8 +15,8 @@ var Clone = function (source) {
         source.x,
         source.y,
         source.radius,
-        source.arcAngle,
-        source.startAngle
+        source.startAngle,
+        source.endAngle
     );
 };
 

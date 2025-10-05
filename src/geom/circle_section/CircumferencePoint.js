@@ -19,12 +19,8 @@ var CircumferencePoint = function (circleSection, angle, out) {
         out = new Vector2();
     }
 
-    out.x =
-        circleSection.x +
-        circleSection.radius * Math.cos(angle + circleSection.startAngle);
-    out.y =
-        circleSection.y +
-        circleSection.radius * Math.sin(angle + circleSection.startAngle);
+    out.x = circleSection.x + circleSection.radius * Math.cos(angle);
+    out.y = circleSection.y + circleSection.radius * Math.sin(angle);
 
     return out;
 };
