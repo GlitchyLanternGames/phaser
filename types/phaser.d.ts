@@ -63906,6 +63906,11 @@ declare namespace Phaser {
         var TRIANGLE: number;
 
         /**
+         * A Circle Section Geometry object type.
+         */
+        var CIRCLE_SECTION: number;
+
+        /**
          * An Ellipse object.
          * 
          * This is a geometry object, containing numerical values and related methods to inspect and modify them.

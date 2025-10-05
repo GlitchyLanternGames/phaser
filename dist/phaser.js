@@ -10976,6 +10976,30 @@ module.exports = ContainsPoint;
 
 /***/ }),
 
+/***/ 5716:
+/***/ ((module) => {
+
+/**
+ * Returns the perimeter of the given CircleSection.
+ *
+ * @function Phaser.Geom.CircleSection.Perimeter
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to get the perimeter of.
+ *
+ * @return {number} The perimeter of the CircleSection.
+ */
+var Perimeter = function (circleSection) {
+    return (
+        circleSection.radius * (2 + circleSection.arcAngle) // circleSection.radius * 2 + arc length
+    );
+};
+
+module.exports = Perimeter;
+
+
+/***/ }),
+
 /***/ 5899:
 /***/ ((module) => {
 
@@ -50294,6 +50318,28 @@ module.exports = GetAdvancedValue;
 
 /***/ }),
 
+/***/ 23618:
+/***/ ((module) => {
+
+/**
+ * Returns the circumference of the given Circle.
+ *
+ * @function Phaser.Geom.CircleSection.Circumference
+ * @since 3.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to get the circumference of.
+ *
+ * @return {number} The circumference of the CircleSection.
+ */
+var Circumference = function (circleSection) {
+    return circleSection.arcAngle * circleSection.radius;
+};
+
+module.exports = Circumference;
+
+
+/***/ }),
+
 /***/ 23629:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -50905,7 +50951,6 @@ module.exports = {
  */
 
 var GEOM_CONST = {
-
     /**
      * A Circle Geometry object type.
      *
@@ -50968,8 +51013,16 @@ var GEOM_CONST = {
      * @type {number}
      * @since 3.19.0
      */
-    TRIANGLE: 6
+    TRIANGLE: 6,
 
+    /**
+     * A Circle Section Geometry object type.
+     *
+     * @name Phaser.Geom.CIRCLE_SECTION
+     * @type {number}
+     * @since 4.0.0
+     */
+    CIRCLE_SECTION: 7,
 };
 
 module.exports = GEOM_CONST;
@@ -66246,6 +66299,53 @@ module.exports = Pixelate;
 
 /***/ }),
 
+/***/ 29900:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var Circumference = __webpack_require__(23618);
+var CircumferencePoint = __webpack_require__(39974);
+var FromPercent = __webpack_require__(62945);
+
+/**
+ * Returns an array of Vector2 objects containing the coordinates of the points around the circumference of the Circle,
+ * based on the given quantity or stepRate values.
+ *
+ * @function Phaser.Geom.CircleSection.GetPoints
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to get the points from.
+ * @param {number} quantity - The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+ * @param {number} [stepRate] - Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
+ * @param {array} [output] - An array to insert the points in to. If not provided a new array will be created.
+ *
+ * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle.
+ */
+var GetPoints = function (circleSection, quantity, stepRate, out) {
+    if (out === undefined) {
+        out = [];
+    }
+
+    //  If quantity is a falsey value (false, null, 0, undefined, etc) or less than 3 then we calculate it based on the stepRate instead.
+    if (quantity < 3 && stepRate > 0) {
+        quantity = Circumference(circle) / stepRate;
+    }
+
+    out.push({ x: circleSection.x, y: circleSection.y });
+
+    for (var i = 0; i < quantity - 1; i++) {
+        var angle = FromPercent(i / quantity, 0, circleSection.arcAngle);
+
+        out.push(CircumferencePoint(circleSection, angle));
+    }
+
+    return out;
+};
+
+module.exports = GetPoints;
+
+
+/***/ }),
+
 /***/ 29903:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -77595,6 +77695,31 @@ module.exports = 'transitioncomplete';
 
 /***/ }),
 
+/***/ 33242:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var Contains = __webpack_require__(94870);
+
+/**
+ * Check to see if the CircleSection contains the given x and y coordinates as stored in the Vector2.
+ *
+ * @function Phaser.Geom.CircleSection.ContainsPoint
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to check.
+ * @param {Phaser.Math.Vector2} vec - The Vector2 object to check if its coordinates are within the CircleSection or not.
+ *
+ * @return {boolean} True if the Vector2 coordinates are within the circle, otherwise false.
+ */
+var ContainsPoint = function (circleSection, vec) {
+    return Contains(circleSection, vec.x, vec.y);
+};
+
+module.exports = ContainsPoint;
+
+
+/***/ }),
+
 /***/ 33286:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -80732,6 +80857,34 @@ module.exports = RotateTo;
 
 /***/ }),
 
+/***/ 34260:
+/***/ ((module) => {
+
+/**
+ * Offsets the CircleSection by the values given in the `x` and `y` properties of the Vector2 object.
+ *
+ * @function Phaser.Geom.CircleSection.OffsetPoint
+ * @since 3.0.0
+ *
+ * @generic {Phaser.Geom.CircleSection} O - [circleSection,$return]
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to be offset (translated.)
+ * @param {Phaser.Math.Vector2} vec - The Vector2 object containing the values to offset the CircleSection by.
+ *
+ * @return {Phaser.Geom.CircleSection} The CircleSection that was offset.
+ */
+var OffsetPoint = function (circleSection, vec) {
+    circleSection.x += vec.x;
+    circleSection.y += vec.y;
+
+    return circleSection;
+};
+
+module.exports = OffsetPoint;
+
+
+/***/ }),
+
 /***/ 34328:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -82098,6 +82251,30 @@ module.exports = UppercaseFirst;
  * @param {Phaser.Types.Input.EventData} event - The Phaser input event. You can call `stopPropagation()` to halt it from going any further in the event flow.
  */
 module.exports = 'pointerup';
+
+
+/***/ }),
+
+/***/ 35746:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var Circle = __webpack_require__(75836);
+
+/**
+ * Creates a new CircleSection instance based on the values contained in the given source.
+ *
+ * @function Phaser.Geom.CircleSection.Clone
+ * @since 4.0.0
+ *
+ * @param {(Phaser.Geom.CircleSection|object)} source - The CircleSection to be cloned. Can be an instance of a CircleSection or a circle section-like object, with x, y, radius and arc angle properties.
+ *
+ * @return {Phaser.Geom.CircleSection} A clone of the source CircleSection.
+ */
+var Clone = function (source) {
+    return new Circle(source.x, source.y, source.radius, source.arcAngle);
+};
+
+module.exports = Clone;
 
 
 /***/ }),
@@ -95259,6 +95436,41 @@ module.exports = Gravity;
 
 /***/ }),
 
+/***/ 39974:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var Vector2 = __webpack_require__(26099);
+
+/**
+ * Returns a Vector2 object containing the coordinates of a point on the circumference of the Circle based on the given angle.
+ *
+ * @function Phaser.Geom.CircleSection.CircumferencePoint
+ * @since 4.0.0
+ *
+ * @generic {Phaser.Math.Vector2} O - [out,$return]
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to get the circumference point on.
+ * @param {number} angle - The angle from the center of the CircleSection to the circumference to return the point from. Given in radians.
+ * @param {Phaser.Math.Vector2} [out] - A Vector2 to store the results in. If not given a Point will be created.
+ *
+ * @return {Phaser.Math.Vector2} A Vector2 object where the `x` and `y` properties are the point on the circumference.
+ */
+var CircumferencePoint = function (circleSection, angle, out) {
+    if (out === undefined) {
+        out = new Vector2();
+    }
+
+    out.x = circleSection.x + circleSection.radius * Math.cos(angle);
+    out.y = circleSection.y + circleSection.radius * Math.sin(angle);
+
+    return out;
+};
+
+module.exports = CircumferencePoint;
+
+
+/***/ }),
+
 /***/ 40012:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -100929,6 +101141,32 @@ var Base64Decode = function (data)
 };
 
 module.exports = Base64Decode;
+
+
+/***/ }),
+
+/***/ 41970:
+/***/ ((module) => {
+
+/**
+ * Copies the `x`, `y` and `radius` properties from the `source` Circle
+ * into the given `dest` Circle, then returns the `dest` Circle.
+ *
+ * @function Phaser.Geom.CircleSection.CopyFrom
+ * @since 4.0.0
+ *
+ * @generic {Phaser.Geom.CircleSection} O - [dest,$return]
+ *
+ * @param {Phaser.Geom.CircleSection} source - The source CircleSection to copy the values from.
+ * @param {Phaser.Geom.CircleSection} dest - The destination CircleSection to copy the values to.
+ *
+ * @return {Phaser.Geom.CircleSection} The destination CircleSection.
+ */
+var CopyFrom = function (source, dest) {
+    return dest.setTo(source.x, source.y, source.radius, source.arcAngle);
+};
+
+module.exports = CopyFrom;
 
 
 /***/ }),
@@ -107285,6 +107523,35 @@ if (true)
 }
 
 module.exports = Filters;
+
+
+/***/ }),
+
+/***/ 43148:
+/***/ ((module) => {
+
+/**
+ * Offsets the CircleSection by the values given.
+ *
+ * @function Phaser.Geom.CircleSection.Offset
+ * @since 3.0.0
+ *
+ * @generic {Phaser.Geom.CircleSection} O - [circleSection,$return]
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to be offset (translated.)
+ * @param {number} x - The amount to horizontally offset the CircleSection by.
+ * @param {number} y - The amount to vertically offset the CircleSection by.
+ *
+ * @return {Phaser.Geom.CircleSection} The CircleSection that was offset.
+ */
+var Offset = function (circleSection, x, y) {
+    circleSection.x += x;
+    circleSection.y += y;
+
+    return circleSection;
+};
+
+module.exports = Offset;
 
 
 /***/ }),
@@ -142897,15 +143164,14 @@ var Extend = __webpack_require__(79291);
  */
 
 var Geom = {
-
     Circle: __webpack_require__(88911),
+    CircleSection: __webpack_require__(85767),
     Ellipse: __webpack_require__(49203),
     Intersects: __webpack_require__(91865),
     Line: __webpack_require__(2529),
     Polygon: __webpack_require__(58423),
     Rectangle: __webpack_require__(93232),
-    Triangle: __webpack_require__(84435)
-
+    Triangle: __webpack_require__(84435),
 };
 
 //   Merge in the consts
@@ -156379,6 +156645,33 @@ module.exports = {
     WrapInRectangle: __webpack_require__(39665)
 
 };
+
+
+/***/ }),
+
+/***/ 61174:
+/***/ ((module) => {
+
+/**
+ * Calculates the area of the circle.
+ *
+ * @function Phaser.Geom.CircleSection.Area
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The Circle to get the area of.
+ *
+ * @return {number} The area of the Circle.
+ */
+var Area = function (circleSection) {
+    return circleSection.radius > 0
+        ? (1 / Math.PI) *
+              circleSection.arcAngle *
+              circleSection.radius *
+              circleSection.radius
+        : 0;
+};
+
+module.exports = Area;
 
 
 /***/ }),
@@ -174127,6 +174420,46 @@ module.exports = ObjectToColor;
 
 /***/ }),
 
+/***/ 68984:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var Vector2 = __webpack_require__(26099);
+
+/**
+ * Returns a uniformly distributed random point from anywhere within the given CircleSection.
+ *
+ * @function Phaser.Geom.CircleSection.Random
+ * @since 4.0.0
+ *
+ * @generic {Phaser.Math.Vector2} O - [out,$return]
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to get a random point from.
+ * @param {Phaser.Math.Vector2} [out] - A Vector2 object to set the random `x` and `y` values in.
+ *
+ * @return {Phaser.Math.Vector2} A Vector2 object with the random values set in the `x` and `y` properties.
+ */
+var Random = function (circleSection, out) {
+    if (out === undefined) {
+        out = new Vector2();
+    }
+
+    var t = circleSection.arcAngle * Math.random() - Math.DegToRad(90);
+    var u = Math.random() + Math.random();
+    var r = u > 1 ? 2 - u : u;
+    var x = r * Math.cos(t);
+    var y = r * Math.sin(t);
+
+    out.x = circle.x + x * circle.radius;
+    out.y = circle.y + y * circle.radius;
+
+    return out;
+};
+
+module.exports = Random;
+
+
+/***/ }),
+
 /***/ 69036:
 /***/ ((module) => {
 
@@ -174161,6 +174494,36 @@ var HasAll = function (source, keys)
 };
 
 module.exports = HasAll;
+
+
+/***/ }),
+
+/***/ 69140:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var Contains = __webpack_require__(94870);
+
+/**
+ * Check to see if the CircleSection contains all four points of the given Rectangle object.
+ *
+ * @function Phaser.Geom.CircleSection.ContainsRect
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to check.
+ * @param {(Phaser.Geom.Rectangle|object)} rect - The Rectangle object to check if it's within the CircleSection or not.
+ *
+ * @return {boolean} True if all of the Rectangle coordinates are within the circle, otherwise false.
+ */
+var ContainsRect = function (circleSection, rect) {
+    return (
+        Contains(circleSection, rect.x, rect.y) &&
+        Contains(circleSection, rect.right, rect.y) &&
+        Contains(circleSection, rect.x, rect.bottom) &&
+        Contains(circleSection, rect.right, rect.bottom)
+    );
+};
+
+module.exports = ContainsRect;
 
 
 /***/ }),
@@ -194431,6 +194794,270 @@ var MatterGameObject = function (world, gameObject, options, addToWorld)
 };
 
 module.exports = MatterGameObject;
+
+
+/***/ }),
+
+/***/ 75836:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var Class = __webpack_require__(83419);
+var Contains = __webpack_require__(94870);
+var GetPoints = __webpack_require__(29900);
+var GEOM_CONST = __webpack_require__(23777);
+var Random = __webpack_require__(68984);
+
+/**
+ * @classdesc
+ * A CircleSection object.
+ *
+ * This is a geometry object, containing numerical values and related methods to inspect and modify them.
+ * It is not a Game Object, in that you cannot add it to the display list, and it has no texture.
+ * To render a CircleSection you should look at the capabilities of the Graphics class.
+ *
+ * @class CircleSection
+ * @memberof Phaser.Geom
+ * @constructor
+ * @since 4.0.0
+ *
+ * @param {number} [x=0] - The x position of the center of the circle.
+ * @param {number} [y=0] - The y position of the center of the circle.
+ * @param {number} [radius=0] - The radius of the circle.
+ * @param {number} [arcAngle=2 * Math.PI] - The arc angle of the circle section in radians.
+ */
+var CircleSection = new Class({
+    initialize: function CircleSection(x, y, radius, arcAngle) {
+        if (x === undefined) {
+            x = 0;
+        }
+        if (y === undefined) {
+            y = 0;
+        }
+        if (radius === undefined) {
+            radius = 0;
+        }
+        if (arcAngle === undefined) {
+            arcAngle = 2 * Math.PI;
+        }
+        if (arcAngle < 0 || arcAngle > Math.PI * 2) {
+            throw new Error("Arc angle must be in the range 0 to 2 * Math.PI");
+        }
+
+        /**
+         * The geometry constant type of this object: `GEOM_CONST.CIRCLE_SECTION`.
+         * Used for fast type comparisons.
+         *
+         * @name Phaser.Geom.CircleSection#type
+         * @type {number}
+         * @readonly
+         * @since 4.0.0
+         */
+        this.type = GEOM_CONST.CIRCLE_SECTION;
+
+        /**
+         * The x position of the center of the circle.
+         *
+         * @name Phaser.Geom.CircleSection#x
+         * @type {number}
+         * @default 0
+         * @since 4.0.0
+         */
+        this.x = x;
+
+        /**
+         * The y position of the center of the circle.
+         *
+         * @name Phaser.Geom.CircleSection#y
+         * @type {number}
+         * @default 0
+         * @since 4.0.0
+         */
+        this.y = y;
+
+        /**
+         * The internal radius of the circle.
+         *
+         * @name Phaser.Geom.CircleSection#_radius
+         * @type {number}
+         * @private
+         * @since 4.0.0
+         */
+        this._radius = radius;
+
+        /**
+         * The internal arc angle (radians) of the circle section.
+         *
+         * @name Phaser.Geom.CircleSection#_arcAngle
+         * @type {number}
+         * @private
+         * @since 4.0.0
+         */
+        this._arcAngle = arcAngle;
+    },
+
+    /**
+     * Check to see if the CircleSection contains the given x / y coordinates.
+     *
+     * @method Phaser.Geom.CircleSection#contains
+     * @since 4.0.0
+     *
+     * @param {number} x - The x coordinate to check within the circle section.
+     * @param {number} y - The y coordinate to check within the circle section.
+     *
+     * @return {boolean} True if the coordinates are within the circle section, otherwise false.
+     */
+    contains: function (x, y) {
+        return Contains(this, x, y);
+    },
+
+    /**
+     * Returns an array of Point objects containing the coordinates of the points around the circumference of the CircleSection,
+     * based on the given quantity or stepRate values.
+     *
+     * @method Phaser.Geom.CircleSection#getPoints
+     * @since 4.0.0
+     *
+     * @generic {Phaser.Math.Vector2[]} O - [output,$return]
+     *
+     * @param {number} quantity - The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+     * @param {number} [stepRate] - Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
+     * @param {Phaser.Math.Vector2[]} [output] - An array to insert the Vector2s in to. If not provided a new array will be created.
+     *
+     * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle.
+     */
+    getPoints: function (quantity, stepRate, output) {
+        return GetPoints(this, quantity, stepRate, output);
+    },
+
+    /**
+     * Returns a uniformly distributed random point from anywhere within the CircleSection.
+     *
+     * @method Phaser.Geom.CircleSection#getRandomPoint
+     * @since 4.0.0
+     *
+     * @generic {Phaser.Math.Vector2} O - [point,$return]
+     *
+     * @param {Phaser.Math.Vector2} [vec] - A Vector2 object to set the random `x` and `y` values in.
+     *
+     * @return {Phaser.Math.Vector2} A Vector2 object with the random values set in the `x` and `y` properties.
+     */
+    getRandomPoint: function (vec) {
+        return Random(this, vec);
+    },
+
+    /**
+     * Sets the x, y and radius of this circle section.
+     *
+     * @method Phaser.Geom.CircleSection#setTo
+     * @since 4.0.0
+     *
+     * @param {number} [x=0] - The x position of the center of the circle.
+     * @param {number} [y=0] - The y position of the center of the circle.
+     * @param {number} [radius=0] - The radius of the circle.
+     * @param {number} [arcAngle=2 * Math.PI] - The arc angle of the circle section in radians.
+     *
+     * @return {this} This Circle object.
+     */
+    setTo: function (x, y, radius, arcAngle) {
+        this.x = x;
+        this.y = y;
+        this._radius = radius;
+        this._arcAngle = arcAngle;
+
+        return this;
+    },
+
+    /**
+     * Sets this CircleSection to be empty with a radius of zero.
+     * Does not change its position.
+     *
+     * @method Phaser.Geom.CircleSection#setEmpty
+     * @since 4.0.0
+     *
+     * @return {this} This CircleSection object.
+     */
+    setEmpty: function () {
+        this._radius = 0;
+        this._arcAngle = 0;
+
+        return this;
+    },
+
+    /**
+     * Sets the position of this CircleSection.
+     *
+     * @method Phaser.Geom.CircleSection#setPosition
+     * @since 4.0.0
+     *
+     * @param {number} [x=0] - The x position of the center of the circle.
+     * @param {number} [y=0] - The y position of the center of the circle.
+     *
+     * @return {this} This CircleSection object.
+     */
+    setPosition: function (x, y) {
+        if (y === undefined) {
+            y = x;
+        }
+
+        this.x = x;
+        this.y = y;
+
+        return this;
+    },
+
+    /**
+     * Checks to see if the CircleSection is empty: has a radius of zero.
+     *
+     * @method Phaser.Geom.CircleSection#isEmpty
+     * @since 4.0.0
+     *
+     * @return {boolean} True if the CircleSection is empty, otherwise false.
+     */
+    isEmpty: function () {
+        return this._radius <= 0 || this._arcAngle === 0;
+    },
+
+    /**
+     * The radius of the CircleSection.
+     *
+     * @name Phaser.Geom.CircleSection#radius
+     * @type {number}
+     * @since 4.0.0
+     */
+    radius: {
+        get: function () {
+            return this._radius;
+        },
+
+        set: function (value) {
+            this._radius = value;
+        },
+    },
+
+    /**
+     * The arc angle of the CircleSection.
+     *
+     * @name Phaser.Geom.CircleSection#arcAngle
+     * @type {number}
+     * @since 4.0.0
+     */
+    arcAngle: {
+        get: function () {
+            return this._arcAngle;
+        },
+
+        set: function (value) {
+            if (value < 0 || value > 2 * Math.PI) {
+                throw new Error(
+                    "Arc angle must be in the range 0 to 2 * Math.PI"
+                );
+            }
+            this._arcAngle = value;
+        },
+    },
+});
+
+module.exports = CircleSection;
 
 
 /***/ }),
@@ -218024,6 +218651,31 @@ module.exports = DefaultRopeNodes;
 
 /***/ }),
 
+/***/ 85767:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var CircleSection = __webpack_require__(75836);
+
+CircleSection.Area = __webpack_require__(61174);
+CircleSection.Circumference = __webpack_require__(23618);
+CircleSection.CircumferencePoint = __webpack_require__(39974);
+CircleSection.Clone = __webpack_require__(35746);
+CircleSection.Contains = __webpack_require__(94870);
+CircleSection.ContainsPoint = __webpack_require__(33242);
+CircleSection.ContainsRect = __webpack_require__(69140);
+CircleSection.CopyFrom = __webpack_require__(41970);
+CircleSection.Equals = __webpack_require__(90654);
+CircleSection.Perimeter = __webpack_require__(5716);
+CircleSection.GetPoints = __webpack_require__(29900);
+CircleSection.Offset = __webpack_require__(43148);
+CircleSection.OffsetPoint = __webpack_require__(34260);
+CircleSection.Random = __webpack_require__(68984);
+
+module.exports = CircleSection;
+
+
+/***/ }),
+
 /***/ 85788:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -231936,6 +232588,35 @@ module.exports = Static;
 
 /***/ }),
 
+/***/ 90654:
+/***/ ((module) => {
+
+/**
+ * Compares the `x`, `y` and `radius` properties of the two given Circles.
+ * Returns `true` if they all match, otherwise returns `false`.
+ *
+ * @function Phaser.Geom.CircleSection.Equals
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The first CircleSection to compare.
+ * @param {Phaser.Geom.CircleSection} toCompare - The second CircleSection to compare.
+ *
+ * @return {boolean} `true` if the two Circles equal each other, otherwise `false`.
+ */
+var Equals = function (circleSection, toCompare) {
+    return (
+        circleSection.x === toCompare.x &&
+        circleSection.y === toCompare.y &&
+        circleSection.radius === toCompare.radius &&
+        circleSection.arcAngle === toCompare.arcAngle
+    );
+};
+
+module.exports = Equals;
+
+
+/***/ }),
+
 /***/ 90664:
 /***/ ((module) => {
 
@@ -237761,6 +238442,56 @@ var ScaleXY = function (items, scaleX, scaleY, stepX, stepY, index, direction)
 };
 
 module.exports = ScaleXY;
+
+
+/***/ }),
+
+/***/ 94870:
+/***/ ((module) => {
+
+/**
+ * Check to see if the CircleSection contains the given x / y coordinates.
+ *
+ * @function Phaser.Geom.CircleSection.Contains
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to check.
+ * @param {number} x - The x coordinate to check within the circle.
+ * @param {number} y - The y coordinate to check within the circle.
+ *
+ * @return {boolean} True if the coordinates are within the circle, otherwise false.
+ */
+var Contains = function (circleSection, x, y) {
+    // Step 1: Translate point relative to arc center
+    var dx = x - circleSection.x;
+    var dy = y - circleSection.y;
+
+    // Step 2: Check if point is within radius
+    var distSq = dx * dx + dy * dy;
+    var radiusSq = circleSection.radius * circleSection.radius;
+    if (distSq > radiusSq) {
+        return false;
+    }
+
+    // Step 3: Get angle to point in radians
+    var angleToPoint = Math.atan2(dy, dx);
+    angleToPoint = (angleToPoint + 2 * Math.PI) % (2 * Math.PI); // Normalize to [0, 2 * Math.PI)
+
+    // Step 4: Define arc start and end angles
+    var startAngle = (-Math.PI / 2 + 2 * Math.PI) % (2 * Math.PI);
+    var endAngle = (startAngle + circleSection.arcAngle) % (2 * Math.PI);
+
+    // Step 5: Check if angleToPoint is within arc (clockwise)
+    if (startAngle < endAngle) {
+        // Normal range
+        return angleToPoint >= startAngle && angleToPoint <= endAngle;
+    } else {
+        // Wrapped around 360
+        return angleToPoint >= startAngle || angleToPoint <= endAngle;
+    }
+};
+
+module.exports = Contains;
 
 
 /***/ }),
