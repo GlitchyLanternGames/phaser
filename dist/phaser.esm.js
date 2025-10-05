@@ -52704,12 +52704,12 @@ var GetCircumferencePoints = function (circleSection, quantity, stepRate, out) {
     }
 
     //  If quantity is a falsey value (false, null, 0, undefined, etc) or less than 4 then we calculate it based on the stepRate instead.
-    if (!quantity && stepRate > 0) {
-        quantity = Circumference(circle) / stepRate;
+    if (quantity < 2 && stepRate > 0) {
+        quantity = Circumference(circleSection) / stepRate;
     }
 
     for (var i = 0; i < quantity; i++) {
-        var angle = FromPercent(i / quantity, 0, circleSection.arcAngle);
+        var angle = FromPercent(i / (quantity - 1), 0, circleSection.arcAngle);
 
         out.push(CircumferencePoint(circleSection, angle));
     }
@@ -66361,7 +66361,7 @@ var GetPoints = function (circleSection, quantity, stepRate, out) {
 
     //  If quantity is a falsey value (false, null, 0, undefined, etc) or less than 4 then we calculate it based on the stepRate instead.
     if (quantity < 4 && stepRate > 0) {
-        quantity = Circumference(circle) / stepRate;
+        quantity = Circumference(circleSection) / stepRate;
     }
 
     out.push({ x: circleSection.x, y: circleSection.y });

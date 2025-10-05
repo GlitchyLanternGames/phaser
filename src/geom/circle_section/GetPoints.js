@@ -23,7 +23,7 @@ var GetPoints = function (circleSection, quantity, stepRate, out) {
 
     //  If quantity is a falsey value (false, null, 0, undefined, etc) or less than 4 then we calculate it based on the stepRate instead.
     if (quantity < 4 && stepRate > 0) {
-        quantity = Circumference(circle) / stepRate;
+        quantity = Circumference(circleSection) / stepRate;
     }
 
     out.push({ x: circleSection.x, y: circleSection.y });
