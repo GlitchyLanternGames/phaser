@@ -5,7 +5,6 @@
  */
 
 var GEOM_CONST = {
-
     /**
      * A Circle Geometry object type.
      *
@@ -68,8 +67,16 @@ var GEOM_CONST = {
      * @type {number}
      * @since 3.19.0
      */
-    TRIANGLE: 6
+    TRIANGLE: 6,
 
+    /**
+     * A Circle Section Geometry object type.
+     *
+     * @name Phaser.Geom.CIRCLE_SECTION
+     * @type {number}
+     * @since 4.0.0
+     */
+    CIRCLE_SECTION: 7,
 };
 
 module.exports = GEOM_CONST;

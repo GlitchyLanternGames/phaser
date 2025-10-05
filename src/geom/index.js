@@ -4,23 +4,22 @@
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
-var CONST = require('./const');
-var Extend = require('../utils/object/Extend');
+var CONST = require("./const");
+var Extend = require("../utils/object/Extend");
 
 /**
  * @namespace Phaser.Geom
  */
 
 var Geom = {
-
-    Circle: require('./circle'),
-    Ellipse: require('./ellipse'),
-    Intersects: require('./intersects'),
-    Line: require('./line'),
-    Polygon: require('./polygon'),
-    Rectangle: require('./rectangle'),
-    Triangle: require('./triangle')
-
+    Circle: require("./circle"),
+    CircleSection: require("./circle_section"),
+    Ellipse: require("./ellipse"),
+    Intersects: require("./intersects"),
+    Line: require("./line"),
+    Polygon: require("./polygon"),
+    Rectangle: require("./rectangle"),
+    Triangle: require("./triangle"),
 };
 
 //   Merge in the consts
