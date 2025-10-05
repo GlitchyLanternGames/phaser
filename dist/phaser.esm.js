@@ -108847,7 +108847,7 @@ var Graphics = new Class({
 
         this.beginPath();
         this.moveTo(x, y);
-        this.arc(x, y, radius, startAngle, arcAngle);
+        this.arc(x, y, radius, startAngle, startAngle + arcAngle);
         this.lineTo(x, y);
         this.fillPath();
 
@@ -108875,7 +108875,7 @@ var Graphics = new Class({
 
         this.beginPath();
         this.moveTo(x, y);
-        this.arc(x, y, radius, startAngle, arcAngle);
+        this.arc(x, y, radius, startAngle, startAngle + arcAngle);
         this.lineTo(x, y);
         this.strokePath();
 
