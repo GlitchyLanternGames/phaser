@@ -52688,6 +52688,51 @@ module.exports = 'animationcomplete';
 
 /***/ }),
 
+/***/ 25369:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var Circumference = __webpack_require__(23618);
+var CircumferencePoint = __webpack_require__(39974);
+var FromPercent = __webpack_require__(62945);
+
+/**
+ * Returns an array of Vector2 objects containing the coordinates of the points around the circumference of the Circle,
+ * based on the given quantity or stepRate values.
+ *
+ * @function Phaser.Geom.CircleSection.GetCircumferencePoints
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to get the points from.
+ * @param {number} quantity - The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+ * @param {number} [stepRate] - Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
+ * @param {array} [output] - An array to insert the points in to. If not provided a new array will be created.
+ *
+ * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle.
+ */
+var GetCircumferencePoints = function (circleSection, quantity, stepRate, out) {
+    if (out === undefined) {
+        out = [];
+    }
+
+    //  If quantity is a falsey value (false, null, 0, undefined, etc) or less than 4 then we calculate it based on the stepRate instead.
+    if (!quantity && stepRate > 0) {
+        quantity = Circumference(circle) / stepRate;
+    }
+
+    for (var i = 0; i < quantity; i++) {
+        var angle = FromPercent(i / quantity, 0, circleSection.arcAngle);
+
+        out.push(CircumferencePoint(circleSection, angle));
+    }
+
+    return out;
+};
+
+module.exports = GetCircumferencePoints;
+
+
+/***/ }),
+
 /***/ 25410:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -66333,7 +66378,7 @@ var GetPoints = function (circleSection, quantity, stepRate, out) {
     out.push({ x: circleSection.x, y: circleSection.y });
 
     for (var i = 0; i < quantity - 2; i++) {
-        var angle = FromPercent(i / quantity, 0, circleSection.arcAngle);
+        var angle = FromPercent(i / (quantity - 3), 0, circleSection.arcAngle);
 
         out.push(CircumferencePoint(circleSection, angle));
     }
@@ -194834,6 +194879,7 @@ module.exports = MatterGameObject;
 var Class = __webpack_require__(83419);
 var Contains = __webpack_require__(94870);
 var GetPoints = __webpack_require__(29900);
+var GetCircumferencePoints = __webpack_require__(25369);
 var GEOM_CONST = __webpack_require__(23777);
 var Random = __webpack_require__(68984);
 
@@ -194966,10 +195012,27 @@ var CircleSection = new Class({
      * @param {number} [stepRate] - Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
      * @param {Phaser.Math.Vector2[]} [output] - An array to insert the Vector2s in to. If not provided a new array will be created.
      *
-     * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle.
+     * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle section.
      */
     getPoints: function (quantity, stepRate, output) {
         return GetPoints(this, quantity, stepRate, output);
+    },
+
+    /**
+     * Returns an array of Point objects containing the coordinates of the points around the circumference of the CircleSection,
+     * based on the given quantity or stepRate values.
+     * @method Phaser.Geom.CircleSection#getCircumferencePoints
+     * @since 4.0.0
+     * @generic {Phaser.Math.Vector2[]} O - [output,$return]
+     *
+     * @param {number} quantity - The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+     * @param {number} [stepRate] - Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
+     * @param {Phaser.Math.Vector2[]} [output] - An array to insert the Vector2s in to. If not provided a new array will be created.
+     *
+     * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle section.
+     */
+    getCircumferencePoints: function (quantity, stepRate, output) {
+        return GetCircumferencePoints(this, quantity, stepRate, output);
     },
 
     /**
@@ -218728,6 +218791,7 @@ CircleSection.CopyFrom = __webpack_require__(41970);
 CircleSection.Equals = __webpack_require__(90654);
 CircleSection.Perimeter = __webpack_require__(5716);
 CircleSection.GetPoints = __webpack_require__(29900);
+CircleSection.GetCircumferencePoints = __webpack_require__(25369);
 CircleSection.Offset = __webpack_require__(43148);
 CircleSection.OffsetPoint = __webpack_require__(34260);
 CircleSection.Random = __webpack_require__(68984);

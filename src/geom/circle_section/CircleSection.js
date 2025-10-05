@@ -1,6 +1,7 @@
 var Class = require("../../utils/Class");
 var Contains = require("./Contains");
 var GetPoints = require("./GetPoints");
+var GetCircumferencePoints = require("./GetCircumferencePoints");
 var GEOM_CONST = require("../const");
 var Random = require("./Random");
 
@@ -133,10 +134,27 @@ var CircleSection = new Class({
      * @param {number} [stepRate] - Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
      * @param {Phaser.Math.Vector2[]} [output] - An array to insert the Vector2s in to. If not provided a new array will be created.
      *
-     * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle.
+     * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle section.
      */
     getPoints: function (quantity, stepRate, output) {
         return GetPoints(this, quantity, stepRate, output);
+    },
+
+    /**
+     * Returns an array of Point objects containing the coordinates of the points around the circumference of the CircleSection,
+     * based on the given quantity or stepRate values.
+     * @method Phaser.Geom.CircleSection#getCircumferencePoints
+     * @since 4.0.0
+     * @generic {Phaser.Math.Vector2[]} O - [output,$return]
+     *
+     * @param {number} quantity - The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+     * @param {number} [stepRate] - Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
+     * @param {Phaser.Math.Vector2[]} [output] - An array to insert the Vector2s in to. If not provided a new array will be created.
+     *
+     * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle section.
+     */
+    getCircumferencePoints: function (quantity, stepRate, output) {
+        return GetCircumferencePoints(this, quantity, stepRate, output);
     },
 
     /**

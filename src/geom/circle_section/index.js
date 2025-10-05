@@ -11,6 +11,7 @@ CircleSection.CopyFrom = require("./CopyFrom");
 CircleSection.Equals = require("./Equals");
 CircleSection.Perimeter = require("./Perimeter");
 CircleSection.GetPoints = require("./GetPoints");
+CircleSection.GetCircumferencePoints = require("./GetCircumferencePoints");
 CircleSection.Offset = require("./Offset");
 CircleSection.OffsetPoint = require("./OffsetPoint");
 CircleSection.Random = require("./Random");

@@ -63709,9 +63709,19 @@ declare namespace Phaser {
              * @param quantity The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
              * @param stepRate Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
              * @param output An array to insert the Vector2s in to. If not provided a new array will be created.
-             * @returns An array of Vector2 objects pertaining to the points around the circumference of the circle.
+             * @returns An array of Vector2 objects pertaining to the points around the circumference of the circle section.
              */
             getPoints<O extends Phaser.Math.Vector2[]>(quantity: number, stepRate?: number, output?: O): O;
+
+            /**
+             * Returns an array of Point objects containing the coordinates of the points around the circumference of the CircleSection,
+             * based on the given quantity or stepRate values.
+             * @param quantity The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+             * @param stepRate Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
+             * @param output An array to insert the Vector2s in to. If not provided a new array will be created.
+             * @returns An array of Vector2 objects pertaining to the points around the circumference of the circle section.
+             */
+            getCircumferencePoints<O extends Phaser.Math.Vector2[]>(quantity: number, stepRate?: number, output?: O): O;
 
             /**
              * Returns a uniformly distributed random point from anywhere within the CircleSection.
@@ -63832,6 +63842,17 @@ declare namespace Phaser {
              * @returns `true` if the two Circles sections equal each other, otherwise `false`.
              */
             static Equals(circleSection: Phaser.Geom.CircleSection, toCompare: Phaser.Geom.CircleSection): boolean;
+
+            /**
+             * Returns an array of Vector2 objects containing the coordinates of the points around the circumference of the Circle,
+             * based on the given quantity or stepRate values.
+             * @param circleSection The CircleSection to get the points from.
+             * @param quantity The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+             * @param stepRate Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
+             * @param output An array to insert the points in to. If not provided a new array will be created.
+             * @returns An array of Vector2 objects pertaining to the points around the circumference of the circle.
+             */
+            static GetCircumferencePoints(circleSection: Phaser.Geom.CircleSection, quantity: number, stepRate?: number, output?: any[]): Phaser.Math.Vector2[];
 
             /**
              * Returns an array of Vector2 objects containing the coordinates of the points around the circumference of the Circle,
