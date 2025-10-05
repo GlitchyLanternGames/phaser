@@ -18,7 +18,7 @@ var Random = function (circleSection, out) {
         out = new Vector2();
     }
 
-    var t = circleSection.arcAngle * Math.random() - Math.DegToRad(90);
+    var t = circleSection.startAngle + circleSection.arcAngle * Math.random();
     var u = Math.random() + Math.random();
     var r = u > 1 ? 2 - u : u;
     var x = r * Math.cos(t);

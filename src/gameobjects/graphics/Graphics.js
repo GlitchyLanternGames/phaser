@@ -627,7 +627,8 @@ var Graphics = new Class({
             circleSection.x,
             circleSection.y,
             circleSection.radius,
-            circleSection.arcAngle
+            circleSection.arcAngle,
+            circleSection.startAngle
         );
     },
 
@@ -646,7 +647,8 @@ var Graphics = new Class({
             circleSection.x,
             circleSection.y,
             circleSection.radius,
-            circleSection.arcAngle
+            circleSection.arcAngle,
+            circleSection.startAngle
         );
     },
 
@@ -660,13 +662,18 @@ var Graphics = new Class({
      * @param {number} y - The y coordinate of the center of the circle.
      * @param {number} radius - The radius of the circle.
      * @param {number} arcAngle - The arc angle of the circle section, in radians.
+     * @param {number} [startAngle=0] - The start angle of the circle section, in radians.
      *
      * @return {this} This Game Object.
      */
-    fillCircleSection: function (x, y, radius, arcAngle) {
+    fillCircleSection: function (x, y, radius, arcAngle, startAngle) {
+        if (startAngle === undefined) {
+            startAngle = 0;
+        }
+
         this.beginPath();
         this.moveTo(x, y);
-        this.arc(x, y, radius, 0, arcAngle);
+        this.arc(x, y, radius, startAngle, arcAngle);
         this.lineTo(x, y);
         this.fillPath();
 
@@ -683,13 +690,18 @@ var Graphics = new Class({
      * @param {number} y - The y coordinate of the center of the circle.
      * @param {number} radius - The radius of the circle.
      * @param {number} arcAngle - The arc angle of the circle section, in radians.
+     * @param {number} [startAngle=0] - The start angle of the circle section, in radians.
      *
      * @return {this} This Game Object.
      */
-    strokeCircleSection: function (x, y, radius, arcAngle) {
+    strokeCircleSection: function (x, y, radius, arcAngle, startAngle) {
+        if (startAngle === undefined) {
+            startAngle = 0;
+        }
+
         this.beginPath();
         this.moveTo(x, y);
-        this.arc(x, y, radius, 0, arcAngle);
+        this.arc(x, y, radius, startAngle, arcAngle);
         this.lineTo(x, y);
         this.strokePath();
 

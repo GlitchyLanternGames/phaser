@@ -11,7 +11,13 @@ var Circle = require("./CircleSection");
  * @return {Phaser.Geom.CircleSection} A clone of the source CircleSection.
  */
 var Clone = function (source) {
-    return new Circle(source.x, source.y, source.radius, source.arcAngle);
+    return new Circle(
+        source.x,
+        source.y,
+        source.radius,
+        source.arcAngle,
+        source.startAngle
+    );
 };
 
 module.exports = Clone;

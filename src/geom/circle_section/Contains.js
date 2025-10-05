@@ -27,7 +27,7 @@ var Contains = function (circleSection, x, y) {
     angleToPoint = (angleToPoint + 2 * Math.PI) % (2 * Math.PI); // Normalize to [0, 2 * Math.PI)
 
     // Step 4: Define arc start and end angles
-    var startAngle = (-Math.PI / 2 + 2 * Math.PI) % (2 * Math.PI);
+    var startAngle = (circleSection.startAngle + 2 * Math.PI) % (2 * Math.PI);
     var endAngle = (startAngle + circleSection.arcAngle) % (2 * Math.PI);
 
     // Step 5: Check if angleToPoint is within arc (clockwise)

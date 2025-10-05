@@ -8,14 +8,15 @@
  * @param {Phaser.Geom.CircleSection} circleSection - The first CircleSection to compare.
  * @param {Phaser.Geom.CircleSection} toCompare - The second CircleSection to compare.
  *
- * @return {boolean} `true` if the two Circles equal each other, otherwise `false`.
+ * @return {boolean} `true` if the two Circles sections equal each other, otherwise `false`.
  */
 var Equals = function (circleSection, toCompare) {
     return (
         circleSection.x === toCompare.x &&
         circleSection.y === toCompare.y &&
         circleSection.radius === toCompare.radius &&
-        circleSection.arcAngle === toCompare.arcAngle
+        circleSection.arcAngle === toCompare.arcAngle &&
+        circleSection.startAngle === toCompare.startAngle
     );
 };
 
