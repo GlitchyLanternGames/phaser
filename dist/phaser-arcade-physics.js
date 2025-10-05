@@ -160294,8 +160294,8 @@ var Random = function (circleSection, out) {
     var x = r * Math.cos(t);
     var y = r * Math.sin(t);
 
-    out.x = circle.x + x * circle.radius;
-    out.y = circle.y + y * circle.radius;
+    out.x = circleSection.x + x * circleSection.radius;
+    out.y = circleSection.y + y * circleSection.radius;
 
     return out;
 };
