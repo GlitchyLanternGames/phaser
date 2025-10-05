@@ -1,6 +1,5 @@
 var Class = require("../../utils/Class");
 var Contains = require("./Contains");
-var GetPoint = require("./GetPoint");
 var GetPoints = require("./GetPoints");
 var GEOM_CONST = require("../const");
 var Random = require("./Random");
@@ -83,16 +82,6 @@ var CircleSection = new Class({
         this._radius = radius;
 
         /**
-         * The internal diameter of the circle.
-         *
-         * @name Phaser.Geom.CircleSection#_diameter
-         * @type {number}
-         * @private
-         * @since 4.0.0
-         */
-        this._diameter = radius * 2;
-
-        /**
          * The internal arc angle (radians) of the circle section.
          *
          * @name Phaser.Geom.CircleSection#_arcAngle
@@ -116,25 +105,6 @@ var CircleSection = new Class({
      */
     contains: function (x, y) {
         return Contains(this, x, y);
-    },
-
-    /**
-     * Returns a Point object containing the coordinates of a point on the circumference of the CircleSection
-     * based on the given angle normalized to the range 0 to 1. I.e. a value of 0.5 will give the point
-     * at 180 degrees around the circle.
-     *
-     * @method Phaser.Geom.CircleSection#getPoint
-     * @since 4.0.0
-     *
-     * @generic {Phaser.Math.Vector2} O - [out,$return]
-     *
-     * @param {number} position - A value between 0 and 1, where 0 equals 0 degrees, 0.5 equals 180 degrees and 1 equals 360 around the circle.
-     * @param {Phaser.Math.Vector2} [out] - A Vector2 to store the return values in. If not given a Vector2 object will be created.
-     *
-     * @return {Phaser.Math.Vector2} A Vector2 containing the coordinates of the point around the circle.
-     */
-    getPoint: function (position, out) {
-        return GetPoint(this, position, out);
     },
 
     /**
@@ -189,7 +159,6 @@ var CircleSection = new Class({
         this.x = x;
         this.y = y;
         this._radius = radius;
-        this._diameter = radius * 2;
         this._arcAngle = arcAngle;
 
         return this;
@@ -206,7 +175,6 @@ var CircleSection = new Class({
      */
     setEmpty: function () {
         this._radius = 0;
-        this._diameter = 0;
         this._arcAngle = 0;
 
         return this;
@@ -260,25 +228,6 @@ var CircleSection = new Class({
 
         set: function (value) {
             this._radius = value;
-            this._diameter = value * 2;
-        },
-    },
-
-    /**
-     * The diameter of the CircleSection.
-     *
-     * @name Phaser.Geom.CircleSection#diameter
-     * @type {number}
-     * @since 4.0.0
-     */
-    diameter: {
-        get: function () {
-            return this._diameter;
-        },
-
-        set: function (value) {
-            this._diameter = value;
-            this._radius = value * 0.5;
         },
     },
 
@@ -301,74 +250,6 @@ var CircleSection = new Class({
                 );
             }
             this._arcAngle = value;
-        },
-    },
-
-    /**
-     * The left position of the CircleSection.
-     *
-     * @name Phaser.Geom.CircleSection#left
-     * @type {number}
-     * @since 4.0.0
-     */
-    left: {
-        get: function () {
-            return this.x - this._radius;
-        },
-
-        set: function (value) {
-            this.x = value + this._radius;
-        },
-    },
-
-    /**
-     * The right position of the CircleSection.
-     *
-     * @name Phaser.Geom.CircleSection#right
-     * @type {number}
-     * @since 4.0.0
-     */
-    right: {
-        get: function () {
-            return this.x + this._radius;
-        },
-
-        set: function (value) {
-            this.x = value - this._radius;
-        },
-    },
-
-    /**
-     * The top position of the CircleSection.
-     *
-     * @name Phaser.Geom.CircleSection#top
-     * @type {number}
-     * @since 4.0.0
-     */
-    top: {
-        get: function () {
-            return this.y - this._radius;
-        },
-
-        set: function (value) {
-            this.y = value + this._radius;
-        },
-    },
-
-    /**
-     * The bottom position of the CircleSection.
-     *
-     * @name Phaser.Geom.CircleSection#bottom
-     * @type {number}
-     * @since 4.0.0
-     */
-    bottom: {
-        get: function () {
-            return this.y + this._radius;
-        },
-
-        set: function (value) {
-            this.y = value - this._radius;
         },
     },
 });

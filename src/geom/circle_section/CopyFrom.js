@@ -13,7 +13,7 @@
  * @return {Phaser.Geom.CircleSection} The destination CircleSection.
  */
 var CopyFrom = function (source, dest) {
-    return dest.setTo(source.x, source.y, source.radius);
+    return dest.setTo(source.x, source.y, source.radius, source.arcAngle);
 };
 
 module.exports = CopyFrom;

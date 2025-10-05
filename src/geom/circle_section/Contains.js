@@ -12,23 +12,23 @@
  */
 var Contains = function (circleSection, x, y) {
     // Step 1: Translate point relative to arc center
-    const dx = x - circleSection.x;
-    const dy = y - circleSection.y;
+    var dx = x - circleSection.x;
+    var dy = y - circleSection.y;
 
     // Step 2: Check if point is within radius
-    const distSq = dx * dx + dy * dy;
-    const radiusSq = circleSection.radius * circleSection.radius;
+    var distSq = dx * dx + dy * dy;
+    var radiusSq = circleSection.radius * circleSection.radius;
     if (distSq > radiusSq) {
         return false;
     }
 
     // Step 3: Get angle to point in radians
-    let angleToPoint = Math.atan2(dy, dx);
+    var angleToPoint = Math.atan2(dy, dx);
     angleToPoint = (angleToPoint + 2 * Math.PI) % (2 * Math.PI); // Normalize to [0, 2 * Math.PI)
 
     // Step 4: Define arc start and end angles
-    const startAngle = (-Math.PI / 2 + 2 * Math.PI) % (2 * Math.PI);
-    const endAngle = (startAngle + circleSection.arcAngle) % (2 * Math.PI);
+    var startAngle = (-Math.PI / 2 + 2 * Math.PI) % (2 * Math.PI);
+    var endAngle = (startAngle + circleSection.arcAngle) % (2 * Math.PI);
 
     // Step 5: Check if angleToPoint is within arc (clockwise)
     if (startAngle < endAngle) {
