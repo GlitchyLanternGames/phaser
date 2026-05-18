@@ -185826,7 +185826,6 @@ module.exports = [
 
 module.exports = [
     '#version 300 es',
-    '#version 100',
     '#pragma phaserTemplate(shaderName)',
     '#ifdef GL_FRAGMENT_PRECISION_HIGH',
     'precision highp float;',
@@ -185887,7 +185886,6 @@ module.exports = [
 
 module.exports = [
     '#version 300 es',
-    '#version 100',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(fragmentIterations)',
     '#pragma phaserTemplate(fragmentNormalMap)',
@@ -186022,7 +186020,6 @@ module.exports = [
 
 module.exports = [
     '#version 300 es',
-    '#version 100',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(fragmentIterations)',
     '#pragma phaserTemplate(fragmentNormalMap)',
@@ -186195,7 +186192,6 @@ module.exports = [
 
 module.exports = [
     '#version 300 es',
-    '#version 100',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(fragmentMode)',
     '#pragma phaserTemplate(fragmentIterations)',
@@ -186335,7 +186331,6 @@ module.exports = [
 
 module.exports = [
     '#version 300 es',
-    '#version 100',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(fragmentMode)',
     '#pragma phaserTemplate(fragmentIterations)',
@@ -186481,7 +186476,6 @@ module.exports = [
 
 module.exports = [
     '#version 300 es',
-    '#version 100',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(fragmentMode)',
     '#pragma phaserTemplate(fragmentIterations)',

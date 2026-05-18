@@ -1,7 +1,6 @@
 // NOISE_WORLEY_2D
 #version 300 es
 
-#version 100
 #pragma phaserTemplate(shaderName)
 
 #ifdef GL_FRAGMENT_PRECISION_HIGH
