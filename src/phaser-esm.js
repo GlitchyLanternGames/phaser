@@ -48,6 +48,7 @@ export const LOG_VERSION = CONST.LOG_VERSION;
 export const AUTO = CONST.AUTO;
 export const CANVAS = CONST.CANVAS;
 export const WEBGL = CONST.WEBGL;
+export const WEBGL2 = CONST.WEBGL2;
 export const HEADLESS = CONST.HEADLESS;
 export const FOREVER = CONST.FOREVER;
 export const NONE = CONST.NONE;
@@ -61,5 +62,5 @@ export default {
     Display, DOM, Events, Filters, Game, GameObjects, Geom, Input, Loader,
     Math, Physics, Plugins, Renderer, Scale, ScaleModes, Scene, Scenes,
     Structs, Sound, Textures, Tilemaps, Time, TintModes, Tweens, Utils,
-    VERSION, LOG_VERSION, AUTO, CANVAS, WEBGL, HEADLESS, FOREVER, NONE, LEFT, RIGHT, UP, DOWN
+    VERSION, LOG_VERSION, AUTO, CANVAS, WEBGL, WEBGL2, HEADLESS, FOREVER, NONE, LEFT, RIGHT, UP, DOWN
 };

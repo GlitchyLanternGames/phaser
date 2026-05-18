@@ -265966,6 +265966,7 @@ var __webpack_exports__ = {};
 /* harmony export */   Zt: () => (/* binding */ Game),
 /* harmony export */   _k: () => (/* binding */ Scenes),
 /* harmony export */   aH: () => (/* binding */ Loader),
+/* harmony export */   aS: () => (/* binding */ WEBGL2),
 /* harmony export */   dv: () => (/* binding */ DOM),
 /* harmony export */   gX: () => (/* binding */ Time),
 /* harmony export */   gd: () => (/* binding */ BlendModes),
@@ -266035,6 +266036,7 @@ const LOG_VERSION = CONST.LOG_VERSION;
 const AUTO = CONST.AUTO;
 const CANVAS = CONST.CANVAS;
 const WEBGL = CONST.WEBGL;
+const WEBGL2 = CONST.WEBGL2;
 const HEADLESS = CONST.HEADLESS;
 const FOREVER = CONST.FOREVER;
 const NONE = CONST.NONE;
@@ -266048,7 +266050,7 @@ const DOWN = CONST.DOWN;
     Display, DOM, Events, Filters, Game, GameObjects, Geom, Input, Loader,
     Math: phaser_esm_Math, Physics, Plugins, Renderer, Scale, ScaleModes, Scene, Scenes,
     Structs, Sound, Textures, Tilemaps, Time, TintModes, Tweens, Utils,
-    VERSION, LOG_VERSION, AUTO, CANVAS, WEBGL, HEADLESS, FOREVER, NONE, LEFT, RIGHT, UP, DOWN
+    VERSION, LOG_VERSION, AUTO, CANVAS, WEBGL, WEBGL2, HEADLESS, FOREVER, NONE, LEFT, RIGHT, UP, DOWN
 });
 
 const __webpack_exports__AUTO = __webpack_exports__.Q8;
@@ -266097,5 +266099,6 @@ const __webpack_exports__UP = __webpack_exports__.UP;
 const __webpack_exports__Utils = __webpack_exports__.Aq;
 const __webpack_exports__VERSION = __webpack_exports__.xv;
 const __webpack_exports__WEBGL = __webpack_exports__.CB;
+const __webpack_exports__WEBGL2 = __webpack_exports__.aS;
 const __webpack_exports__default = __webpack_exports__.Ay;
-export { __webpack_exports__AUTO as AUTO, __webpack_exports__Actions as Actions, __webpack_exports__Animations as Animations, __webpack_exports__BlendModes as BlendModes, __webpack_exports__CANVAS as CANVAS, __webpack_exports__Cache as Cache, __webpack_exports__Cameras as Cameras, __webpack_exports__Class as Class, __webpack_exports__Core as Core, __webpack_exports__Curves as Curves, __webpack_exports__DOM as DOM, __webpack_exports__DOWN as DOWN, __webpack_exports__Data as Data, __webpack_exports__Display as Display, __webpack_exports__Events as Events, __webpack_exports__FOREVER as FOREVER, __webpack_exports__Filters as Filters, __webpack_exports__Game as Game, __webpack_exports__GameObjects as GameObjects, __webpack_exports__Geom as Geom, __webpack_exports__HEADLESS as HEADLESS, __webpack_exports__Input as Input, __webpack_exports__LEFT as LEFT, __webpack_exports__LOG_VERSION as LOG_VERSION, __webpack_exports__Loader as Loader, __webpack_exports__Math as Math, __webpack_exports__NONE as NONE, __webpack_exports__Physics as Physics, __webpack_exports__Plugins as Plugins, __webpack_exports__RIGHT as RIGHT, __webpack_exports__Renderer as Renderer, __webpack_exports__Scale as Scale, __webpack_exports__ScaleModes as ScaleModes, __webpack_exports__Scene as Scene, __webpack_exports__Scenes as Scenes, __webpack_exports__Sound as Sound, __webpack_exports__Structs as Structs, __webpack_exports__Textures as Textures, __webpack_exports__Tilemaps as Tilemaps, __webpack_exports__Time as Time, __webpack_exports__TintModes as TintModes, __webpack_exports__Tweens as Tweens, __webpack_exports__UP as UP, __webpack_exports__Utils as Utils, __webpack_exports__VERSION as VERSION, __webpack_exports__WEBGL as WEBGL, __webpack_exports__default as default };
+export { __webpack_exports__AUTO as AUTO, __webpack_exports__Actions as Actions, __webpack_exports__Animations as Animations, __webpack_exports__BlendModes as BlendModes, __webpack_exports__CANVAS as CANVAS, __webpack_exports__Cache as Cache, __webpack_exports__Cameras as Cameras, __webpack_exports__Class as Class, __webpack_exports__Core as Core, __webpack_exports__Curves as Curves, __webpack_exports__DOM as DOM, __webpack_exports__DOWN as DOWN, __webpack_exports__Data as Data, __webpack_exports__Display as Display, __webpack_exports__Events as Events, __webpack_exports__FOREVER as FOREVER, __webpack_exports__Filters as Filters, __webpack_exports__Game as Game, __webpack_exports__GameObjects as GameObjects, __webpack_exports__Geom as Geom, __webpack_exports__HEADLESS as HEADLESS, __webpack_exports__Input as Input, __webpack_exports__LEFT as LEFT, __webpack_exports__LOG_VERSION as LOG_VERSION, __webpack_exports__Loader as Loader, __webpack_exports__Math as Math, __webpack_exports__NONE as NONE, __webpack_exports__Physics as Physics, __webpack_exports__Plugins as Plugins, __webpack_exports__RIGHT as RIGHT, __webpack_exports__Renderer as Renderer, __webpack_exports__Scale as Scale, __webpack_exports__ScaleModes as ScaleModes, __webpack_exports__Scene as Scene, __webpack_exports__Scenes as Scenes, __webpack_exports__Sound as Sound, __webpack_exports__Structs as Structs, __webpack_exports__Textures as Textures, __webpack_exports__Tilemaps as Tilemaps, __webpack_exports__Time as Time, __webpack_exports__TintModes as TintModes, __webpack_exports__Tweens as Tweens, __webpack_exports__UP as UP, __webpack_exports__Utils as Utils, __webpack_exports__VERSION as VERSION, __webpack_exports__WEBGL as WEBGL, __webpack_exports__WEBGL2 as WEBGL2, __webpack_exports__default as default };
