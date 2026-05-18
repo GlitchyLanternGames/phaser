@@ -184844,8 +184844,10 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform sampler2D uTransferSampler;',
     'uniform float uColorMatrixSelf[20];',
@@ -184854,15 +184856,15 @@ module.exports = [
     'uniform float uAlphaTransfer;',
     'uniform vec4 uAdditions;',
     'uniform vec4 uMultiplications;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     '#define S uColorMatrixSelf',
     '#define T uColorMatrixTransfer',
     'void main ()',
     '{',
-    '    vec4 self = texture2D(uMainSampler, outTexCoord);',
+    '    vec4 self = texture(uMainSampler, outTexCoord);',
     '    if (uAlphaSelf == 0.0)',
     '    {',
-    '        gl_FragColor = self;',
+    '        fragColorOutput = self;',
     '        return;',
     '    }',
     '    if (self.a > 0.0)',
@@ -184878,10 +184880,10 @@ module.exports = [
     '    {',
     '        self.rgb *= self.a;',
     '        resultSelf.rgb *= resultSelf.a;',
-    '        gl_FragColor = mix(self, resultSelf, uAlphaSelf);',
+    '        fragColorOutput = mix(self, resultSelf, uAlphaSelf);',
     '        return;',
     '    }',
-    '    vec4 tex = texture2D(uTransferSampler, outTexCoord);',
+    '    vec4 tex = texture(uTransferSampler, outTexCoord);',
     '    if (tex.a > 0.0)',
     '    {',
     '        tex.rgb /= tex.a;',
@@ -184895,7 +184897,7 @@ module.exports = [
     '    self.rgb *= self.a;',
     '    resultSelf.rgb *= resultSelf.a;',
     '    combo.rgb *= combo.a;',
-    '    gl_FragColor = mix(self, mix(resultSelf, combo, uAlphaTransfer), uAlphaSelf);',
+    '    fragColorOutput = mix(self, mix(resultSelf, combo, uAlphaTransfer), uAlphaSelf);',
     '}',
 ].join('\n');
 
@@ -184994,18 +184996,20 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision highp float;',
     '#pragma phaserTemplate(fragmentHeader)',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform vec4 uColor;',
     'uniform vec4 uColorFactor;',
     'uniform bool uUnpremultiply;',
     'uniform float uAlpha;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'void main ()',
     '{',
-    '    vec4 sample = texture2D(uMainSampler, outTexCoord);',
+    '    vec4 sample = texture(uMainSampler, outTexCoord);',
     '    if (uUnpremultiply)',
     '    {',
     '        sample.rgb /= sample.a;',
@@ -185014,7 +185018,7 @@ module.exports = [
     '    float progress = modulatedSample.r + modulatedSample.g + modulatedSample.b + modulatedSample.a;',
     '    vec4 rampColor = getRampAt(progress);',
     '    rampColor.rgb *= rampColor.a;',
-    '    gl_FragColor = mix(sample, rampColor * sample.a, uAlpha);',
+    '    fragColorOutput = mix(sample, rampColor * sample.a, uAlpha);',
     '}',
 ].join('\n');
 
@@ -185025,8 +185029,10 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform sampler2D uEnvSampler;',
     'uniform sampler2D uNormSampler;',
@@ -185034,12 +185040,12 @@ module.exports = [
     'uniform float uModelRotation;',
     'uniform float uBulge;',
     'uniform vec3 uColorFactor;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     '#define PI 3.14159265358979323846',
     'void main()',
     '{',
-    '    vec4 color = texture2D(uMainSampler, outTexCoord);',
-    '    vec3 normal = texture2D(uNormSampler, outTexCoord).rgb;',
+    '    vec4 color = texture(uMainSampler, outTexCoord);',
+    '    vec3 normal = texture(uNormSampler, outTexCoord).rgb;',
     '    vec3 normalN = normal * 2.0 - 1.0;',
     '    float normalXYLength = length(normalN.xy);',
     '    float angle = atan(',
@@ -185071,8 +185077,8 @@ module.exports = [
     '        uv.y = 2.0 - uv.y;',
     '        uv.x += 0.5;',
     '    }',
-    '    vec3 environment = texture2D(uEnvSampler, uv).rgb;',
-    '    gl_FragColor = vec4(environment * color.rgb * uColorFactor, color.a);',
+    '    vec3 environment = texture(uEnvSampler, uv).rgb;',
+    '    fragColorOutput = vec4(environment * color.rgb * uColorFactor, color.a);',
     '}',
 ].join('\n');
 
@@ -185083,15 +185089,17 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform vec4 uColor;',
     'uniform vec4 uIsolateThresholdFeather;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'void main()',
     '{',
-    '    vec4 color = texture2D(uMainSampler, outTexCoord);',
+    '    vec4 color = texture(uMainSampler, outTexCoord);',
     '    vec3 unpremultipliedColor = color.rgb / color.a;',
     '    float isolate = uIsolateThresholdFeather.x;',
     '    float threshold = uIsolateThresholdFeather.y;',
@@ -185104,7 +185112,7 @@ module.exports = [
     '        match = 1.0 - match;',
     '    }',
     '    match = mix(1.0, match, uColor.a);',
-    '    gl_FragColor = color * match;',
+    '    fragColorOutput = color * match;',
     '}',
 ].join('\n');
 
@@ -185140,9 +185148,11 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
     '#pragma phaserTemplate(fragmentHeader)',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform mat4 uViewMatrix;',
     '#ifdef FACING_POWER',
@@ -185152,10 +185162,10 @@ module.exports = [
     'uniform vec3 uRatioVector;',
     'uniform float uRatioRadius;',
     '#endif',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'void main()',
     '{',
-    '    vec3 normal = texture2D(uMainSampler, outTexCoord).rgb * 2.0 - 1.0;',
+    '    vec3 normal = texture(uMainSampler, outTexCoord).rgb * 2.0 - 1.0;',
     '    normal = (uViewMatrix * vec4(normal, 1.0)).xyz;',
     '    #ifdef FACING_POWER',
     '    normal = normalize(normal * vec3(1.0, 1.0, uFacingPower));',
@@ -185169,7 +185179,7 @@ module.exports = [
     '    }',
     '    normal = vec3(ratio * 2.0 - 1.0);',
     '    #endif',
-    '    gl_FragColor = vec4((normal + 1.0) * 0.5, 1.0);',
+    '    fragColorOutput = vec4((normal + 1.0) * 0.5, 1.0);',
     '}',
 ].join('\n');
 
@@ -185180,12 +185190,14 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform float uRadius;',
     'uniform float uPower;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     '#define PI 3.14159265358979323846',
     '#pragma phaserTemplate(fragmentHeader)',
     '#define STEP_X 1.0 / SAMPLES_X',
@@ -185218,13 +185230,13 @@ module.exports = [
     '            {',
     '                continue;',
     '            }',
-    '            vec3 color = texture2D(uMainSampler, uv).rgb;',
+    '            vec3 color = texture(uMainSampler, uv).rgb;',
     '            color *= pow(length(color), uPower);',
     '            acc += color * dotProduct * yWeight;',
     '            div += dotProduct * yWeight;',
     '        }',
     '    }',
-    '    gl_FragColor = vec4(acc / div, 1.0);',
+    '    fragColorOutput = vec4(acc / div, 1.0);',
     '}',
 ].join('\n');
 
@@ -185267,15 +185279,17 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision highp float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform vec4 uSteps;',
     'uniform vec4 uGamma;',
     'uniform vec4 uOffset;',
     'uniform int uMode;',
     'uniform bool uDither;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'vec4 rgbaToHsva(vec4 rgba)',
     '{',
     '    float r = rgba.r;',
@@ -185328,7 +185342,7 @@ module.exports = [
     '}',
     'void main ()',
     '{',
-    '    vec4 sample = texture2D(uMainSampler, outTexCoord);',
+    '    vec4 sample = texture(uMainSampler, outTexCoord);',
     '    if (uMode == 1)',
     '    {',
     '        sample = rgbaToHsva(sample);',
@@ -185350,7 +185364,7 @@ module.exports = [
     '        sample.x = mod(sample.x, 1.0);',
     '        sample = hsvaToRgba(clamp(sample, 0.0, 1.0));',
     '    }',
-    '    gl_FragColor = sample;',
+    '    fragColorOutput = sample;',
     '}',
 ].join('\n');
 
@@ -185426,15 +185440,17 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform float uRadius;',
     'uniform float uStrength;',
     'uniform vec2 uPosition;',
     'uniform vec4 uColor;',
     'uniform int uBlendMode;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'void main ()',
     '{',
     '    float vignette = 1.0;',
@@ -185446,7 +185462,7 @@ module.exports = [
     '        vignette = sin(g * 3.14 * uStrength);',
     '    }',
     '    vec4 color = uColor;',
-    '    vec4 texture = texture2D(uMainSampler, outTexCoord);',
+    '    vec4 texture = texture(uMainSampler, outTexCoord);',
     '    if (uBlendMode == 1)',
     '    {',
     '        color.rgb = texture.rgb + color.rgb;',
@@ -185459,7 +185475,7 @@ module.exports = [
     '    {',
     '        color.rgb = 1.0 - ((1.0 - texture.rgb) * (1.0 - color.rgb));',
     '    }',
-    '    gl_FragColor = mix(texture, color, vignette);',
+    '    fragColorOutput = mix(texture, color, vignette);',
     '}',
 ].join('\n');
 
@@ -185470,26 +185486,28 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform sampler2D uMainSampler2;',
     'uniform vec4 uProgress_WipeWidth_Direction_Axis;',
     'uniform float uReveal;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'void main ()',
     '{',
     '    vec4 color0;',
     '    vec4 color1;',
     '    if (uReveal == 0.0)',
     '    {',
-    '        color0 = texture2D(uMainSampler, outTexCoord);',
-    '        color1 = texture2D(uMainSampler2, outTexCoord);',
+    '        color0 = texture(uMainSampler, outTexCoord);',
+    '        color1 = texture(uMainSampler2, outTexCoord);',
     '    }',
     '    else',
     '    {',
-    '        color0 = texture2D(uMainSampler2, outTexCoord);',
-    '        color1 = texture2D(uMainSampler, outTexCoord);',
+    '        color0 = texture(uMainSampler2, outTexCoord);',
+    '        color1 = texture(uMainSampler, outTexCoord);',
     '    }',
     '    float distance = uProgress_WipeWidth_Direction_Axis.x;',
     '    float width = uProgress_WipeWidth_Direction_Axis.y;',
@@ -185501,7 +185519,7 @@ module.exports = [
     '    }',
     '    float adjust = mix(width, -width, distance);',
     '    float value = smoothstep(distance - width, distance + width, abs(direction - axis) + adjust);',
-    '    gl_FragColor = mix(color1, color0, value);',
+    '    fragColorOutput = mix(color1, color0, value);',
     '}',
 ].join('\n');
 
@@ -185638,16 +185656,18 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision highp float;',
     '#pragma phaserTemplate(fragmentHeader)',
     '#define PI 3.14159265358979323846',
+    'out vec4 fragColorOutput;',
     'uniform int uRepeatMode;',
     'uniform float uOffset;',
     'uniform int uShapeMode;',
     'uniform vec2 uShape;',
     'uniform vec2 uStart;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'float linear()',
     '{',
     '    float len = length(uShape);',
@@ -185721,7 +185741,7 @@ module.exports = [
     '    progress = repeat(progress);',
     '    vec4 bandCol = getRampAt(progress);',
     '    bandCol.rgb *= bandCol.a;',
-    '    gl_FragColor = bandCol;',
+    '    fragColorOutput = bandCol;',
     '}',
 ].join('\n');
 
@@ -185805,6 +185825,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#version 100',
     '#pragma phaserTemplate(shaderName)',
     '#ifdef GL_FRAGMENT_PRECISION_HIGH',
@@ -185812,12 +185833,13 @@ module.exports = [
     '#else',
     'precision mediump float;',
     '#endif',
+    'out vec4 fragColorOutput;',
     'uniform vec2 uOffset;',
     'uniform vec4 uColorStart;',
     'uniform vec4 uColorEnd;',
     'uniform float uPower;',
     'uniform int uMode;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'float trig(vec2 p)',
     '{',
     '    return fract(43757.5453*sin(dot(p, vec2(12.9898,78.233))));',
@@ -185829,7 +185851,7 @@ module.exports = [
     '    {',
     '        vec4 color = mix(uColorStart, uColorEnd, value);',
     '        color.rgb *= color.a;',
-    '        gl_FragColor = color;',
+    '        fragColorOutput = color;',
     '    }',
     '    else if (uMode == 1)',
     '    {',
@@ -185839,7 +185861,7 @@ module.exports = [
     '        vec4 color = vec4(valueR, valueG, valueB, 1.);',
     '        color *= mix(uColorStart, uColorEnd, value);',
     '        color.rgb *= color.a;',
-    '        gl_FragColor = color;',
+    '        fragColorOutput = color;',
     '    }',
     '    else if (uMode == 2)',
     '    {',
@@ -185852,7 +185874,7 @@ module.exports = [
     '            sqrt(1. - x * x - y * y),',
     '            1.0',
     '        );',
-    '        gl_FragColor = color * 0.5 + 0.5;',
+    '        fragColorOutput = color * 0.5 + 0.5;',
     '    }',
     '}',
 ].join('\n');
@@ -185864,6 +185886,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#version 100',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(fragmentIterations)',
@@ -185879,6 +185902,7 @@ module.exports = [
     '#else',
     'precision mediump float;',
     '#endif',
+    'out vec4 fragColorOutput;',
     'uniform vec2 uCells;',
     'uniform vec2 uPeriod;',
     'uniform vec2 uOffset;',
@@ -185897,7 +185921,7 @@ module.exports = [
     'uniform float uValueAdd;',
     'uniform float uValuePower;',
     'uniform vec2 uSeed;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'float psrdnoise(vec2 x, vec2 period, float alpha)',
     '{',
     '    vec2 uv = vec2(x.x+x.y*0.5, x.y);',
@@ -185980,12 +186004,12 @@ module.exports = [
     '    #ifndef NORMAL_MAP',
     '    vec4 color = mix(uColorStart, uColorEnd, value);',
     '    color.rgb *= color.a;',
-    '    gl_FragColor = color;',
+    '    fragColorOutput = color;',
     '    #else',
     '    float dx = dFdx(value) * uNormalScale;',
     '    float dy = dFdy(value) * uNormalScale;',
     '    vec3 normal = vec3(dx, dy, 1.0 - sqrt(dx * dx + dy * dy)) * 0.5 + 0.5;',
-    '    gl_FragColor = vec4(normal, 1.0);',
+    '    fragColorOutput = vec4(normal, 1.0);',
     '    #endif',
     '}',
 ].join('\n');
@@ -185997,6 +186021,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#version 100',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(fragmentIterations)',
@@ -186012,6 +186037,7 @@ module.exports = [
     '#else',
     'precision mediump float;',
     '#endif',
+    'out vec4 fragColorOutput;',
     'uniform vec3 uCells;',
     'uniform vec3 uPeriod;',
     'uniform vec3 uOffset;',
@@ -186030,7 +186056,7 @@ module.exports = [
     'uniform float uValueAdd;',
     'uniform float uValuePower;',
     'uniform vec3 uSeed;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'vec4 permute(vec4 i) {',
     '    vec4 im = mod(i, 289.0);',
     '    return mod(((im * 34.0) + 10.0) * im, 289.0);',
@@ -186151,12 +186177,12 @@ module.exports = [
     '    #ifndef NORMAL_MAP',
     '    vec4 color = mix(uColorStart, uColorEnd, value);',
     '    color.rgb *= color.a;',
-    '    gl_FragColor = color;',
+    '    fragColorOutput = color;',
     '    #else',
     '    float dx = dFdx(value) * uNormalScale;',
     '    float dy = dFdy(value) * uNormalScale;',
     '    vec3 normal = vec3(dx, dy, 1.0 - sqrt(dx * dx + dy * dy)) * 0.5 + 0.5;',
-    '    gl_FragColor = vec4(normal, 1.0);',
+    '    fragColorOutput = vec4(normal, 1.0);',
     '    #endif',
     '}',
 ].join('\n');
@@ -186168,6 +186194,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#version 100',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(fragmentMode)',
@@ -186178,6 +186205,7 @@ module.exports = [
     '#else',
     'precision mediump float;',
     '#endif',
+    'out vec4 fragColorOutput;',
     'uniform vec2 uSeedX;',
     'uniform vec2 uSeedY;',
     'uniform vec2 uCells;',
@@ -186188,7 +186216,7 @@ module.exports = [
     'uniform float uNormalScale;',
     'uniform vec4 uColorStart;',
     'uniform vec4 uColorEnd;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'float trig(vec2 p)',
     '{',
     '    return fract(43757.5453*sin(dot(p, vec2(12.9898,78.233))));',
@@ -186289,12 +186317,12 @@ module.exports = [
     '    #ifndef NORMAL_MAP',
     '        vec4 color = mix(uColorStart, uColorEnd, value);',
     '        color.rgb *= color.a;',
-    '        gl_FragColor = color;',
+    '        fragColorOutput = color;',
     '    #else',
     '        float dx = dFdx(value) * uNormalScale;',
     '        float dy = dFdy(value) * uNormalScale;',
     '        vec3 normal = vec3(dx, dy, 1.0 - sqrt(dx * dx + dy * dy)) * 0.5 + 0.5;',
-    '        gl_FragColor = vec4(normal, 1.0);',
+    '        fragColorOutput = vec4(normal, 1.0);',
     '    #endif',
     '}',
 ].join('\n');
@@ -186306,6 +186334,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#version 100',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(fragmentMode)',
@@ -186316,6 +186345,7 @@ module.exports = [
     '#else',
     'precision mediump float;',
     '#endif',
+    'out vec4 fragColorOutput;',
     'uniform vec3 uSeedX;',
     'uniform vec3 uSeedY;',
     'uniform vec3 uSeedZ;',
@@ -186327,7 +186357,7 @@ module.exports = [
     'uniform float uNormalScale;',
     'uniform vec4 uColorStart;',
     'uniform vec4 uColorEnd;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'float trig(vec3 p)',
     '{',
     '    return fract(43757.5453*sin(dot(p, vec3(12.9898,78.233, 9441.8953))));',
@@ -186433,12 +186463,12 @@ module.exports = [
     '    #ifndef NORMAL_MAP',
     '        vec4 color = mix(uColorStart, uColorEnd, value);',
     '        color.rgb *= color.a;',
-    '        gl_FragColor = color;',
+    '        fragColorOutput = color;',
     '    #else',
     '        float dx = dFdx(value) * uNormalScale;',
     '        float dy = dFdy(value) * uNormalScale;',
     '        vec3 normal = vec3(dx, dy, 1.0 - sqrt(dx * dx + dy * dy)) * 0.5 + 0.5;',
-    '        gl_FragColor = vec4(normal, 1.0);',
+    '        fragColorOutput = vec4(normal, 1.0);',
     '    #endif',
     '}',
 ].join('\n');
@@ -186450,6 +186480,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#version 100',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(fragmentMode)',
@@ -186460,6 +186491,7 @@ module.exports = [
     '#else',
     'precision mediump float;',
     '#endif',
+    'out vec4 fragColorOutput;',
     'uniform vec4 uSeedX;',
     'uniform vec4 uSeedY;',
     'uniform vec4 uSeedZ;',
@@ -186472,7 +186504,7 @@ module.exports = [
     'uniform float uNormalScale;',
     'uniform vec4 uColorStart;',
     'uniform vec4 uColorEnd;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'float trig(vec4 p)',
     '{',
     '    return fract(43757.5453*sin(dot(p, vec4(12.9898,78.233,9441.8953,61.99))));',
@@ -186582,12 +186614,12 @@ module.exports = [
     '    #ifndef NORMAL_MAP',
     '        vec4 color = mix(uColorStart, uColorEnd, value);',
     '        color.rgb *= color.a;',
-    '        gl_FragColor = color;',
+    '        fragColorOutput = color;',
     '    #else',
     '        float dx = dFdx(value) * uNormalScale;',
     '        float dy = dFdy(value) * uNormalScale;',
     '        vec3 normal = vec3(dx, dy, 1.0 - sqrt(dx * dx + dy * dy)) * 0.5 + 0.5;',
-    '        gl_FragColor = vec4(normal, 1.0);',
+    '        fragColorOutput = vec4(normal, 1.0);',
     '    #endif',
     '}',
 ].join('\n');
@@ -186686,7 +186718,6 @@ module.exports = [
 (module) {
 
 module.exports = [
-    '#extension GL_OES_standard_derivatives : enable',
     '#define BAND_TREE_DEPTH 0.0',
     'uniform sampler2D uRampTexture;',
     'uniform vec2 uRampResolution;',
@@ -186715,8 +186746,8 @@ module.exports = [
     '{',
     '    vec2 rampStep = 1.0 / uRampResolution;',
     '    vec2 c = rampStep / 2.0;',
-    '    float start = decodeNumberSample(texture2D(uRampTexture, c));',
-    '    float end = decodeNumberSample(texture2D(uRampTexture, vec2(1.0, 0.0) * rampStep + c));',
+    '    float start = decodeNumberSample(texture(uRampTexture, c));',
+    '    float end = decodeNumberSample(texture(uRampTexture, vec2(1.0, 0.0) * rampStep + c));',
     '    float TREE_OFFSET = 2.0; // Beginning of tree block.',
     '    float index = 0.0;',
     '    float x, y;',
@@ -186724,7 +186755,7 @@ module.exports = [
     '    {',
     '        x = mod(index + TREE_OFFSET, uRampResolution.x);',
     '        y = floor(x / uRampResolution.x);',
-    '        float pivot = decodeNumberSample(texture2D(uRampTexture, vec2(x, y) * rampStep + c));',
+    '        float pivot = decodeNumberSample(texture(uRampTexture, vec2(x, y) * rampStep + c));',
     '        if (progress > pivot)',
     '        {',
     '            start = pivot;',
@@ -186740,13 +186771,13 @@ module.exports = [
     '    float bandIndex = bandNumber * 3.0 + uRampBandStart;',
     '    x =  mod(bandIndex, uRampResolution.x);',
     '    y = floor(bandIndex / uRampResolution.x);',
-    '    vec4 colorStart = texture2D(uRampTexture, vec2(x, y) * rampStep + c);',
+    '    vec4 colorStart = texture(uRampTexture, vec2(x, y) * rampStep + c);',
     '    x =  mod(bandIndex + 1.0, uRampResolution.x);',
     '    y = floor(bandIndex / uRampResolution.x);',
-    '    vec4 colorEnd = texture2D(uRampTexture, vec2(x, y) * rampStep + c);',
+    '    vec4 colorEnd = texture(uRampTexture, vec2(x, y) * rampStep + c);',
     '    x =  mod(bandIndex + 2.0, uRampResolution.x);',
     '    y = floor(bandIndex / uRampResolution.x);',
-    '    float bandData = decodeNumberSample(texture2D(uRampTexture, vec2(x, y) * rampStep + c));',
+    '    float bandData = decodeNumberSample(texture(uRampTexture, vec2(x, y) * rampStep + c));',
     '    int colorSpace = int(floor(bandData / 255.0));',
     '    int interpolation = int(floor(bandData)) - colorSpace * 255;',
     '    return Band(colorStart, colorEnd, start, end, colorSpace, interpolation, fract(bandData) * 2.0);',

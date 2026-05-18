@@ -1,5 +1,4 @@
 // RAMP snippet
-#extension GL_OES_standard_derivatives : enable
 #define BAND_TREE_DEPTH 0.0
 
 uniform sampler2D uRampTexture;
@@ -32,8 +31,8 @@ Band getBand(float progress)
 {
     vec2 rampStep = 1.0 / uRampResolution;
     vec2 c = rampStep / 2.0;
-    float start = decodeNumberSample(texture2D(uRampTexture, c));
-    float end = decodeNumberSample(texture2D(uRampTexture, vec2(1.0, 0.0) * rampStep + c));
+    float start = decodeNumberSample(texture(uRampTexture, c));
+    float end = decodeNumberSample(texture(uRampTexture, vec2(1.0, 0.0) * rampStep + c));
 
     float TREE_OFFSET = 2.0; // Beginning of tree block.
     float index = 0.0;
@@ -44,7 +43,7 @@ Band getBand(float progress)
         x = mod(index + TREE_OFFSET, uRampResolution.x);
         y = floor(x / uRampResolution.x);
 
-        float pivot = decodeNumberSample(texture2D(uRampTexture, vec2(x, y) * rampStep + c));
+        float pivot = decodeNumberSample(texture(uRampTexture, vec2(x, y) * rampStep + c));
 
         // Move to next tree level and narrow the band.
         // Pivot rounds down, so we don't access undefined branches.
@@ -69,17 +68,17 @@ Band getBand(float progress)
     // Get start color.
     x =  mod(bandIndex, uRampResolution.x);
     y = floor(bandIndex / uRampResolution.x);
-    vec4 colorStart = texture2D(uRampTexture, vec2(x, y) * rampStep + c);
+    vec4 colorStart = texture(uRampTexture, vec2(x, y) * rampStep + c);
 
     // Get end color.
     x =  mod(bandIndex + 1.0, uRampResolution.x);
     y = floor(bandIndex / uRampResolution.x);
-    vec4 colorEnd = texture2D(uRampTexture, vec2(x, y) * rampStep + c);
+    vec4 colorEnd = texture(uRampTexture, vec2(x, y) * rampStep + c);
 
     // Get additional data.
     x =  mod(bandIndex + 2.0, uRampResolution.x);
     y = floor(bandIndex / uRampResolution.x);
-    float bandData = decodeNumberSample(texture2D(uRampTexture, vec2(x, y) * rampStep + c));
+    float bandData = decodeNumberSample(texture(uRampTexture, vec2(x, y) * rampStep + c));
     int colorSpace = int(floor(bandData / 255.0));
     int interpolation = int(floor(bandData)) - colorSpace * 255;
 

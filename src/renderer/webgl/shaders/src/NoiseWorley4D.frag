@@ -1,4 +1,6 @@
 // NOISE_WORLEY_4D
+#version 300 es
+
 #version 100
 #pragma phaserTemplate(shaderName)
 
@@ -11,6 +13,8 @@ precision highp float;
 #else
 precision mediump float;
 #endif
+
+out vec4 fragColorOutput;
 
 uniform vec4 uSeedX;
 uniform vec4 uSeedY;
@@ -25,7 +29,7 @@ uniform float uNormalScale;
 uniform vec4 uColorStart;
 uniform vec4 uColorEnd;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 float trig(vec4 p)
 {
@@ -153,11 +157,11 @@ void main ()
     #ifndef NORMAL_MAP
         vec4 color = mix(uColorStart, uColorEnd, value);
         color.rgb *= color.a;
-        gl_FragColor = color;
+        fragColorOutput = color;
     #else
         float dx = dFdx(value) * uNormalScale;
         float dy = dFdy(value) * uNormalScale;
         vec3 normal = vec3(dx, dy, 1.0 - sqrt(dx * dx + dy * dy)) * 0.5 + 0.5;
-        gl_FragColor = vec4(normal, 1.0);
+        fragColorOutput = vec4(normal, 1.0);
     #endif
 }

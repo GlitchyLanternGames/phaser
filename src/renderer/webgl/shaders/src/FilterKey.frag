@@ -1,17 +1,21 @@
 // KEY_FS
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 uniform vec4 uColor;
 uniform vec4 uIsolateThresholdFeather;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 void main()
 {
-    vec4 color = texture2D(uMainSampler, outTexCoord);
+    vec4 color = texture(uMainSampler, outTexCoord);
     vec3 unpremultipliedColor = color.rgb / color.a;
 
     float isolate = uIsolateThresholdFeather.x;
@@ -33,5 +37,5 @@ void main()
 
     match = mix(1.0, match, uColor.a);
 
-    gl_FragColor = color * match;
+    fragColorOutput = color * match;
 }

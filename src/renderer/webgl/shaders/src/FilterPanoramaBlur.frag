@@ -1,13 +1,17 @@
 // PANORAMA_BLUR_FS
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 uniform float uRadius;
 uniform float uPower;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 #define PI 3.14159265358979323846
 
@@ -51,7 +55,7 @@ void main()
             {
                 continue;
             }
-            vec3 color = texture2D(uMainSampler, uv).rgb;
+            vec3 color = texture(uMainSampler, uv).rgb;
 
             // Reduce contribution of colors with low power.
             color *= pow(length(color), uPower);
@@ -61,5 +65,5 @@ void main()
         }
     }
 
-    gl_FragColor = vec4(acc / div, 1.0);
+    fragColorOutput = vec4(acc / div, 1.0);
 }

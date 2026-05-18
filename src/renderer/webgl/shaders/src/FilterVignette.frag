@@ -1,8 +1,12 @@
 // VIGNETTE
 
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 uniform float uRadius;
@@ -11,7 +15,7 @@ uniform vec2 uPosition;
 uniform vec4 uColor;
 uniform int uBlendMode;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 void main ()
 {
@@ -27,7 +31,7 @@ void main ()
     }
     vec4 color = uColor;
 
-    vec4 texture = texture2D(uMainSampler, outTexCoord);
+    vec4 texture = texture(uMainSampler, outTexCoord);
 
     // Blend modes.
     if (uBlendMode == 1)
@@ -46,5 +50,5 @@ void main ()
         color.rgb = 1.0 - ((1.0 - texture.rgb) * (1.0 - color.rgb));
     }
 
-    gl_FragColor = mix(texture, color, vignette);
+    fragColorOutput = mix(texture, color, vignette);
 }

@@ -1,4 +1,6 @@
 // NOISE_SIMPLEX_3D
+#version 300 es
+
 #version 100
 #pragma phaserTemplate(shaderName)
 
@@ -19,6 +21,8 @@ precision highp float;
 precision mediump float;
 #endif
 
+out vec4 fragColorOutput;
+
 uniform vec2 uCells;
 uniform vec2 uPeriod;
 uniform vec2 uOffset;
@@ -38,7 +42,7 @@ uniform float uValueAdd;
 uniform float uValuePower;
 uniform vec2 uSeed;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 // psrdnoise2.glsl, version 2021-12-02
 // Copyright (c) 2021 Stefan Gustavson and Ian McEwan
@@ -148,11 +152,11 @@ void main ()
     #ifndef NORMAL_MAP
     vec4 color = mix(uColorStart, uColorEnd, value);
     color.rgb *= color.a;
-    gl_FragColor = color;
+    fragColorOutput = color;
     #else
     float dx = dFdx(value) * uNormalScale;
     float dy = dFdy(value) * uNormalScale;
     vec3 normal = vec3(dx, dy, 1.0 - sqrt(dx * dx + dy * dy)) * 0.5 + 0.5;
-    gl_FragColor = vec4(normal, 1.0);
+    fragColorOutput = vec4(normal, 1.0);
     #endif
 }

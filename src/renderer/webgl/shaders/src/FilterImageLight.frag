@@ -1,7 +1,11 @@
 // IMAGELIGHT_FS
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 uniform sampler2D uEnvSampler;
@@ -11,14 +15,14 @@ uniform float uModelRotation;
 uniform float uBulge;
 uniform vec3 uColorFactor;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 #define PI 3.14159265358979323846
 
 void main()
 {
-    vec4 color = texture2D(uMainSampler, outTexCoord);
-    vec3 normal = texture2D(uNormSampler, outTexCoord).rgb;
+    vec4 color = texture(uMainSampler, outTexCoord);
+    vec3 normal = texture(uNormSampler, outTexCoord).rgb;
 
     // Rotate the normal by the model rotation.
     vec3 normalN = normal * 2.0 - 1.0;
@@ -64,9 +68,9 @@ void main()
         uv.x += 0.5;
     }
 
-    vec3 environment = texture2D(uEnvSampler, uv).rgb;
+    vec3 environment = texture(uEnvSampler, uv).rgb;
 
-    // gl_FragColor = color;
-    // gl_FragColor = vec4(normal, 1.0);
-    gl_FragColor = vec4(environment * color.rgb * uColorFactor, color.a);
+    // fragColorOutput = color;
+    // fragColorOutput = vec4(normal, 1.0);
+    fragColorOutput = vec4(environment * color.rgb * uColorFactor, color.a);
 }

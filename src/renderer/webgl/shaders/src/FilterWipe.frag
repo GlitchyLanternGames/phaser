@@ -1,14 +1,18 @@
 // WIPE
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 uniform sampler2D uMainSampler2;
 uniform vec4 uProgress_WipeWidth_Direction_Axis;
 uniform float uReveal;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 void main ()
 {
@@ -17,13 +21,13 @@ void main ()
 
     if (uReveal == 0.0)
     {
-        color0 = texture2D(uMainSampler, outTexCoord);
-        color1 = texture2D(uMainSampler2, outTexCoord);
+        color0 = texture(uMainSampler, outTexCoord);
+        color1 = texture(uMainSampler2, outTexCoord);
     }
     else
     {
-        color0 = texture2D(uMainSampler2, outTexCoord);
-        color1 = texture2D(uMainSampler, outTexCoord);
+        color0 = texture(uMainSampler2, outTexCoord);
+        color1 = texture(uMainSampler, outTexCoord);
     }
 
     float distance = uProgress_WipeWidth_Direction_Axis.x;
@@ -40,5 +44,5 @@ void main ()
 
     float value = smoothstep(distance - width, distance + width, abs(direction - axis) + adjust);
 
-    gl_FragColor = mix(color1, color0, value);
+    fragColorOutput = mix(color1, color0, value);
 }

@@ -1,9 +1,13 @@
 // GRADIENT_MAP
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision highp float;
 
 #pragma phaserTemplate(fragmentHeader)
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 uniform vec4 uColor;
@@ -11,11 +15,11 @@ uniform vec4 uColorFactor;
 uniform bool uUnpremultiply;
 uniform float uAlpha;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 void main ()
 {
-    vec4 sample = texture2D(uMainSampler, outTexCoord);
+    vec4 sample = texture(uMainSampler, outTexCoord);
     if (uUnpremultiply)
     {
         sample.rgb /= sample.a;
@@ -31,5 +35,5 @@ void main ()
 
     rampColor.rgb *= rampColor.a;
 
-    gl_FragColor = mix(sample, rampColor * sample.a, uAlpha);
+    fragColorOutput = mix(sample, rampColor * sample.a, uAlpha);
 }

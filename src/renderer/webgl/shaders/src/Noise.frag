@@ -1,4 +1,6 @@
 // NOISE_WORLEY_2D
+#version 300 es
+
 #version 100
 #pragma phaserTemplate(shaderName)
 
@@ -8,13 +10,15 @@ precision highp float;
 precision mediump float;
 #endif
 
+out vec4 fragColorOutput;
+
 uniform vec2 uOffset;
 uniform vec4 uColorStart;
 uniform vec4 uColorEnd;
 uniform float uPower;
 uniform int uMode;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 float trig(vec2 p)
 {
@@ -28,7 +32,7 @@ void main ()
     {
         vec4 color = mix(uColorStart, uColorEnd, value);
         color.rgb *= color.a;
-        gl_FragColor = color;
+        fragColorOutput = color;
     }
     else if (uMode == 1)
     {
@@ -38,7 +42,7 @@ void main ()
         vec4 color = vec4(valueR, valueG, valueB, 1.);
         color *= mix(uColorStart, uColorEnd, value);
         color.rgb *= color.a;
-        gl_FragColor = color;
+        fragColorOutput = color;
     }
     else if (uMode == 2)
     {
@@ -51,6 +55,6 @@ void main ()
             sqrt(1. - x * x - y * y),
             1.0
         );
-        gl_FragColor = color * 0.5 + 0.5;
+        fragColorOutput = color * 0.5 + 0.5;
     }
 }

@@ -1,4 +1,6 @@
 // GRADIENT
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision highp float;
@@ -7,13 +9,15 @@ precision highp float;
 
 #define PI 3.14159265358979323846
 
+out vec4 fragColorOutput;
+
 uniform int uRepeatMode;
 uniform float uOffset;
 uniform int uShapeMode;
 uniform vec2 uShape;
 uniform vec2 uStart;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 float linear()
 {
@@ -105,5 +109,5 @@ void main()
     // Premultiply.
     bandCol.rgb *= bandCol.a;
 
-    gl_FragColor = bandCol;
+    fragColorOutput = bandCol;
 }

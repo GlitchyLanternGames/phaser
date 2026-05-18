@@ -1,7 +1,11 @@
 // QUANTIZE
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision highp float;
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 uniform vec4 uSteps;
@@ -10,7 +14,7 @@ uniform vec4 uOffset;
 uniform int uMode;
 uniform bool uDither;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 vec4 rgbaToHsva(vec4 rgba)
 {
@@ -69,7 +73,7 @@ vec4 ditherIGN(vec4 value)
 
 void main ()
 {
-    vec4 sample = texture2D(uMainSampler, outTexCoord);
+    vec4 sample = texture(uMainSampler, outTexCoord);
 
     if (uMode == 1)
     {
@@ -110,5 +114,5 @@ void main ()
         sample = hsvaToRgba(clamp(sample, 0.0, 1.0));
     }
 
-    gl_FragColor = sample;
+    fragColorOutput = sample;
 }

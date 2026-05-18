@@ -1,8 +1,12 @@
 // COMBINE_COLOR_MATRIX
 
+#version 300 es
+
 #pragma phaserTemplate(shaderName)
 
 precision mediump float;
+
+out vec4 fragColorOutput;
 
 uniform sampler2D uMainSampler;
 uniform sampler2D uTransferSampler;
@@ -13,19 +17,19 @@ uniform float uAlphaTransfer;
 uniform vec4 uAdditions;
 uniform vec4 uMultiplications;
 
-varying vec2 outTexCoord;
+in vec2 outTexCoord;
 
 #define S uColorMatrixSelf
 #define T uColorMatrixTransfer
 
 void main ()
 {
-    vec4 self = texture2D(uMainSampler, outTexCoord);
+    vec4 self = texture(uMainSampler, outTexCoord);
 
     if (uAlphaSelf == 0.0)
     {
         // Return just the input.
-        gl_FragColor = self;
+        fragColorOutput = self;
 
         return;
     }
@@ -50,12 +54,12 @@ void main ()
         // Premultiply.
         self.rgb *= self.a;
         resultSelf.rgb *= resultSelf.a;
-        gl_FragColor = mix(self, resultSelf, uAlphaSelf);
+        fragColorOutput = mix(self, resultSelf, uAlphaSelf);
 
         return;
     }
 
-    vec4 tex = texture2D(uTransferSampler, outTexCoord);
+    vec4 tex = texture(uTransferSampler, outTexCoord);
 
     if (tex.a > 0.0)
     {
@@ -78,5 +82,5 @@ void main ()
     resultSelf.rgb *= resultSelf.a;
     combo.rgb *= combo.a;
 
-    gl_FragColor = mix(self, mix(resultSelf, combo, uAlphaTransfer), uAlphaSelf);
+    fragColorOutput = mix(self, mix(resultSelf, combo, uAlphaTransfer), uAlphaSelf);
 }
