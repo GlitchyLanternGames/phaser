@@ -28,7 +28,7 @@ out float outTexDatum;
 out float outTintEffect;
 out vec4 outTint;
 
-#pragma phaserTemplate(outVariables)
+#pragma phaserTemplate(vertexOutVariables)
 
 #pragma phaserTemplate(vertexHeader)
 

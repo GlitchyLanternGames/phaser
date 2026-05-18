@@ -8,8 +8,9 @@ var OutInverseRotation = require('../OutInverseRotation-glsl');
 
 /**
  * Returns a ShaderAdditionConfig for creating an `outInverseRotationMatrix`
- * varying in the vertex shader. This matrix is used during lighting calculations
- * to correctly transform normal vectors into world space, ensuring that
+ * interpolated variable in the vertex shader (consumed as `in` in the
+ * fragment shader). This matrix is used during lighting calculations to
+ * correctly transform normal vectors into world space, ensuring that
  * light direction is applied relative to the game object's orientation.
  *
  * The `rotation` variable must be available in the vertex renderer.
@@ -27,7 +28,8 @@ var MakeOutInverseRotation = function (disable)
         additions: {
             vertexHeader: 'uniform vec4 uCamera;',
             vertexProcess: OutInverseRotation,
-            outVariables: 'varying mat3 outInverseRotationMatrix;'
+            vertexOutVariables: 'out mat3 outInverseRotationMatrix;',
+            fragmentInVariables: 'in mat3 outInverseRotationMatrix;'
         },
         tags: [ 'LIGHTING' ],
         disable: !!disable

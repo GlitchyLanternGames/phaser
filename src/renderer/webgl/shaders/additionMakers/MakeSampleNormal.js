@@ -23,7 +23,7 @@ var MakeSampleNormal = function (disable)
         name: 'SampleNormal',
         additions: {
             defineSamples: 'vec4 normal;',
-            getSamples: 'samples.normal = texture2D(uNormSampler, texCoord);',
+            getSamples: 'samples.normal = texture(uNormSampler, texCoord);',
             mixSamples: 'samples.normal = mix(samples1.normal, samples2.normal, alpha);',
             declareSamples: 'vec3 normal = normalize(samples.normal.rgb * 2.0 - 1.0);'
         },

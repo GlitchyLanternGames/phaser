@@ -11,7 +11,7 @@ module.exports = [
     '#pragma phaserTemplate(fragmentDefine)',
     'out vec4 fragColorOutput;',
     'in vec2 outTexCoord;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(fragmentInVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',

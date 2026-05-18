@@ -12,7 +12,7 @@ module.exports = [
     'in vec4 lightColor;',
     'in float lightRadius;',
     'in float lightAttenuation;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(fragmentInVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',

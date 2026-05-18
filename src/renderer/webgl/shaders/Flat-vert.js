@@ -14,7 +14,7 @@ module.exports = [
     'in vec2 inPosition;',
     'in vec4 inTint;',
     'out vec4 outTint;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(vertexOutVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',
     '{',

@@ -5,7 +5,7 @@
  */
 
 /**
- * Returns a ShaderAdditionConfig that declares `inFrame` as a vertex attribute and passes it to the fragment shader via the `outFrame` varying.
+ * Returns a ShaderAdditionConfig that declares `inFrame` as a vertex input and passes it to the fragment shader as the `outFrame` interpolated variable.
  *
  * @function Phaser.Renderer.WebGL.ShaderAdditionMakers.MakeOutFrame
  * @since 4.0.0
@@ -17,9 +17,10 @@ var MakeOutFrame = function (disable)
     return {
         name: 'OutFrame',
         additions: {
-            vertexHeader: 'attribute vec4 inFrame;',
+            vertexHeader: 'in vec4 inFrame;',
             vertexProcess: 'outFrame = inFrame;',
-            outVariables: 'varying vec4 outFrame;',
+            vertexOutVariables: 'out vec4 outFrame;',
+            fragmentInVariables: 'in vec4 outFrame;'
         },
         disable: !!disable
     };

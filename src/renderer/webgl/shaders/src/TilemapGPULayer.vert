@@ -24,7 +24,7 @@ in vec2 inTexCoord;
 out vec2 outTexCoord;
 out vec2 outTileStride;
 
-#pragma phaserTemplate(outVariables)
+#pragma phaserTemplate(vertexOutVariables)
 
 #pragma phaserTemplate(vertexHeader)
 

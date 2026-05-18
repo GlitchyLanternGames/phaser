@@ -15,7 +15,7 @@ module.exports = [
     'out vec4 lightColor;',
     'out float lightRadius;',
     'out float lightAttenuation;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(vertexOutVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',
     '{',

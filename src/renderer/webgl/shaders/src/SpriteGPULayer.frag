@@ -22,7 +22,7 @@ in vec2 outTexCoord;
 in float outTintEffect;
 in vec4 outTint;
 
-#pragma phaserTemplate(outVariables)
+#pragma phaserTemplate(fragmentInVariables)
 
 #pragma phaserTemplate(fragmentHeader)
 

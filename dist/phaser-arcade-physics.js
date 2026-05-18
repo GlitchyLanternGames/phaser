@@ -185543,7 +185543,7 @@ module.exports = [
     'out vec4 fragColorOutput;',
     'uniform vec2 uResolution;',
     'in vec4 outTint;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(fragmentInVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
@@ -185575,7 +185575,7 @@ module.exports = [
     'in vec2 inPosition;',
     'in vec4 inTint;',
     'out vec4 outTint;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(vertexOutVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',
     '{',
@@ -185768,7 +185768,7 @@ module.exports = [
     'in float outTexDatum;',
     'in float outTintEffect;',
     'in vec4 outTint;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(fragmentInVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
@@ -185805,7 +185805,7 @@ module.exports = [
     'out float outTexDatum;',
     'out float outTintEffect;',
     'out vec4 outTint;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(vertexOutVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',
     '{',
@@ -186655,7 +186655,7 @@ module.exports = [
     'in vec4 lightColor;',
     'in float lightRadius;',
     'in float lightAttenuation;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(fragmentInVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
@@ -186692,7 +186692,7 @@ module.exports = [
     'out vec4 lightColor;',
     'out float lightRadius;',
     'out float lightAttenuation;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(vertexOutVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',
     '{',
@@ -186926,7 +186926,7 @@ module.exports = [
     '#pragma phaserTemplate(fragmentDefine)',
     'out vec4 fragColorOutput;',
     'in vec2 outTexCoord;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(fragmentInVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
@@ -186957,7 +186957,7 @@ module.exports = [
     'in vec2 inPosition;',
     'in vec2 inTexCoord;',
     'out vec2 outTexCoord;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(vertexOutVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',
     '{',
@@ -187011,7 +187011,7 @@ module.exports = [
     'in vec2 outTexCoord;',
     'in float outTintEffect;',
     'in vec4 outTint;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(fragmentInVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
@@ -187066,7 +187066,7 @@ module.exports = [
     'out vec2 outTexCoord;',
     'out float outTintEffect;',
     'out vec4 outTint;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(vertexOutVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'const float PI = 3.14159265359;',
     'const float HALF_PI = PI / 2.0;',
@@ -187620,7 +187620,7 @@ module.exports = [
     '#endif',
     'in vec2 outTexCoord;',
     'in vec2 outTileStride;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(fragmentInVariables)',
     'vec2 getTexRes ()',
     '{',
     '    return uMainResolution;',
@@ -187854,7 +187854,7 @@ module.exports = [
     'in vec2 inTexCoord;',
     'out vec2 outTexCoord;',
     'out vec2 outTileStride;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(vertexOutVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',
     '{',
@@ -188308,7 +188308,7 @@ module.exports = MakeGetTexture;
  */
 
 /**
- * Returns a ShaderAdditionConfig that declares `inFrame` as a vertex attribute and passes it to the fragment shader via the `outFrame` varying.
+ * Returns a ShaderAdditionConfig that declares `inFrame` as a vertex input and passes it to the fragment shader as the `outFrame` interpolated variable.
  *
  * @function Phaser.Renderer.WebGL.ShaderAdditionMakers.MakeOutFrame
  * @since 4.0.0
@@ -188320,9 +188320,10 @@ var MakeOutFrame = function (disable)
     return {
         name: 'OutFrame',
         additions: {
-            vertexHeader: 'attribute vec4 inFrame;',
+            vertexHeader: 'in vec4 inFrame;',
             vertexProcess: 'outFrame = inFrame;',
-            outVariables: 'varying vec4 outFrame;',
+            vertexOutVariables: 'out vec4 outFrame;',
+            fragmentInVariables: 'in vec4 outFrame;'
         },
         disable: !!disable
     };
@@ -188346,8 +188347,9 @@ var OutInverseRotation = __webpack_require__(62807);
 
 /**
  * Returns a ShaderAdditionConfig for creating an `outInverseRotationMatrix`
- * varying in the vertex shader. This matrix is used during lighting calculations
- * to correctly transform normal vectors into world space, ensuring that
+ * interpolated variable in the vertex shader (consumed as `in` in the
+ * fragment shader). This matrix is used during lighting calculations to
+ * correctly transform normal vectors into world space, ensuring that
  * light direction is applied relative to the game object's orientation.
  *
  * The `rotation` variable must be available in the vertex renderer.
@@ -188365,7 +188367,8 @@ var MakeOutInverseRotation = function (disable)
         additions: {
             vertexHeader: 'uniform vec4 uCamera;',
             vertexProcess: OutInverseRotation,
-            outVariables: 'varying mat3 outInverseRotationMatrix;'
+            vertexOutVariables: 'out mat3 outInverseRotationMatrix;',
+            fragmentInVariables: 'in mat3 outInverseRotationMatrix;'
         },
         tags: [ 'LIGHTING' ],
         disable: !!disable
@@ -188443,7 +188446,7 @@ var MakeSampleNormal = function (disable)
         name: 'SampleNormal',
         additions: {
             defineSamples: 'vec4 normal;',
-            getSamples: 'samples.normal = texture2D(uNormSampler, texCoord);',
+            getSamples: 'samples.normal = texture(uNormSampler, texCoord);',
             mixSamples: 'samples.normal = mix(samples1.normal, samples2.normal, alpha);',
             declareSamples: 'vec3 normal = normalize(samples.normal.rgb * 2.0 - 1.0);'
         },

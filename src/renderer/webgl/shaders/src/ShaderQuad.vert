@@ -25,7 +25,7 @@ in vec2 inTexCoord;
 // 0,1 is the top-left, 1,0 is the bottom right.
 out vec2 outTexCoord;
 
-#pragma phaserTemplate(outVariables)
+#pragma phaserTemplate(vertexOutVariables)
 
 #pragma phaserTemplate(vertexHeader)
 

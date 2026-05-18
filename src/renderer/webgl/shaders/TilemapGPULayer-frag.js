@@ -27,7 +27,7 @@ module.exports = [
     '#endif',
     'in vec2 outTexCoord;',
     'in vec2 outTileStride;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(fragmentInVariables)',
     'vec2 getTexRes ()',
     '{',
     '    return uMainResolution;',

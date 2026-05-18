@@ -37,7 +37,7 @@ uniform vec2 uAnimResolution;
 in vec2 outTexCoord;
 in vec2 outTileStride;
 
-#pragma phaserTemplate(outVariables)
+#pragma phaserTemplate(fragmentInVariables)
 
 // Utility to support smooth pixel art.
 vec2 getTexRes ()

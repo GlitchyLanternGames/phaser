@@ -38,7 +38,7 @@ module.exports = [
     'out vec2 outTexCoord;',
     'out float outTintEffect;',
     'out vec4 outTint;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(vertexOutVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'const float PI = 3.14159265359;',
     'const float HALF_PI = PI / 2.0;',

@@ -15,7 +15,7 @@ module.exports = [
     'in float outTexDatum;',
     'in float outTintEffect;',
     'in vec4 outTint;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(fragmentInVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',

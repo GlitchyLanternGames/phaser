@@ -13,7 +13,7 @@ module.exports = [
     'in vec2 inPosition;',
     'in vec2 inTexCoord;',
     'out vec2 outTexCoord;',
-    '#pragma phaserTemplate(outVariables)',
+    '#pragma phaserTemplate(vertexOutVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',
     '{',

@@ -20,7 +20,7 @@ uniform vec2 uResolution;
 
 in vec4 outTint;
 
-#pragma phaserTemplate(outVariables)
+#pragma phaserTemplate(fragmentInVariables)
 
 #pragma phaserTemplate(fragmentHeader)
 
