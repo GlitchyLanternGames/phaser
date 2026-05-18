@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -75,7 +75,10 @@ var Threshold = new Class({
         this.edge2 = [ 0.5, 0.5, 0.5, 0.5 ];
 
         /**
-         * Whether each channel is inverted.
+         * Whether each channel is inverted. When a channel is inverted, its
+         * output is flipped so that values that would normally output 0 instead
+         * output 1, and vice versa. This applies per-channel to the RGBA
+         * components of the threshold result.
          *
          * @name Phaser.Filters.Threshold#invert
          * @type {boolean[]}
@@ -145,8 +148,11 @@ var Threshold = new Class({
     },
 
     /**
-     * Set the invert state of the threshold.
-     * If invert is not provided, it will be set to false.
+     * Sets the invert state for each channel of the threshold filter.
+     * When a channel is inverted, its output is flipped: pixels that would
+     * output 0 instead output 1, and vice versa. This can be used to create
+     * negative or reversed threshold effects per channel.
+     * If `invert` is not provided, all channels default to `false`.
      *
      * @method Phaser.Filters.Threshold#setInvert
      * @since 4.0.0

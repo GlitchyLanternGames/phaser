@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -152,7 +152,7 @@ var Blitter = new Class({
      * @param {number} y - The y position of the Bob. Bob coordinate are relative to the position of the Blitter object.
      * @param {(string|number|Phaser.Textures.Frame)} [frame] - The Frame the Bob will use. It _must_ be part of the Texture the parent Blitter object is using.
      * @param {boolean} [visible=true] - Should the created Bob render or not?
-     * @param {number} [index] - The position in the Blitters Display List to add the new Bob at. Defaults to the top of the list.
+     * @param {number} [index] - The position in the Blitter's Display List to add the new Bob at. Defaults to the top of the list.
      *
      * @return {Phaser.GameObjects.Bob} The newly created Bob object.
      */
@@ -283,7 +283,7 @@ var Blitter = new Class({
     },
 
     /**
-     * Removes all Bobs from the children List and clears the dirty flag.
+     * Removes all Bobs from the children List and marks the Blitter as dirty.
      *
      * @method Phaser.GameObjects.Blitter#clear
      * @since 3.0.0

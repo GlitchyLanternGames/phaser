@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -8,7 +8,11 @@ var Vector2 = require('../../math/Vector2');
 var Length = require('../line/Length');
 
 /**
- * Returns a Vector2 point from around the perimeter of a Triangle.
+ * Returns a point along the perimeter of a Triangle as a Vector2, based on a normalized position value.
+ *
+ * The `position` parameter is a value between 0 and 1, where 0 and 1 both map to the start of
+ * line A (the first vertex). The point is calculated by traversing the triangle's perimeter in
+ * order: line A, then line B, then line C.
  *
  * @function Phaser.Geom.Triangle.GetPoint
  * @since 3.0.0
@@ -16,10 +20,10 @@ var Length = require('../line/Length');
  * @generic {Phaser.Math.Vector2} O - [out,$return]
  *
  * @param {Phaser.Geom.Triangle} triangle - The Triangle to get the point on its perimeter from.
- * @param {number} position - The position along the perimeter of the triangle. A value between 0 and 1.
- * @param {Phaser.Math.Vector2} [out] - An optional Vector2 point to store the value in. If not given a new Vector2 will be created.
+ * @param {number} position - A normalized value between 0 and 1 representing a position along the triangle's perimeter. Both 0 and 1 return the start of line A.
+ * @param {Phaser.Math.Vector2} [out] - An optional Vector2 point to store the result in. If not given, a new Vector2 will be created.
  *
- * @return {Phaser.Math.Vector2} A Vector2 point object containing the given position from the perimeter of the triangle.
+ * @return {Phaser.Math.Vector2} A Vector2 point containing the coordinates of the position on the triangle's perimeter.
  */
 var GetPoint = function (triangle, position, out)
 {

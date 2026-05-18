@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -17,6 +17,10 @@ var Controller = require('./Controller');
  * characters, or UI elements. This effect is used to emphasize importance, enhance visual appeal,
  * or convey a sense of energy, magic, or otherworldly presence. The effect can also be set on
  * the inside of edges. The color and strength of the glow can be modified.
+ *
+ * This effect samples across an area. To avoid missing data at the edges,
+ * use `controller.setPaddingOverride(null)` to automatically pad game objects,
+ * or `camera.getPaddingWrapper(x)` to enlarge a camera.
  *
  * A Glow effect is added to a Camera via the FilterList component:
  *
@@ -94,7 +98,7 @@ var Glow = new Class({
          * If `true` only the glow is drawn, not the texture itself.
          *
          * @name Phaser.Filters.Glow#knockout
-         * @type {number}
+         * @type {boolean}
          * @since 4.0.0
          * @default false
          */
@@ -132,7 +136,10 @@ var Glow = new Class({
         this._distance = Math.max(Math.round(distance), 1);
 
         /**
-         * A 4 element array of gl color values.
+         * The internal RGBA color of the glow, stored as four normalized
+         * floating-point values (red, green, blue, alpha) in the range 0 to 1,
+         * for direct use by the WebGL renderer. To set the glow color, use the
+         * `color` property instead.
          *
          * @name Phaser.Filters.Glow#glcolor
          * @type {number[]}
@@ -147,7 +154,10 @@ var Glow = new Class({
     },
 
     /**
-     * The color of the glow as a number value.
+     * The color of the glow effect, expressed as a hex color value in the
+     * format 0xRRGGBB. Getting this value converts it from the internal
+     * normalized `glcolor` array. Setting it updates `glcolor` for use by
+     * the WebGL renderer.
      *
      * @name Phaser.Filters.Glow#color
      * @type {number}
@@ -213,6 +223,16 @@ var Glow = new Class({
         }
     },
 
+    /**
+     * Returns the amount of extra padding, in pixels, that this filter requires when rendering.
+     * The padding accounts for the glow effect extending beyond the original bounds
+     * of the Camera's rendered output.
+     *
+     * @method Phaser.Filters.Glow#getPadding
+     * @since 4.0.0
+     *
+     * @return {Phaser.Geom.Rectangle} The padding Rectangle.
+     */
     getPadding: function ()
     {
         var override = this.paddingOverride;

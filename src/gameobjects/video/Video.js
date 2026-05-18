@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -87,8 +87,6 @@ var VideoRender = require('./VideoRender');
  *
  * You can set the `noAudio` parameter to `true` even if the video does contain audio. It will still allow the video
  * to play immediately, but the audio will not start.
- *
- * Note that due to a bug in IE11 you cannot play a video texture to a Sprite in WebGL. For IE11 force Canvas mode.
  *
  * More details about video playback and the supported media formats can be found on MDN:
  *
@@ -455,7 +453,7 @@ var Video = new Class({
         this._playingMarker = false;
 
         /**
-         * The previous frames mediaTime.
+         * The previous frame's mediaTime.
          *
          * @name Phaser.GameObjects.Video#_lastUpdate
          * @type {number}
@@ -568,13 +566,27 @@ var Video = new Class({
         }
     },
 
-    //  Overrides Game Object method
+    /**
+     * Adds this Video to the Scene's update list, ensuring it receives
+     * `preUpdate` calls each game step. This is called automatically by
+     * the Scene when this Game Object is added to it.
+     *
+     * @method Phaser.GameObjects.Video#addedToScene
+     * @since 3.20.0
+     */
     addedToScene: function ()
     {
         this.scene.sys.updateList.add(this);
     },
 
-    //  Overrides Game Object method
+    /**
+     * Removes this Video from the Scene's update list, stopping it from
+     * receiving `preUpdate` calls. This is called automatically by the
+     * Scene when this Game Object is removed from it.
+     *
+     * @method Phaser.GameObjects.Video#removedFromScene
+     * @since 3.20.0
+     */
     removedFromScene: function ()
     {
         this.scene.sys.updateList.remove(this);
@@ -1311,7 +1323,7 @@ var Video = new Class({
      * @param {number} [width] - The width of the resulting CanvasTexture.
      * @param {number} [height] - The height of the resulting CanvasTexture.
      *
-     * @return {Phaser.Textures.CanvasTexture}
+     * @return {Phaser.Textures.CanvasTexture} The CanvasTexture the snapshot was drawn to.
      */
     snapshot: function (width, height)
     {
@@ -1338,7 +1350,7 @@ var Video = new Class({
      * @param {number} [destWidth] - The destination width of the grab, allowing you to resize it.
      * @param {number} [destHeight] - The destination height of the grab, allowing you to resize it.
      *
-     * @return {Phaser.Textures.CanvasTexture}
+     * @return {Phaser.Textures.CanvasTexture} The CanvasTexture the snapshot was drawn to.
      */
     snapshotArea: function (x, y, srcWidth, srcHeight, destWidth, destHeight)
     {
@@ -1619,7 +1631,7 @@ var Video = new Class({
      * @fires Phaser.GameObjects.Events#VIDEO_STALLED
      * @since 3.60.0
      *
-     * @param {Event} event - The error Event.
+     * @param {Event} event - The stall Event.
      */
     stalledHandler: function (event)
     {

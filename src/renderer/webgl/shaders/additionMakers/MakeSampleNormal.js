@@ -1,15 +1,19 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
 /**
- * Return a ShaderAdditionConfig for sampling a normal map
- * in the context of a TilemapGPULayer shader.
- * This shader uses a `Samples` object to collate texture samples.
+ * Returns a `ShaderAdditionConfig` that adds normal map sampling to a
+ * TilemapGPULayer shader. The addition samples the normal map texture via
+ * `uNormSampler`, decodes the stored RGB values from the [0, 1] range back
+ * into a normalized direction vector in the [-1, 1] range, and exposes the
+ * result through a `Samples` object so that other shader additions (such as
+ * lighting calculations) can consume it. The addition is tagged `LIGHTING`,
+ * meaning it will only be active when a lighting pass is in use.
  *
- * @function Phaser.Renderer.WebGL.Shaders.MakeSampleNormal
+ * @function Phaser.Renderer.WebGL.ShaderAdditionMakers.MakeSampleNormal
  * @since 4.0.0
  * @param {boolean} [disable=false] - Whether to disable the shader addition on creation.
  */

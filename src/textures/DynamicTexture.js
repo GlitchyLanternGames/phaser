@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -44,6 +44,13 @@ var TransformMatrix = require('../gameobjects/components/TransformMatrix');
  * to be drawn with no aliasing around the edges. This is a technical limitation of WebGL1. To get around it,
  * create your shape as a texture in an art package, then draw that to this texture.
  *
+ * If you activate mipmap support in your game, it will not automatically
+ * be applied to DynamicTextures.
+ * This is because regenerating the mipmap for a texture
+ * costs over 10 microseconds, a big performance loss for a single frame.
+ * If you want to render your DynamicTextures with mipmaps,
+ * you must also activate the render config option `mipmapRegeneration`.
+ *
  * In the event that the WebGL context is lost, this DynamicTexture will
  * lose its contents. Once context is restored (signalled by the `restorewebgl`
  * event), you can choose to redraw the contents of the DynamicTexture.
@@ -57,8 +64,8 @@ var TransformMatrix = require('../gameobjects/components/TransformMatrix');
  *
  * @param {Phaser.Textures.TextureManager} manager - A reference to the Texture Manager this Texture belongs to.
  * @param {string} key - The unique string-based key of this Texture.
- * @param {number} [width=256] - The width of this Dymamic Texture in pixels. Defaults to 256 x 256.
- * @param {number} [height=256] - The height of this Dymamic Texture in pixels. Defaults to 256 x 256.
+ * @param {number} [width=256] - The width of this Dynamic Texture in pixels. Defaults to 256 x 256.
+ * @param {number} [height=256] - The height of this Dynamic Texture in pixels. Defaults to 256 x 256.
  * @param {boolean} [forceEven=true] - Force the given width and height to be rounded to even values. This significantly improves the rendering quality. Set to false if you know you need an odd sized texture.
  */
 var DynamicTexture = new Class({
@@ -180,7 +187,8 @@ var DynamicTexture = new Class({
             width: width,
             height: height,
             camera: this.camera,
-            autoClear: false
+            autoClear: false,
+            enableMipmap: true
         });
 
         if (!isCanvas)
@@ -252,8 +260,7 @@ var DynamicTexture = new Class({
 
             this.camera.setSize(width, height);
 
-            source.width = width;
-            source.height = height;
+            source.updateSize(width, height);
 
             frame.setSize(width, height);
 
@@ -616,10 +623,10 @@ var DynamicTexture = new Class({
      * @method Phaser.Textures.DynamicTexture#clear
      * @since 3.2.0
      *
-     * @param {number} [x=0] - The left coordinate of the fill rectangle.
-     * @param {number} [y=0] - The top coordinate of the fill rectangle.
-     * @param {number} [width=this.width] - The width of the fill rectangle.
-     * @param {number} [height=this.height] - The height of the fill rectangle.
+     * @param {number} [x=0] - The left coordinate of the area to clear.
+     * @param {number} [y=0] - The top coordinate of the area to clear.
+     * @param {number} [width=this.width] - The width of the area to clear.
+     * @param {number} [height=this.height] - The height of the area to clear.
      *
      * @return {this} This Dynamic Texture instance.
      */
@@ -1104,7 +1111,7 @@ var DynamicTexture = new Class({
      * @method Phaser.Textures.DynamicTexture#preserve
      * @since 4.0.0
      * @param {boolean} preserve - Whether to preserve the command buffer after rendering.
-     * @returns {this} This Dynamic Texture instance.
+     * @return {this} This Dynamic Texture instance.
      */
     preserve: function (preserve)
     {
@@ -1123,7 +1130,7 @@ var DynamicTexture = new Class({
      * @method Phaser.Textures.DynamicTexture#callback
      * @since 4.0.0
      * @param {Function} callback - A callback function to run during the render process.
-     * @returns {this} This Dynamic Texture instance.
+     * @return {this} This Dynamic Texture instance.
      */
     callback: function (callback)
     {
@@ -1268,7 +1275,7 @@ var DynamicTexture = new Class({
     },
 
     /**
-     * This is a NOOP method. Bitmap Masks are not supported by the Canvas Renderer.
+     * This is a NOOP method. Dynamic Textures cannot render themselves to the Canvas Renderer directly.
      *
      * @method Phaser.Textures.DynamicTexture#renderCanvas
      * @since 3.60.0

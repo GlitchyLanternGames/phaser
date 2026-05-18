@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -14,6 +14,7 @@ var ParseFromAtlas = require('../ParseFromAtlas');
 var ParseXMLBitmapFont = require('../ParseXMLBitmapFont');
 var Rectangle = require('../../../geom/rectangle/Rectangle');
 var Render = require('./BitmapTextRender');
+var TintModes = require('../../../renderer/TintModes');
 
 /**
  * @classdesc
@@ -525,12 +526,19 @@ var BitmapText = new Class({
      *
      * This is a WebGL only feature and only works with Static Bitmap Text, not Dynamic.
      *
-     * The tint works by taking the pixel color values from the Bitmap Text texture, and then
-     * multiplying it by the color value of the tint. You can provide either one color value,
+     * The tint applies a color to the pixel color values
+     * from the Bitmap Text texture in one of several modes:
+     *
+     * - Phaser.TintModes.MULTIPLY (default)
+     * - Phaser.TintModes.FILL
+     * - Phaser.TintModes.ADD
+     * - Phaser.TintModes.SCREEN
+     * - Phaser.TintModes.OVERLAY
+     * - Phaser.TintModes.HARD_LIGHT
+     *
+     * You can provide either one color value,
      * in which case the whole character will be tinted in that color. Or you can provide a color
      * per corner. The colors are blended together across the extent of the character range.
-     *
-     * To swap this from being an additive tint to a fill based tint, set the `tintFill` parameter to `true`.
      *
      * To modify the tint color once set, call this method again with new color values.
      *
@@ -544,19 +552,19 @@ var BitmapText = new Class({
      *
      * @param {number} [start=0] - The starting character to begin the tint at. If negative, it counts back from the end of the text.
      * @param {number} [length=1] - The number of characters to tint. Remember that spaces count as a character too. Pass -1 to tint all characters from `start` onwards.
-     * @param {boolean} [tintFill=false] - Use a fill-based tint (true), or an additive tint (false)
-     * @param {number} [topLeft=0xffffff] - The tint being applied to the top-left of the character. If not other values are given this value is applied evenly, tinting the whole character.
+     * @param {number} [tintMode=Phaser.TintModes.MULTIPLY] - The tint mode to use.
+     * @param {number} [topLeft=0xffffff] - The tint being applied to the top-left of the character. If no other values are given this value is applied evenly, tinting the whole character.
      * @param {number} [topRight] - The tint being applied to the top-right of the character.
      * @param {number} [bottomLeft] - The tint being applied to the bottom-left of the character.
      * @param {number} [bottomRight] - The tint being applied to the bottom-right of the character.
      *
      * @return {this} This BitmapText Object.
      */
-    setCharacterTint: function (start, length, tintFill, topLeft, topRight, bottomLeft, bottomRight)
+    setCharacterTint: function (start, length, tintMode, topLeft, topRight, bottomLeft, bottomRight)
     {
         if (start === undefined) { start = 0; }
         if (length === undefined) { length = 1; }
-        if (tintFill === undefined) { tintFill = false; }
+        if (tintMode === undefined) { tintMode = TintModes.MULTIPLY; }
         if (topLeft === undefined) { topLeft = -1; }
 
         if (topRight === undefined)
@@ -594,7 +602,7 @@ var BitmapText = new Class({
             }
             else
             {
-                var tintEffect = (tintFill) ? 1 : 0;
+                var tintEffect = tintMode;
 
                 if (color)
                 {
@@ -628,7 +636,7 @@ var BitmapText = new Class({
      * If a string, it will run a string comparison against the text contents, and if matching,
      * it will tint the whole word.
      *
-     * If a number, if till that word, based on its offset within the text contents.
+     * If a number, it will tint that word, based on its index within the words array.
      *
      * The `count` parameter controls how many words are replaced. Pass in -1 to replace them all.
      *
@@ -636,12 +644,19 @@ var BitmapText = new Class({
      *
      * This is a WebGL only feature and only works with Static Bitmap Text, not Dynamic.
      *
-     * The tint works by taking the pixel color values from the Bitmap Text texture, and then
-     * multiplying it by the color value of the tint. You can provide either one color value,
+     * The tint applies a color to the pixel color values
+     * from the Bitmap Text texture in one of several modes:
+     *
+     * - Phaser.TintModes.MULTIPLY (default)
+     * - Phaser.TintModes.FILL
+     * - Phaser.TintModes.ADD
+     * - Phaser.TintModes.SCREEN
+     * - Phaser.TintModes.OVERLAY
+     * - Phaser.TintModes.HARD_LIGHT
+     *
+     * You can provide either one color value,
      * in which case the whole character will be tinted in that color. Or you can provide a color
      * per corner. The colors are blended together across the extent of the character range.
-     *
-     * To swap this from being an additive tint to a fill based tint, set the `tintFill` parameter to `true`.
      *
      * To modify the tint color once set, call this method again with new color values.
      *
@@ -653,15 +668,15 @@ var BitmapText = new Class({
      *
      * @param {(string|number)} word - The word to search for. Either a string, or an index of the word in the words array.
      * @param {number} [count=1] - The number of matching words to tint. Pass -1 to tint all matching words.
-     * @param {boolean} [tintFill=false] - Use a fill-based tint (true), or an additive tint (false)
-     * @param {number} [topLeft=0xffffff] - The tint being applied to the top-left of the word. If not other values are given this value is applied evenly, tinting the whole word.
+     * @param {number} [tintMode=Phaser.TintModes.MULTIPLY] - The tint mode to use.
+     * @param {number} [topLeft=0xffffff] - The tint being applied to the top-left of the word. If no other values are given this value is applied evenly, tinting the whole word.
      * @param {number} [topRight] - The tint being applied to the top-right of the word.
      * @param {number} [bottomLeft] - The tint being applied to the bottom-left of the word.
      * @param {number} [bottomRight] - The tint being applied to the bottom-right of the word.
      *
      * @return {this} This BitmapText Object.
      */
-    setWordTint: function (word, count, tintFill, topLeft, topRight, bottomLeft, bottomRight)
+    setWordTint: function (word, count, tintMode, topLeft, topRight, bottomLeft, bottomRight)
     {
         if (count === undefined) { count = 1; }
 
@@ -679,7 +694,7 @@ var BitmapText = new Class({
 
             if ((wordIsNumber && i === word) || (!wordIsNumber && lineword.word === word))
             {
-                this.setCharacterTint(lineword.i, lineword.word.length, tintFill, topLeft, topRight, bottomLeft, bottomRight);
+                this.setCharacterTint(lineword.i, lineword.word.length, tintMode, topLeft, topRight, bottomLeft, bottomRight);
 
                 total++;
 
@@ -870,6 +885,34 @@ var BitmapText = new Class({
     },
 
     /**
+     * Sets the display size of this BitmapText Game Object.
+     *
+     * Calling this will adjust the scale.
+     *
+     * @method Phaser.GameObjects.BitmapText#setDisplaySize
+     * @since 3.61.0
+     *
+     * @param {number} width - The width of this BitmapText Game Object.
+     * @param {number} height - The height of this BitmapText Game Object.
+     *
+     * @return {this} This Game Object instance.
+     */
+    setDisplaySize: function (displayWidth, displayHeight)
+    {
+        this.setScale(1, 1);
+
+        this.getTextBounds(false);
+
+        var scaleX = displayWidth / this.width;
+
+        var scaleY = displayHeight / this.height;
+
+        this.setScale(scaleX, scaleY);
+
+        return this;
+    },
+
+    /**
      * Controls the alignment of each line of text in this BitmapText object.
      *
      * Only has any effect when this BitmapText contains multiple lines of text, split with carriage-returns.
@@ -1052,7 +1095,7 @@ var BitmapText = new Class({
     },
 
     /**
-     * The height of this Bitmap text.
+     * The height of this Bitmap Text.
      *
      * This property is read-only.
      *
@@ -1086,6 +1129,17 @@ var BitmapText = new Class({
      */
     displayWidth: {
 
+        set: function(value)
+        {
+            this.setScaleX(1);
+
+            this.getTextBounds(false);
+
+            var scale = value / this.width;
+
+            this.setScaleX(scale);
+        },
+
         get: function ()
         {
             return this.width;
@@ -1106,6 +1160,17 @@ var BitmapText = new Class({
      * @since 3.60.0
      */
     displayHeight: {
+
+        set: function(value)
+        {
+            this.setScaleY(1);
+
+            this.getTextBounds(false);
+
+            var scale = value / this.height;
+
+            this.setScaleY(scale);
+        },
 
         get: function ()
         {

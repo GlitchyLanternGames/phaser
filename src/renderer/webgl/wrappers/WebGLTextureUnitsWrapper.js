@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -126,6 +126,11 @@ var WebGLTextureUnitsWrapper = new Class({
         var glTexture = texture ? texture.webGLTexture : null;
         var gl = this.renderer.gl;
         gl.bindTexture(gl.TEXTURE_2D, glTexture);
+
+        if (texture && texture.needsMipmapRegeneration)
+        {
+            texture.generateMipmap();
+        }
     },
 
     /**
@@ -150,6 +155,17 @@ var WebGLTextureUnitsWrapper = new Class({
         }
     },
 
+    /**
+     * Unbinds a specific texture from all texture units it is currently bound to.
+     *
+     * Iterates over all texture units and replaces any binding that matches
+     * the given texture with `null`. This is typically called when a texture
+     * is about to be destroyed, to ensure no unit holds a stale reference.
+     *
+     * @method Phaser.Renderer.WebGL.Wrappers.WebGLTextureUnitsWrapper#unbindTexture
+     * @since 4.0.0
+     * @param {Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper} texture - The texture to unbind from all units.
+     */
     unbindTexture: function (texture)
     {
         for (var i = this.units.length - 1; i >= 0; i--)

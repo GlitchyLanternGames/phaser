@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -9,7 +9,10 @@ var WebGLGlobalParametersFactory = require('../parameters/WebGLGlobalParametersF
 
 /**
  * @classdesc
- * Wrapper for the WebGL global state.
+ * Wrapper for the WebGL global state, including blend mode, texture bindings,
+ * scissor test, stencil test, depth test, and other GL context settings. It
+ * tracks the current state and applies changes efficiently to avoid redundant
+ * WebGL calls.
  *
  * @class WebGLGlobalWrapper
  * @memberof Phaser.Renderer.WebGL.Wrappers
@@ -34,7 +37,7 @@ var WebGLGlobalWrapper = new Class({
         this.renderer = renderer;
 
         /**
-         * The current state of the WebGL global state.
+         * The current WebGL global state parameters tracked by this wrapper.
          *
          * @name Phaser.Renderer.WebGL.Wrappers.WebGLGlobalWrapper#state
          * @type {Phaser.Types.Renderer.WebGL.WebGLGlobalParameters}
@@ -190,7 +193,8 @@ var WebGLGlobalWrapper = new Class({
     },
 
     /**
-     * Updates the vertex array buffer state.
+     * Updates the array buffer (ARRAY_BUFFER) binding state. This binds the
+     * vertex buffer object used to supply vertex attribute data to the GPU.
      *
      * @method Phaser.Renderer.WebGL.Wrappers.WebGLGlobalWrapper#updateBindingsArrayBuffer
      * @since 4.0.0
@@ -282,7 +286,7 @@ var WebGLGlobalWrapper = new Class({
     },
 
     /**
-     * Updates the program state.
+     * Updates the currently bound WebGL shader program by calling `gl.useProgram`.
      *
      * @method Phaser.Renderer.WebGL.Wrappers.WebGLGlobalWrapper#updateBindingsProgram
      * @since 4.0.0
@@ -482,7 +486,8 @@ var WebGLGlobalWrapper = new Class({
     },
 
     /**
-     * Updates the color clear value.
+     * Updates the RGBA color value used to fill the color buffer when
+     * `gl.clear` is called with the color buffer bit.
      *
      * @method Phaser.Renderer.WebGL.Wrappers.WebGLGlobalWrapper#updateColorClearValue
      * @since 4.0.0
@@ -514,7 +519,8 @@ var WebGLGlobalWrapper = new Class({
     },
 
     /**
-     * Updates the color writemask.
+     * Updates the color write mask, which controls which RGBA color components
+     * are written to the color buffer during rendering.
      *
      * @method Phaser.Renderer.WebGL.Wrappers.WebGLGlobalWrapper#updateColorWritemask
      * @since 4.0.0
@@ -727,7 +733,8 @@ var WebGLGlobalWrapper = new Class({
     },
 
     /**
-     * Updates the stencil clear state.
+     * Updates the value used to clear the stencil buffer when `gl.clear` is
+     * called with the stencil buffer bit.
      *
      * @method Phaser.Renderer.WebGL.Wrappers.WebGLGlobalWrapper#updateStencilClear
      * @since 4.0.0
@@ -859,7 +866,8 @@ var WebGLGlobalWrapper = new Class({
     },
 
     /**
-     * Updates the texture flipY state.
+     * Updates the `UNPACK_FLIP_Y_WEBGL` pixel store parameter, which controls
+     * whether texture image data is flipped vertically when uploaded to the GPU.
      *
      * @method Phaser.Renderer.WebGL.Wrappers.WebGLGlobalWrapper#updateTexturingFlipY
      * @since 4.0.0
@@ -884,7 +892,9 @@ var WebGLGlobalWrapper = new Class({
     },
 
     /**
-     * Updates the texture premultiplyAlpha state.
+     * Updates the `UNPACK_PREMULTIPLY_ALPHA_WEBGL` pixel store parameter,
+     * which controls whether the alpha channel is pre-multiplied into the RGB
+     * components when texture image data is uploaded to the GPU.
      *
      * @method Phaser.Renderer.WebGL.Wrappers.WebGLGlobalWrapper#updateTexturingPremultiplyAlpha
      * @since 4.0.0

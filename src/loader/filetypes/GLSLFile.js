@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -15,6 +15,11 @@ var Shader = require('../../display/shader/BaseShader');
 /**
  * @classdesc
  * A single GLSL File suitable for loading by the Loader.
+ *
+ * GLSL (OpenGL Shading Language) files contain shader source code used by the WebGL renderer to create
+ * custom visual effects. Once loaded, the raw GLSL source is wrapped in a `BaseShader` instance and
+ * stored in the global Shader Cache, where it can be retrieved and applied to Game Objects that support
+ * custom shaders, such as those using the `Phaser.GameObjects.Shader` class.
  *
  * These are created when you use the Phaser.Loader.LoaderPlugin#glsl method and are not typically created directly.
  *
@@ -66,7 +71,9 @@ var GLSLFile = new Class({
 
     /**
      * Called automatically by Loader.nextFile.
-     * This method controls what extra work this File does with its loaded data.
+     * This method reads the raw GLSL source text from the completed XHR response and stores it
+     * in `this.data`, then immediately signals that processing is complete. No further parsing
+     * or transformation is performed at this stage; the source is stored as-is until `addToCache` runs.
      *
      * @method Phaser.Loader.FileTypes.GLSLFile#onProcess
      * @since 3.7.0
@@ -82,6 +89,9 @@ var GLSLFile = new Class({
 
     /**
      * Adds this file to its target cache upon successful loading and processing.
+     * The raw GLSL source string is wrapped in a new `BaseShader` instance and stored in the
+     * global Shader Cache under this file's key, making it available for use with shader-enabled
+     * Game Objects.
      *
      * @method Phaser.Loader.FileTypes.GLSLFile#addToCache
      * @since 3.17.0

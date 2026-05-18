@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -14,6 +14,7 @@ export const BlendModes = require('./renderer/BlendModes');
 export const Cache = require('./cache');
 export const Cameras = require('./cameras');
 export const Core = require('./core');
+export const Class = require('./utils/Class');
 export const Curves = require('./curves');
 export const Data = require('./data');
 export const Display = require('./display');
@@ -38,10 +39,12 @@ export const Sound = require('./sound');
 export const Textures = require('./textures');
 export const Tilemaps = require('./tilemaps');
 export const Time = require('./time');
+export const TintModes = require('./renderer/TintModes');
 export const Tweens = require('./tweens');
 export const Utils = require('./utils');
 
 export const VERSION = CONST.VERSION;
+export const LOG_VERSION = CONST.LOG_VERSION;
 export const AUTO = CONST.AUTO;
 export const CANVAS = CONST.CANVAS;
 export const WEBGL = CONST.WEBGL;
@@ -52,3 +55,11 @@ export const LEFT = CONST.LEFT;
 export const RIGHT = CONST.RIGHT;
 export const UP = CONST.UP;
 export const DOWN = CONST.DOWN;
+
+export default {
+    Actions, Animations, BlendModes, Cache, Cameras, Core, Class, Curves, Data,
+    Display, DOM, Events, Filters, Game, GameObjects, Geom, Input, Loader,
+    Math, Physics, Plugins, Renderer, Scale, ScaleModes, Scene, Scenes,
+    Structs, Sound, Textures, Tilemaps, Time, TintModes, Tweens, Utils,
+    VERSION, LOG_VERSION, AUTO, CANVAS, WEBGL, HEADLESS, FOREVER, NONE, LEFT, RIGHT, UP, DOWN
+};

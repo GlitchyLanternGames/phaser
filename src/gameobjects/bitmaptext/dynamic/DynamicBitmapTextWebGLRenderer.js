@@ -1,10 +1,11 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
 var GetCalcMatrix = require('../../GetCalcMatrix');
+var TintModes = require('../../../renderer/TintModes');
 var TransformMatrix = require('../../components/TransformMatrix');
 var Utils = require('../../../renderer/webgl/Utils');
 
@@ -16,7 +17,7 @@ var tempTextureData = {
 };
 
 var tempTintData1 = {
-    tintEffect: 0,
+    tintEffect: TintModes.MULTIPLY,
     tintTopLeft: 0,
     tintTopRight: 0,
     tintBottomLeft: 0,
@@ -78,7 +79,7 @@ var DynamicBitmapTextWebGLRenderer = function (renderer, src, drawingContext, pa
 
     tempTextureData.frame = src.frame;
 
-    var tintEffect = src.tintFill;
+    var tintMode = TintModes.MULTIPLY;
     var tintTL = Utils.getTintAppendFloatAlpha(src.tintTopLeft, src._alphaTL);
     var tintTR = Utils.getTintAppendFloatAlpha(src.tintTopRight, src._alphaTR);
     var tintBL = Utils.getTintAppendFloatAlpha(src.tintBottomLeft, src._alphaBL);
@@ -193,6 +194,7 @@ var DynamicBitmapTextWebGLRenderer = function (renderer, src, drawingContext, pa
         if (displayCallback)
         {
             callbackData.color = 0;
+            callbackData.tintMode = tintMode;
             callbackData.tint.topLeft = tintTL;
             callbackData.tint.topRight = tintTR;
             callbackData.tint.bottomLeft = tintBL;
@@ -227,13 +229,14 @@ var DynamicBitmapTextWebGLRenderer = function (renderer, src, drawingContext, pa
                 tintBR = output.tint.bottomRight;
             }
 
+            tintMode = output.tintMode;
             tintTL = Utils.getTintAppendFloatAlpha(tintTL, src._alphaTL);
             tintTR = Utils.getTintAppendFloatAlpha(tintTR, src._alphaTR);
             tintBL = Utils.getTintAppendFloatAlpha(tintBL, src._alphaBL);
             tintBR = Utils.getTintAppendFloatAlpha(tintBR, src._alphaBR);
         }
 
-        tempTintData1.tintFill = tintEffect;
+        tempTintData1.tintEffect = tintMode;
         tempTintData1.tintTopLeft = tintTL;
         tempTintData1.tintTopRight = tintTR;
         tempTintData1.tintBottomLeft = tintBL;

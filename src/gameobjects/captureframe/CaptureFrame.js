@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -136,7 +136,7 @@ var CaptureFrame = new Class({
      * @since 4.0.0
      * @webglOnly
      * @param {number} alpha - The alpha value (not used).
-     * @returns {this}
+     * @return {this} This Game Object instance, for method chaining.
      */
     setAlpha: function (alpha)
     {
@@ -152,7 +152,7 @@ var CaptureFrame = new Class({
      * @webglOnly
      * @param {number} x - The horizontal scroll factor (not used).
      * @param {number} y - The vertical scroll factor (not used).
-     * @returns {this}
+     * @return {this} This Game Object instance, for method chaining.
      */
     setScrollFactor: function (x, y)
     {

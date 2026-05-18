@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -19,6 +19,24 @@ function getAlphaTint (alpha)
 }
 
 /**
+ * @classdesc
+ * A RenderNode responsible for executing the full rendering pipeline for a
+ * single Phaser Camera. It orchestrates every stage of camera output: filling
+ * the background color, rendering the list of visible children via the
+ * ListCompositor, applying post-render effects (flash and fade), and then
+ * compositing the result into the parent drawing context.
+ *
+ * When the camera requires isolation — because it has a non-opaque alpha,
+ * active internal or external filter chains, or `forceComposite` is set —
+ * the node allocates a temporary framebuffer from the drawing context pool and
+ * renders into that instead of directly into the parent context. Internal
+ * filters are applied to the camera contents before compositing, while
+ * external filters expand the coverage area and are applied after the camera
+ * output has been placed into the scene coordinate space. The final composited
+ * image is then batched back to the parent context using the
+ * BatchHandlerQuadSingle node, with the camera's alpha and pixel-rounding
+ * settings respected.
+ *
  * @class Camera
  * @memberof Phaser.Renderer.WebGL.RenderNodes
  * @constructor
@@ -66,7 +84,7 @@ var Camera = new Class({
 
         /**
          * A temporary TransformMatrix used for the parent context
-         * within which this camera is renderered.
+         * within which this camera is rendered.
          *
          * @name Phaser.Renderer.WebGL.RenderNodes.Camera#_parentTransformMatrix
          * @type {Phaser.GameObjects.Components.TransformMatrix}
@@ -77,7 +95,18 @@ var Camera = new Class({
     },
 
     /**
-     * Renders the children through this camera.
+     * Executes the full rendering pipeline for the given camera. This includes
+     * drawing the camera background color, rendering all child Game Objects via
+     * the ListCompositor, applying any post-render flash and fade effects, and
+     * then compositing the result into the parent drawing context.
+     *
+     * If the camera requires a framebuffer (due to active filters, a non-opaque
+     * alpha, or `forceComposite` being set), a temporary context is allocated
+     * from the drawing context pool. Internal filters are applied to the camera
+     * contents within that framebuffer, and external filters are applied after
+     * the output has been transformed into scene space. The final image is
+     * batched back to the parent context, with camera alpha and pixel-rounding
+     * applied as appropriate.
      *
      * @method Phaser.Renderer.WebGL.RenderNodes.Camera#run
      * @since 4.0.0
@@ -137,7 +166,7 @@ var Camera = new Class({
         // Generate a drawing context.
         var baseContext = drawingContext.getClone();
         baseContext.setCamera(camera);
-        
+
         if (useFramebuffers)
         {
             currentContext = drawingContextPool.get(cw, ch);
@@ -209,7 +238,7 @@ var Camera = new Class({
                 currentContext = renderNode.run(filter, currentContext);
 
                 // Record padding.
-                padding = filter.getPadding();
+                padding = filter.getPaddingCeil();
                 coverageInternal.setTo(
                     coverageInternal.x + padding.x,
                     coverageInternal.y + padding.y,
@@ -232,7 +261,7 @@ var Camera = new Class({
 
                     if (!filter.active) { continue; }
 
-                    padding = filter.getPadding();
+                    padding = filter.getPaddingCeil();
 
                     // Increase coverage.
                     coverageExternal.setTo(
@@ -280,6 +309,20 @@ var Camera = new Class({
                 quad = parentTransformMatrix.quad;
 
                 tint = drawExternalFilters ? 0xffffffff : getAlphaTint(alpha);
+
+                if (camera.roundPixels)
+                {
+                    // Assume that `roundPixels` conveys the intent to round coordinates.
+                    // The `Filters` game object component sets this accordingly.
+                    quad[0] = Math.round(quad[0]);
+                    quad[1] = Math.round(quad[1]);
+                    quad[2] = Math.round(quad[2]);
+                    quad[3] = Math.round(quad[3]);
+                    quad[4] = Math.round(quad[4]);
+                    quad[5] = Math.round(quad[5]);
+                    quad[6] = Math.round(quad[6]);
+                    quad[7] = Math.round(quad[7]);
+                }
 
                 this.batchHandlerQuadSingleNode.batch(
                     currentContext,

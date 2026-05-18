@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -169,6 +169,11 @@ var Mask = new Class({
 
         /**
          * The scale factor to apply to the underlying mask texture.
+         * A value less than 1 reduces the texture resolution to save memory
+         * at the cost of mask precision. A value greater than 1 increases
+         * resolution for sharper masking but uses more memory. When changing
+         * this value, you must also scale the mask GameObject or Container
+         * to match, so that its rendered output fills the texture correctly.
          *
          * @name Phaser.Filters.Mask#scaleFactor
          * @type {number}
@@ -198,7 +203,7 @@ var Mask = new Class({
      * @method Phaser.Filters.Mask#updateDynamicTexture
      * @since 4.0.0
      * @param {number} width - The width of the DynamicTexture.
-     * @param {number} height - The height of the DynamicTexture
+     * @param {number} height - The height of the DynamicTexture.
      */
     updateDynamicTexture: function (width, height)
     {
@@ -220,7 +225,7 @@ var Mask = new Class({
         }
         else if (this._dynamicTexture.width !== scaledWidth || this._dynamicTexture.height !== scaledHeight)
         {
-            this._dynamicTexture.setSize(scaledWidth, scaledHeight);
+            this._dynamicTexture.setSize(scaledWidth, scaledHeight, false);
         }
         else
         {
@@ -239,12 +244,15 @@ var Mask = new Class({
     },
 
     /**
-     * Sets the GameObject used for the mask.
+     * Sets the GameObject used for the mask. The GameObject will be rendered
+     * to an internal DynamicTexture on the next render pass. Setting a new
+     * GameObject also sets `needsUpdate` to `true`, ensuring the texture is
+     * refreshed before the next frame is drawn.
      *
      * @method Phaser.Filters.Mask#setGameObject
      * @since 4.0.0
      * @param {Phaser.GameObjects.GameObject} gameObject - The GameObject to use for the mask.
-     * @returns {this} This Filter Controller.
+     * @return {this} This Filter Controller.
      */
     setGameObject: function (gameObject)
     {
@@ -260,12 +268,15 @@ var Mask = new Class({
     },
 
     /**
-     * Sets the texture used for the mask.
+     * Sets a static texture to use as the mask, looked up by key from the
+     * Texture Manager. Any previously assigned mask GameObject is cleared.
+     * Unlike a GameObject mask, a static texture mask does not update
+     * automatically between frames.
      *
      * @method Phaser.Filters.Mask#setTexture
      * @since 4.0.0
-     * @param {string} [texture='__WHITE'] - The unique string-based key of the texture to use for displacement, which must exist in the Texture Manager.
-     * @returns {this} This Filter Controller.
+     * @param {string} [texture='__WHITE'] - The unique string-based key of the texture to use for the mask, which must exist in the Texture Manager.
+     * @return {this} This Filter Controller.
      */
     setTexture: function (texture)
     {
@@ -280,6 +291,15 @@ var Mask = new Class({
         return this;
     },
 
+    /**
+     * Destroys this filter, releasing all references and resources.
+     *
+     * If a dynamic texture was created for a mask GameObject,
+     * it will also be destroyed.
+     *
+     * @method Phaser.Filters.Mask#destroy
+     * @since 4.0.0
+     */
     destroy: function ()
     {
         if (this._dynamicTexture)

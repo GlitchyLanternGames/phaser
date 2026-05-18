@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -9,8 +9,10 @@ var Vector2 = require('../math/Vector2');
 
 /**
  * @classdesc
- * A Tileset is a combination of a single image containing the tiles and a container for data about
- * each tile.
+ * A Tileset is a combination of a single image containing the tiles and a container for data
+ * about each tile. It maps tile indexes (GIDs) to positions within the tileset image, stores
+ * per-tile properties and collision data, and supports tile spacing and margin. Tilesets are
+ * created automatically when parsing Tiled map data and are used by TilemapLayer during rendering.
  *
  * @class Tileset
  * @memberof Phaser.Tilemaps
@@ -90,7 +92,7 @@ var Tileset = new Class({
         this.tileMargin = tileMargin;
 
         /**
-         * The spacing between each the tile in the sheet (in pixels). Use `setSpacing` to change.
+         * The spacing between each tile in the sheet (in pixels). Use `setSpacing` to change.
          *
          * @name Phaser.Tilemaps.Tileset#tileSpacing
          * @type {number}
@@ -155,7 +157,7 @@ var Tileset = new Class({
         this.glTexture = null;
 
         /**
-         * The number of tile rows in the the tileset.
+         * The number of tile rows in the tileset.
          *
          * @name Phaser.Tilemaps.Tileset#rows
          * @type {number}
@@ -254,7 +256,7 @@ var Tileset = new Class({
     },
 
     /**
-     * Get a tiles properties that are stored in the Tileset. Returns null if tile index is not
+     * Get a tile's properties that are stored in the Tileset. Returns null if tile index is not
      * contained in this Tileset. This is typically defined in Tiled under the Tileset editor.
      *
      * @method Phaser.Tilemaps.Tileset#getTileProperties
@@ -633,7 +635,7 @@ var Tileset = new Class({
 
         if (totalTuples > 4096 * 4096 / 2)
         {
-            throw new Error('Tileset.animationDataTexture: too many animations - total number of animations plus animation frames is max 8388608, got ' + (totalTuples));
+            throw new Error('Tileset._animationDataTexture: too many animations - total number of animations plus animation frames is max 8388608, got ' + (totalTuples));
         }
 
         var size = totalTuples * 2;
@@ -667,9 +669,9 @@ var Tileset = new Class({
         }
 
         // Create or update the animation data texture.
-        if (this.animationDataTexture)
+        if (this._animationDataTexture)
         {
-            this.animationDataTexture.destroy();
+            this._animationDataTexture.destroy();
         }
 
         var u8 = new Uint8Array(u32.buffer);

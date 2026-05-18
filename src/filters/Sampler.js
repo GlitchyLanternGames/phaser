@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -11,10 +11,12 @@ var Controller = require('./Controller');
  * @classdesc
  * The Sampler Filter Controller.
  *
- * This controller manages a sampler.
- * It doesn't actually render anything, and leaves the image unaltered.
- * It is used to sample a region of the camera view, and pass the results to a callback.
- * This is useful for extracting data from the camera view.
+ * This controller reads pixel data from the camera's rendered output and passes
+ * it to a user-defined callback. Unlike other filter controllers, the Sampler
+ * does not alter the rendered image in any way — it is purely a data extraction
+ * tool. It can sample a single point, a rectangular region, or the entire
+ * camera view, and is useful for techniques such as color picking, pixel-perfect
+ * hit detection, or runtime visual analysis.
  *
  * This operation is expensive, so use sparingly.
  *
@@ -48,7 +50,10 @@ var Sampler = new Class({
         this.allowBaseDraw = false;
 
         /**
-         * The callback to call with the results of the sampler.
+         * The callback to invoke once the pixel data has been read from the
+         * sampled region. It receives the snapshot result, which may be an
+         * `HTMLImageElement` (for region snapshots) or a `Phaser.Display.Color`
+         * (for point snapshots), depending on the `region` type.
          *
          * @name Phaser.Filters.Sampler#callback
          * @type {Phaser.Types.Renderer.Snapshot.SnapshotCallback}
@@ -63,6 +68,7 @@ var Sampler = new Class({
          *
          * @name Phaser.Filters.Sampler#region
          * @type {null|Phaser.Types.Math.Vector2Like|Phaser.Geom.Rectangle}
+         * @since 4.0.0
          */
         this.region = region;
     }

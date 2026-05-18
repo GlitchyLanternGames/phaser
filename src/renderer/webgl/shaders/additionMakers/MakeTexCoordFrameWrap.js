@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -9,10 +9,10 @@
  * This makes the texture repeat within the bounds of the frame -
  * it's what makes a TileSprite work.
  *
- * @function Phaser.Renderer.WebGL.Shaders.MakeTexCoordFrameWrap
+ * @function Phaser.Renderer.WebGL.ShaderAdditionMakers.MakeTexCoordFrameWrap
  * @since 4.0.0
  * @param {boolean} [disable=false] - Whether to disable the shader addition on creation.
- * @returns {Phaser.Types.Renderer.WebGL.ShaderAdditionConfig} The shader addition configuration.
+ * @return {Phaser.Types.Renderer.WebGL.ShaderAdditionConfig} The shader addition configuration.
  */
 var MakeTexCoordFrameWrap = function (disable)
 {

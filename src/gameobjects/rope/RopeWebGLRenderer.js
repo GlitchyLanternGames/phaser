@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -60,7 +60,7 @@ var RopeWebGLRenderer = function (renderer, src, drawingContext, parentMatrix)
         src.colors,
         src.alphas,
         src.alpha,
-        src.tintFill,
+        src.tintMode,
         renderOptions,
         src.debugCallback
     );

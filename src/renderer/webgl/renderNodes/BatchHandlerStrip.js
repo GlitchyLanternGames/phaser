@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -25,7 +25,7 @@ var getTint = Utils.getTintAppendFloatAlpha;
  *
  * If a strip is submitted with too many vertices (usually >32,768),
  * it will throw an error.
- * 
+ *
  * Note that you should call `batchStrip` instead of `batch` to add strips.
  *
  * @class BatchHandlerStrip
@@ -126,25 +126,37 @@ var BatchHandlerStrip = new Class({
     },
 
     /**
-     * Add a strip to the batch.
+     * Adds a textured triangle strip to the batch. Each pair of vertices
+     * in `vertices` forms one instance. The vertices are transformed by
+     * `calcMatrix` before being written into the vertex buffer.
      *
-     * This method would usually be named `batch`, but the call signature
-     * is different from the other batch handlers.
+     * When multiple strips are batched together, degenerate triangles are
+     * automatically inserted between them by repeating the last vertex of
+     * one strip and the first vertex of the next, ensuring correct rendering
+     * without a draw-call break.
+     *
+     * If the incoming strip would overflow the current batch, the batch is
+     * flushed first. If the strip itself exceeds the maximum batch capacity,
+     * an error is thrown.
+     *
+     * This method is named `batchStrip` rather than `batch` because its call
+     * signature differs from the standard batch handlers used by quad-based
+     * Game Objects.
      *
      * @method Phaser.Renderer.WebGL.RenderNodes.BatchHandlerStrip#batchStrip
      * @since 4.0.0
      * @param {Phaser.Renderer.WebGL.DrawingContext} drawingContext - The current drawing context.
      * @param {Phaser.GameObjects.GameObject} src - The Game Object being rendered.
-     * @param {Phaser.GameObjects.Components.TransformMatrix} calcMatrix - The current transform matrix.
+     * @param {Phaser.GameObjects.Components.TransformMatrix} calcMatrix - The current transform matrix used to transform each vertex position into world space.
      * @param {Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper} glTexture - The texture to render.
-     * @param {Float32Array} vertices - The vertices of the strip.
-     * @param {Float32Array} uv - The UV coordinates of the strip.
-     * @param {Uint32Array} colors - The color values of the strip.
-     * @param {Float32Array} alphas - The alpha values of the strip.
-     * @param {number} alpha - The overall alpha value of the strip.
-     * @param {boolean} tintFill - Whether to tint the fill color.
-     * @param {Phaser.Types.Renderer.WebGL.RenderNodes.BatchHandlerQuadRenderOptions} renderOptions - Optional render features. Strip rendering should always set `multiTexturing` to false. It can use `smoothPixelArt`. Other options are ignored.
-     * @param {function} [debugCallback] - The debug callback, called with an array consisting of alternating x,y values of the transformed vertices.
+     * @param {Float32Array} vertices - The local-space vertex positions of the strip, as a flat array of alternating x and y values.
+     * @param {Float32Array} uv - The normalized texture coordinates of the strip, as a flat array of alternating u and v values, matching the layout of `vertices`.
+     * @param {Uint32Array} colors - The per-vertex packed tint color values for the strip.
+     * @param {Float32Array} alphas - The per-vertex alpha multiplier values for the strip.
+     * @param {number} alpha - The overall alpha multiplier applied on top of the per-vertex alpha values.
+     * @param {Phaser.TintModes} tintMode - The tint mode to use.
+     * @param {Phaser.Types.Renderer.WebGL.RenderNodes.BatchHandlerQuadRenderOptions} renderOptions - Optional render features. Strip rendering uses a single texture slot and does not support additional multi-texturing. The `smoothPixelArt` option is supported; other options are ignored.
+     * @param {function} [debugCallback] - An optional callback invoked after all vertices are processed, called in the context of `src` with three arguments: the source Game Object, the total vertex count, and a flat array of alternating x,y world-space positions for the transformed vertices.
      */
     batchStrip: function (
         drawingContext,
@@ -156,7 +168,7 @@ var BatchHandlerStrip = new Class({
         colors,
         alphas,
         alpha,
-        tintFill,
+        tintMode,
         renderOptions,
         debugCallback
     )
@@ -245,7 +257,7 @@ var BatchHandlerStrip = new Class({
             vertexViewF32[vertexOffset32++] = uv[i];
             vertexViewF32[vertexOffset32++] = uv[i + 1];
             vertexViewF32[vertexOffset32++] = textureDatum;
-            vertexViewF32[vertexOffset32++] = tintFill;
+            vertexViewF32[vertexOffset32++] = tintMode;
             vertexViewU32[vertexOffset32++] = getTint(
                 colors[i / 2],
                 alphas[i / 2] * alpha

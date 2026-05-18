@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -74,7 +74,9 @@ var LightsPlugin = new Class({
     },
 
     /**
-     * Boot the Lights Plugin.
+     * Handles the boot event from the Scene's Event Emitter, subscribing to
+     * the Scene's `shutdown` and `destroy` events so the plugin can clean up
+     * its resources when the Scene is stopped or destroyed.
      *
      * @method Phaser.GameObjects.LightsPlugin#boot
      * @since 3.0.0

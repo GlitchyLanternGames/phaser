@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -91,7 +91,7 @@ var GeometryMask = new Class({
     },
 
     /**
-     * Restore the canvas context's previous clipping path, thus turning off the mask for it.
+     * Restores the canvas context's previous clipping path, thus turning off the mask for it.
      *
      * @method Phaser.Display.Masks.GeometryMask#postRenderCanvas
      * @since 3.0.0

@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -25,7 +25,12 @@ var BatchHandler = require('./BatchHandler');
 
 /**
  * @classdesc
- * This RenderNode draws Standard Batch Render (SBR) quads in batches.
+ * The primary batch rendering node in Phaser's WebGL pipeline. It draws
+ * textured quads (used by Image, Sprite, BitmapText, TileSprite, and other
+ * Game Objects) in large batches for performance. Supports multi-texturing,
+ * normal-map-based lighting, and smooth pixel art rendering. Game Objects are
+ * accumulated into a vertex buffer and flushed to the GPU in a single draw
+ * call whenever possible.
  *
  * @class BatchHandlerQuad
  * @extends Phaser.Renderer.WebGL.RenderNodes.BatchHandler
@@ -188,9 +193,9 @@ var BatchHandlerQuad = new Class({
     },
 
     /**
-     * Update the number of draw calls per batch.
-     * This rebuilds the shader program with the new draw call count.
-     * The minimum number of draw calls is 1, and the maximum is the number of
+     * Update the maximum number of textures per batch.
+     * This rebuilds the shader program with the new texture count.
+     * The minimum number of textures is 1, and the maximum is the number of
      * texture units defined in the renderer.
      * Rebuilding the shader may be expensive, so use this sparingly.
      *
@@ -204,7 +209,7 @@ var BatchHandlerQuad = new Class({
      *
      * @method Phaser.Renderer.WebGL.RenderNodes.BatchHandlerQuad#updateTextureCount
      * @since 4.0.0
-     * @param {number} [count] - The new number of draw calls per batch. If undefined, the maximum number of texture units is used.
+     * @param {number} [count] - The new maximum number of textures per batch. If undefined, the maximum number of texture units is used.
      */
     updateTextureCount: function (count)
     {
@@ -293,9 +298,13 @@ var BatchHandlerQuad = new Class({
     },
 
     /**
-     * Update the texture uniforms for the current shader program.
+     * Set the texture resolution uniforms for the current shader program.
+     * Specifically, this sets the `uMainResolution` uniform with the pixel
+     * dimensions of each bound texture. This information is required by shader
+     * features such as smooth pixel art rendering.
      *
-     * This method is called automatically when the batch is run.
+     * This method is called automatically when the batch is run and the
+     * `texRes` render option is enabled.
      *
      * @method Phaser.Renderer.WebGL.RenderNodes.BatchHandlerQuad#setupTextureUniforms
      * @since 4.0.0
@@ -373,7 +382,11 @@ var BatchHandlerQuad = new Class({
     },
 
     /**
-     * Update the render options for the current shader program.
+     * Compare the incoming render options against the currently active options
+     * and stage any differences into `nextRenderOptions`. Sets
+     * `_renderOptionsChanged` to `true` if any option has changed, signalling
+     * that the current batch should be flushed and the shader rebuilt via
+     * `updateShaderConfig` before the next draw.
      *
      * @method Phaser.Renderer.WebGL.RenderNodes.BatchHandlerQuad#updateRenderOptions
      * @since 4.0.0
@@ -611,12 +624,12 @@ var BatchHandlerQuad = new Class({
      * Add a quad to the batch.
      *
      * For compatibility with TRIANGLE_STRIP rendering,
-     * the vertices are added in the order:
+     * the vertices are written into the buffer in the order:
      *
-     * - Top-left
      * - Bottom-left
-     * - Top-right
+     * - Top-left
      * - Bottom-right
+     * - Top-right
      *
      * @method Phaser.Renderer.WebGL.RenderNodes.BatchHandlerQuad#batch
      * @since 4.0.0
@@ -634,7 +647,7 @@ var BatchHandlerQuad = new Class({
      * @param {number} texY - The top v coordinate (0-1).
      * @param {number} texWidth - The width of the texture (0-1).
      * @param {number} texHeight - The height of the texture (0-1).
-     * @param {boolean} tintFill - Whether to tint the fill color.
+     * @param {number} tintMode - The tint mode to use.
      * @param {number} tintTL - The top-left tint color.
      * @param {number} tintBL - The bottom-left tint color.
      * @param {number} tintTR - The top-right tint color.
@@ -651,7 +664,7 @@ var BatchHandlerQuad = new Class({
         x3, y3,
         texX, texY,
         texWidth, texHeight,
-        tintFill,
+        tintMode,
         tintTL, tintBL, tintTR, tintBR,
         renderOptions
     )
@@ -684,7 +697,7 @@ var BatchHandlerQuad = new Class({
         vertexViewF32[vertexOffset32++] = texX;
         vertexViewF32[vertexOffset32++] = texY + texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintFill;
+        vertexViewF32[vertexOffset32++] = tintMode;
         vertexViewU32[vertexOffset32++] = tintBL;
 
         // Top-left
@@ -693,7 +706,7 @@ var BatchHandlerQuad = new Class({
         vertexViewF32[vertexOffset32++] = texX;
         vertexViewF32[vertexOffset32++] = texY;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintFill;
+        vertexViewF32[vertexOffset32++] = tintMode;
         vertexViewU32[vertexOffset32++] = tintTL;
 
         // Bottom-right
@@ -702,7 +715,7 @@ var BatchHandlerQuad = new Class({
         vertexViewF32[vertexOffset32++] = texX + texWidth;
         vertexViewF32[vertexOffset32++] = texY + texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintFill;
+        vertexViewF32[vertexOffset32++] = tintMode;
         vertexViewU32[vertexOffset32++] = tintBR;
 
         // Top-right
@@ -711,7 +724,7 @@ var BatchHandlerQuad = new Class({
         vertexViewF32[vertexOffset32++] = texX + texWidth;
         vertexViewF32[vertexOffset32++] = texY;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintFill;
+        vertexViewF32[vertexOffset32++] = tintMode;
         vertexViewU32[vertexOffset32++] = tintTR;
 
         // Increment the instance count.

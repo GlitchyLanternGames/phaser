@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -9,7 +9,12 @@ var DeepCopy = require('../../../utils/object/DeepCopy');
 var WebGLStencilParametersFactory = require('./WebGLStencilParametersFactory');
 
 /**
- * Factory for creating a WebGLGlobalParameters.
+ * A factory namespace that creates `WebGLGlobalParameters` objects for use by the
+ * WebGL Renderer. A `WebGLGlobalParameters` object captures the complete set of
+ * global WebGL state tracked by Phaser, including buffer bindings, blend mode,
+ * color masks, scissor region, stencil settings, texturing options, and viewport
+ * dimensions. The renderer uses these objects to detect state changes and avoid
+ * redundant WebGL calls, which improves rendering performance.
  *
  * @namespace Phaser.Renderer.WebGL.WebGLGlobalParametersFactory
  * @webglOnly
@@ -18,12 +23,19 @@ var WebGLStencilParametersFactory = require('./WebGLStencilParametersFactory');
 var WebGLGlobalParametersFactory = {
 
     /**
-     * Creates a new WebGLGlobalParameters.
+     * Creates a new `WebGLGlobalParameters` object populated with sensible default
+     * values. The defaults reflect the initial WebGL state expected at the start of
+     * each render: the NORMAL blend mode, a fully-opaque black clear color, all
+     * color channels enabled for writing, face culling and depth testing disabled,
+     * scissor testing enabled with a zero-sized box, default stencil parameters
+     * (obtained via `WebGLStencilParametersFactory`), and a zero-sized viewport.
+     * This object is typically used by the WebGL Renderer to initialise or reset
+     * its tracked global state.
      *
      * @method Phaser.Renderer.WebGL.WebGLGlobalParametersFactory#getDefault
      * @since 4.0.0
      * @param {Phaser.Renderer.WebGL.WebGLRenderer} renderer - The WebGLRenderer to create the WebGLGlobalParameters for.
-     * @returns {Phaser.Types.Renderer.WebGL.WebGLGlobalParameters} The default WebGLGlobalParameters.
+     * @return {Phaser.Types.Renderer.WebGL.WebGLGlobalParameters} The default WebGLGlobalParameters.
      */
     getDefault: function (renderer)
     {

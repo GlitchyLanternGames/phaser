@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -71,9 +71,9 @@ if (typeof WEBGL_RENDERER)
         filterCamera: null,
 
         /**
-         * Get the filters lists.
+         * The filter lists for this Game Object.
          * This is an object with `internal` and `external` properties.
-         * Each list is a {@see Phaser.GameObjects.Components.FilterList} object.
+         * Each list is a {@link Phaser.GameObjects.Components.FilterList} object.
          *
          * This is only available if you use the `enableFilters` method.
          *
@@ -232,7 +232,7 @@ if (typeof WEBGL_RENDERER)
          * @method Phaser.GameObjects.Components.Filters#enableFilters
          * @since 4.0.0
          * @webglOnly
-         * @returns {this}
+         * @return {this}
          */
         enableFilters: function ()
         {
@@ -347,6 +347,16 @@ if (typeof WEBGL_RENDERER)
             var filterCamera = gameObject.filterCamera;
             filterCamera.preRender();
 
+            // Set the camera roundPixels property to reflect desired rounding.
+            // This is necessary to avoid blurring from antialiasing
+            // if coordinates are not integer.
+            var filterCameraRoundPixels = filterCamera.roundPixels;
+            filterCamera.roundPixels = gameObject.willRoundVertices(
+                filterCamera,
+                (gameObject.rotation % (Math.PI * 2) === 0) &&
+                (gameObject.scaleX === 1, gameObject.scaleY === 1)
+            );
+
             if (filtersAutoFocus && filtersFocusContext)
             {
                 var parent = gameObject.parentContainer;
@@ -430,6 +440,9 @@ if (typeof WEBGL_RENDERER)
             gameObject.scrollFactorX = scrollX;
             gameObject.scrollFactorY = scrollY;
 
+            // Restore camera roundPixels.
+            filterCamera.roundPixels = filterCameraRoundPixels;
+
             // Add the game object's filter camera's render list
             // to the drawingContext's render list.
             var filterRenderListLength = filterCamera.renderList.length;
@@ -453,7 +466,7 @@ if (typeof WEBGL_RENDERER)
          * @method Phaser.GameObjects.Components.Filters#focusFilters
          * @webglOnly
          * @since 4.0.0
-         * @returns {this}
+         * @return {this}
          */
         focusFilters: function ()
         {
@@ -480,18 +493,20 @@ if (typeof WEBGL_RENDERER)
             var scaleX = this.scaleX;
             var scaleY = this.scaleY;
 
-            var centerX = posX + width * (0.5 - originX);
-            var centerY = posY + height * (0.5 - originY);
-
             // Handle flip.
             if (this.flipX)
             {
                 scaleX *= -1;
+                originX = 1 - originX;
             }
             if (this.flipY)
             {
                 scaleY *= -1;
+                originY = 1 - originY;
             }
+
+            var centerX = posX + width * (0.5 - originX);
+            var centerY = posY + height * (0.5 - originY);
 
             // Set the filter camera size to match the object.
             this.setFilterSize(width, height);
@@ -514,7 +529,7 @@ if (typeof WEBGL_RENDERER)
          * @webglOnly
          * @since 4.0.0
          * @param {Phaser.Cameras.Scene2D.Camera} camera - The camera to focus on.
-         * @returns {this}
+         * @return {this}
          */
         focusFiltersOnCamera: function (camera)
         {
@@ -554,7 +569,7 @@ if (typeof WEBGL_RENDERER)
          * @param {number} [y] - The y-coordinate of the focus point, relative to the filter size. Default is the center.
          * @param {number} [width] - The width of the focus area. Default is the filter width.
          * @param {number} [height] - The height of the focus area. Default is the filter height.
-         * @returns {this}
+         * @return {this}
          */
         focusFiltersOverride: function (x, y, width, height)
         {
@@ -615,7 +630,7 @@ if (typeof WEBGL_RENDERER)
          * @since 4.0.0
          * @param {number} width - Base width of the filter texture.
          * @param {number} height - Base height of the filter texture.
-         * @returns {this}
+         * @return {this}
          */
         setFilterSize: function (width, height)
         {
@@ -634,14 +649,14 @@ if (typeof WEBGL_RENDERER)
         },
 
         /**
-         * Set whether filters should be updated every frame.
+         * Sets whether the filter camera should automatically re-focus on the Game Object every frame.
          * Sets the `filtersAutoFocus` property.
          *
          * @method Phaser.GameObjects.Components.Filters#setFiltersAutoFocus
          * @webglOnly
          * @since 4.0.0
          * @param {boolean} value - Whether filters should be updated every frame.
-         * @returns {this}
+         * @return {this}
          */
         setFiltersAutoFocus: function (value)
         {
@@ -658,7 +673,7 @@ if (typeof WEBGL_RENDERER)
          * @webglOnly
          * @since 4.0.0
          * @param {boolean} value - Whether the filters should focus on the context.
-         * @returns {this}
+         * @return {this}
          */
         setFiltersFocusContext: function (value)
         {
@@ -675,7 +690,7 @@ if (typeof WEBGL_RENDERER)
          * @webglOnly
          * @since 4.0.0
          * @param {boolean} value - Whether the object should always draw to a framebuffer, even if there are no active filters.
-         * @returns {this}
+         * @return {this}
          */
         setFiltersForceComposite: function (value)
         {
@@ -692,7 +707,7 @@ if (typeof WEBGL_RENDERER)
          * @webglOnly
          * @since 4.0.0
          * @param {boolean} value - Whether the filters should be rendered.
-         * @returns {this}
+         * @return {this}
          */
         setRenderFilters: function (value)
         {

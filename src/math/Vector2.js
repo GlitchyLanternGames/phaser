@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -12,9 +12,14 @@ var FuzzyEqual = require('../math/fuzzy/Equal');
 
 /**
  * @classdesc
- * A representation of a vector in 2D space.
+ * A representation of a vector in 2D space, defined by an `x` and `y` component.
  *
- * A two-component vector.
+ * Vector2 is used throughout Phaser for positions, directions, velocities, and other
+ * quantities that have both magnitude and direction. It provides methods for common
+ * vector operations such as addition, subtraction, scaling, normalization, dot and
+ * cross products, linear interpolation, and rotation. Many Phaser APIs accept a
+ * `Vector2Like` object (any object with `x` and `y` number properties), making
+ * Vector2 easy to integrate across the framework.
  *
  * @class Vector2
  * @memberof Phaser.Math
@@ -114,7 +119,7 @@ var Vector2 = new Class({
     },
 
     /**
-     * Set the `x` and `y` components of the this Vector to the given `x` and `y` values.
+     * Set the `x` and `y` components of this Vector to the given `x` and `y` values.
      *
      * @method Phaser.Math.Vector2#set
      * @since 3.0.0
@@ -607,7 +612,7 @@ var Vector2 = new Class({
     },
 
     /**
-     * Transform this Vector with the given Matrix.
+     * Transform this Vector with the given Matrix3.
      *
      * @method Phaser.Math.Vector2#transformMat3
      * @since 3.0.0
@@ -629,7 +634,7 @@ var Vector2 = new Class({
     },
 
     /**
-     * Transform this Vector with the given Matrix.
+     * Transform this Vector with the given Matrix4.
      *
      * @method Phaser.Math.Vector2#transformMat4
      * @since 3.0.0
@@ -765,7 +770,7 @@ var Vector2 = new Class({
      * @param {Phaser.Math.Vector2} vecB - The vector to project onto.
      * @param {Phaser.Math.Vector2} [out] - The Vector2 object to store the position in. If not given, a new Vector2 instance is created.
      *
-     * @return {Phaser.Math.Vector2} This Vector2.
+     * @return {Phaser.Math.Vector2} The `out` Vector2 containing the projected values.
      */
     projectUnit: function (vecB, out)
     {

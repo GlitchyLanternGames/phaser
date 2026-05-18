@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -47,7 +47,7 @@ var RectangleWebGLRenderer = function (renderer, src, drawingContext, parentMatr
         else
         {
             var fillTintColor = Utils.getTintAppendFloatAlpha(src.fillColor, src.fillAlpha * alpha);
-    
+
             (customRenderNodes.FillRect || defaultRenderNodes.FillRect).run(
                 drawingContext,
                 calcMatrix,
@@ -57,7 +57,8 @@ var RectangleWebGLRenderer = function (renderer, src, drawingContext, parentMatr
                 fillTintColor,
                 fillTintColor,
                 fillTintColor,
-                fillTintColor
+                fillTintColor,
+                src.lighting
             );
         }
     }

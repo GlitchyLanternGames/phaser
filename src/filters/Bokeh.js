@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -22,6 +22,10 @@ var Controller = require('./Controller');
  * effect by blurring everything except a small area of the image. This effect is achieved by blurring the
  * top and bottom elements, while keeping the center area in focus.
  *
+ * This effect samples across an area. To avoid missing data at the edges,
+ * use `controller.setPaddingOverride(null)` to automatically pad game objects,
+ * or `camera.getPaddingWrapper(x)` to enlarge a camera.
+ *
  * A Bokeh effect is added to a Camera via the FilterList component:
  *
  * ```js
@@ -40,7 +44,7 @@ var Controller = require('./Controller');
  * @param {number} [radius=0.5] - The radius of the bokeh effect.
  * @param {number} [amount=1] - The amount of the bokeh effect.
  * @param {number} [contrast=0.2] - The color contrast of the bokeh effect.
- * @param {boolean} [isTiltShift=false] - Is this a bokeh or Tile Shift effect?
+ * @param {boolean} [isTiltShift=false] - Is this a bokeh or Tilt Shift effect?
  * @param {number} [blurX=1] - If Tilt Shift, the amount of horizontal blur.
  * @param {number} [blurY=1] - If Tilt Shift, the amount of vertical blur.
  * @param {number} [strength=1] - If Tilt Shift, the strength of the blur.
@@ -76,7 +80,10 @@ var Bokeh = new Class({
         this.radius = radius;
 
         /**
-         * The amount, or strength, of the bokeh effect.
+         * The amount of the bokeh effect. This controls how many samples are taken
+         * during the blur pass. Higher values produce a denser, more pronounced bokeh
+         * at the cost of additional GPU work. This property applies to the standard
+         * bokeh effect only; use `strength` to adjust the intensity of a Tilt Shift effect.
          *
          * @name Phaser.Filters.Bokeh#amount
          * @type {number}
@@ -86,7 +93,10 @@ var Bokeh = new Class({
         this.amount = amount;
 
         /**
-         * The color contrast, or brightness, of the bokeh effect.
+         * The color contrast of the bokeh effect. This controls how strongly the
+         * out-of-focus areas differ in luminance from the in-focus areas. Higher values
+         * increase the brightness contrast between the bokeh highlights and their surroundings,
+         * making the effect more visually distinct.
          *
          * @name Phaser.Filters.Bokeh#contrast
          * @type {number}
@@ -141,6 +151,16 @@ var Bokeh = new Class({
         this.strength = strength;
     },
 
+    /**
+     * Returns the amount of extra padding, in pixels, that this filter requires when rendering.
+     * The padding accounts for the bokeh effect extending beyond the original bounds
+     * of the filtered Camera.
+     *
+     * @method Phaser.Filters.Bokeh#getPadding
+     * @since 4.0.0
+     *
+     * @return {Phaser.Geom.Rectangle} The padding Rectangle.
+     */
     getPadding: function ()
     {
         var override = this.paddingOverride;

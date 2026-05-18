@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -138,7 +138,7 @@ var TileSprite = new Class({
         this._tileRotation = 0;
 
         /**
-         * Whether the Tile Sprite has changed in some way, requiring an re-render of its tile texture.
+         * Whether the Tile Sprite has changed in some way, requiring a re-render of its tile texture.
          *
          * Such changes include the texture frame and scroll position of the Tile Sprite.
          *
@@ -222,7 +222,7 @@ var TileSprite = new Class({
         this.currentFrame = null;
 
         /**
-         * The Canvas that the TileSprites texture is rendered to.
+         * The Canvas that the TileSprite's texture is rendered to.
          * This is used to create a WebGL texture from.
          *
          * @name Phaser.GameObjects.TileSprite#fillCanvas
@@ -232,7 +232,7 @@ var TileSprite = new Class({
         this.fillCanvas = isCanvas ? CanvasPool.create2D(this, displayFrame.width, this.displayFrame.height) : null;
 
         /**
-         * The Canvas Context used to render the TileSprites texture.
+         * The Canvas Context used to render the TileSprite's texture.
          *
          * @name Phaser.GameObjects.TileSprite#fillContext
          * @type {CanvasRenderingContext2D}
@@ -255,7 +255,7 @@ var TileSprite = new Class({
          *
          * This component provides features to apply animations to this TileSprite.
          * It is responsible for playing, loading, queuing animations for later playback,
-         * mixing between animations and setting the current animation frame to this Sprite.
+         * mixing between animations and setting the current animation frame to this TileSprite.
          *
          * @name Phaser.GameObjects.TileSprite#anims
          * @type {Phaser.Animations.AnimationState}
@@ -287,13 +287,27 @@ var TileSprite = new Class({
         }
     },
 
-    //  Overrides Game Object method
+    /**
+     * Adds this TileSprite to the Scene's update list, so that its `preUpdate` method
+     * is called each game step to advance its animations. Called automatically when
+     * this Game Object is added to a Scene.
+     *
+     * @method Phaser.GameObjects.TileSprite#addedToScene
+     * @since 3.50.0
+     */
     addedToScene: function ()
     {
         this.scene.sys.updateList.add(this);
     },
 
-    //  Overrides Game Object method
+    /**
+     * Removes this TileSprite from the Scene's update list, stopping its `preUpdate`
+     * method from being called. Called automatically when this Game Object is removed
+     * from a Scene.
+     *
+     * @method Phaser.GameObjects.TileSprite#removedFromScene
+     * @since 3.50.0
+     */
     removedFromScene: function ()
     {
         this.scene.sys.updateList.remove(this);
@@ -361,7 +375,9 @@ var TileSprite = new Class({
     },
 
     /**
-     * Sets {@link Phaser.GameObjects.TileSprite#tilePositionX} and {@link Phaser.GameObjects.TileSprite#tilePositionY}.
+     * Sets the horizontal and vertical scroll position of the tiling texture, updating
+     * {@link Phaser.GameObjects.TileSprite#tilePositionX} and {@link Phaser.GameObjects.TileSprite#tilePositionY}.
+     * Either value may be omitted to leave it unchanged.
      *
      * @method Phaser.GameObjects.TileSprite#setTilePosition
      * @since 3.3.0
@@ -387,7 +403,9 @@ var TileSprite = new Class({
     },
 
     /**
-     * Sets {@link Phaser.GameObjects.TileSprite#tileRotation}.
+     * Sets the rotation of the tiling texture, in radians, updating
+     * {@link Phaser.GameObjects.TileSprite#tileRotation}.
+     * The texture rotates around its own origin, independently of the TileSprite's world rotation.
      *
      * @method Phaser.GameObjects.TileSprite#setTileRotation
      * @since 4.0.0
@@ -404,7 +422,10 @@ var TileSprite = new Class({
     },
 
     /**
-     * Sets {@link Phaser.GameObjects.TileSprite#tileScaleX} and {@link Phaser.GameObjects.TileSprite#tileScaleY}.
+     * Sets the horizontal and vertical scale of the tiling texture, updating
+     * {@link Phaser.GameObjects.TileSprite#tileScaleX} and {@link Phaser.GameObjects.TileSprite#tileScaleY}.
+     * The scale is independent of the TileSprite's own scale. If only `x` is provided,
+     * both axes are set to the same value.
      *
      * @method Phaser.GameObjects.TileSprite#setTileScale
      * @since 3.12.0
@@ -549,6 +570,40 @@ var TileSprite = new Class({
         ctx.restore();
 
         this.dirty = false;
+    },
+
+    /**
+     * Sets the size of this TileSprite's output region.
+     *
+     * This does not change the scale.
+     *
+     * If you have enabled this Game Object for input, changing the size will also change the
+     * size of the hit area, unless you have defined a custom hit area.
+     *
+     * @method Phaser.GameObjects.TileSprite#setSize
+     * @since 4.0.0
+     *
+     * @param {number} width - The width of this Game Object.
+     * @param {number} height - The height of this Game Object.
+     *
+     * @return {this} This Game Object instance.
+     */
+    setSize: function (width, height)
+    {
+        this.width = width;
+        this.height = height;
+
+        this.updateDisplayOrigin();
+
+        var input = this.input;
+
+        if (input && !input.customHitArea)
+        {
+            input.hitArea.width = width;
+            input.hitArea.height = height;
+        }
+
+        return this;
     },
 
     /**

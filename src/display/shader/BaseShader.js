@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -11,10 +11,9 @@ var Class = require('../../utils/Class');
  * A BaseShader is a small resource class that contains GLSL code for a shader.
  *
  * It contains the key of the shader, the source code, and optional metadata.
- * The source code is not of a specific type, such as fragment or vertex,
- * or even an incomplete snippet of GLSL.
- * It's just the raw source code as a string.
- * It may be retrieved and compiled as you wish.
+ * Phaser does not enforce a specific shader type: the source could be a
+ * fragment shader, a vertex shader, or even an incomplete snippet of GLSL.
+ * It is stored as raw source code and may be retrieved and compiled as you wish.
  * These keys can be used by `Phaser.GameObjects.Shader` and
  * `Phaser.Renderer.WebGL.RenderNodes.BaseFilterShader`.
  *

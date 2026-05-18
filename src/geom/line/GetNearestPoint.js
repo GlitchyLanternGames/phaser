@@ -1,14 +1,15 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
  * @author       Florian Mertens
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
 var Vector2 = require('../../math/Vector2');
 
 /**
- * Get the nearest point on a line perpendicular to the given point.
+ * Gets the nearest point on the infinite line defined by the given Line segment to the specified point.
+ * Note that the returned point is projected onto the full line, not clamped to the segment endpoints.
  *
  * @function Phaser.Geom.Line.GetNearestPoint
  * @since 3.16.0

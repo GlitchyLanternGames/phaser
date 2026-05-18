@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -10,13 +10,18 @@ var GameObjectFactory = require('../GameObjectFactory');
 /**
  * Creates a new SpriteGPULayer Game Object and adds it to the Scene.
  *
+ * A SpriteGPULayer is a high-performance batch renderer that draws a collection
+ * of sprites sharing the same texture in a single GPU draw call. Use it when you
+ * need to render many instances of the same sprite with minimal draw call overhead,
+ * such as for particle-like effects, tilemaps, or large crowds of identical objects.
+ *
  * Note: This method will only be available if the SpriteGPULayer Game Object has been built into Phaser.
  *
  * @method Phaser.GameObjects.GameObjectFactory#spriteGPULayer
  * @since 4.0.0
  *
  * @param {(string|Phaser.Textures.Texture)} texture - The key, or instance of the Texture this Game Object will use to render with, as stored in the Texture Manager.
- * @param {number} [size] - The number of members the SpriteGPULayer will accommodate. Default 1.
+ * @param {number} [size] - The maximum number of sprites the SpriteGPULayer can render in a single batch. Default 1.
  *
  * @return {Phaser.GameObjects.SpriteGPULayer} The Game Object that was created.
  */

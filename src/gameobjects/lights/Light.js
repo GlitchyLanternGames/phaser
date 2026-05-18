@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -70,7 +70,8 @@ var Light = new Class({
         this.color = new RGB(r, g, b);
 
         /**
-         * The intensity of the light.
+         * The intensity of the light. This scales the overall brightness of the light effect.
+         * A value of 1 is considered normal brightness. Higher values produce a stronger, brighter light.
          *
          * @name Phaser.GameObjects.Light#intensity
          * @type {number}
@@ -100,9 +101,9 @@ var Light = new Class({
         this.z = z === undefined ? radius * 0.1 : z;
 
         /**
-         * The flags that are compared against `RENDER_MASK` to determine if this Game Object will render or not.
-         * The bits are 0001 | 0010 | 0100 | 1000 set by the components Visible, Alpha, Transform and Texture respectively.
-         * If those components are not used by your custom class then you can use this bitmask as you wish.
+         * The flags that are compared against `RENDER_MASK` to determine if this Light will render or not.
+         * The relevant bit is 0001, set by the Visible component. The remaining bits are unused by Light
+         * but are reserved for custom use if required.
          *
          * @name Phaser.GameObjects.Light#renderFlags
          * @type {number}
@@ -273,12 +274,13 @@ var Light = new Class({
     },
 
     /**
-     * Set the intensity of the light.
+     * Set the intensity of the light. This scales the overall brightness of the light effect.
+     * A value of 1 is considered normal brightness. Higher values produce a stronger, brighter light.
      *
      * @method Phaser.GameObjects.Light#setIntensity
      * @since 3.0.0
      *
-     * @param {number} intensity - The intensity of the light.
+     * @param {number} intensity - The intensity (brightness multiplier) of the light.
      *
      * @return {this} This Light object.
      */
@@ -290,12 +292,13 @@ var Light = new Class({
     },
 
     /**
-     * Set the radius of the light.
+     * Set the radius of the light, in pixels. This defines the circular area of influence
+     * within which lit Game Objects will be affected by this light.
      *
      * @method Phaser.GameObjects.Light#setRadius
      * @since 3.0.0
      *
-     * @param {number} radius - The radius of the light.
+     * @param {number} radius - The radius of the light, in pixels.
      *
      * @return {this} This Light object.
      */
@@ -307,12 +310,16 @@ var Light = new Class({
     },
 
     /**
-     * Set the z position of the light.
+     * Set the z position of the light. This controls the perceived height of the light above
+     * the scene, which influences the relief (normal-map shading) effect. Larger values make
+     * the light appear more elevated. Lit Game Objects are considered to be at z=0, so if z
+     * exceeds the light's radius the light will not affect them. Strong values are in the
+     * range of 0 to radius/2.
      *
      * @method Phaser.GameObjects.Light#setZ
      * @since 4.0.0
      *
-     * @param {number} z - The z position of the light.
+     * @param {number} z - The z position of the light, where 0 is at the same level as lit Game Objects.
      *
      * @return {this} This Light object.
      */

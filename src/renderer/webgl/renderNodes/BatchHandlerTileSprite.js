@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -25,9 +25,18 @@ var BatchHandlerQuad = require('./BatchHandlerQuad');
 
 /**
  * @classdesc
- * This RenderNode handles batch rendering of TileSprites and Tiles.
- * It supplies shaders with knowledge of the frame and texture data,
- * which can be used to handle texture borders more intelligently.
+ * A RenderNode that handles batch rendering of TileSprite and Tile game objects
+ * in WebGL. It extends `BatchHandlerQuad` by passing per-vertex frame data
+ * (the texture coordinate origin and dimensions of the source frame) to the
+ * shader, enabling the shader to correctly clamp or wrap texture coordinates
+ * within the bounds of the frame. This is essential for tiled sprites, where
+ * a texture is repeated or scrolled across a surface and must not bleed into
+ * neighbouring frames on a texture atlas.
+ *
+ * Two additional render options are supported: `clampFrame`, which prevents
+ * texture coordinates from sampling outside the frame region, and `wrapFrame`,
+ * which tiles the frame region. These options are managed dynamically so that
+ * shader variants are compiled and swapped only when the options change.
  *
  * @class BatchHandlerTileSprite
  * @memberof Phaser.Renderer.WebGL.RenderNodes
@@ -99,6 +108,18 @@ var BatchHandlerTileSprite = new Class({
         }
     },
 
+    /**
+     * Reads the incoming render options and compares them against the
+     * currently active options. If any TileSprite-specific option has changed
+     * (`clampFrame`, `wrapFrame`, or the derived `texRes` flag), the internal
+     * change flag is set so that `updateShaderConfig` will update the active
+     * shader additions before the next draw call. Also calls the parent
+     * `BatchHandlerQuad` implementation to handle shared render options.
+     *
+     * @method Phaser.Renderer.WebGL.RenderNodes.BatchHandlerTileSprite#updateRenderOptions
+     * @since 4.0.0
+     * @param {Phaser.Types.Renderer.WebGL.RenderNodes.BatchHandlerQuadRenderOptions} renderOptions - The render options to apply.
+     */
     updateRenderOptions: function (renderOptions)
     {
         BatchHandlerQuad.prototype.updateRenderOptions.call(this, renderOptions);
@@ -132,6 +153,17 @@ var BatchHandlerTileSprite = new Class({
         }
     },
 
+    /**
+     * Applies any pending render option changes to the active shader program
+     * by enabling or disabling the `TexCoordFrameClamp` and `TexCoordFrameWrap`
+     * shader additions as required. This is called after the current batch has
+     * been flushed whenever `updateRenderOptions` detects a change. Also calls
+     * the parent `BatchHandlerQuad` implementation to handle shared shader
+     * configuration.
+     *
+     * @method Phaser.Renderer.WebGL.RenderNodes.BatchHandlerTileSprite#updateShaderConfig
+     * @since 4.0.0
+     */
     updateShaderConfig: function ()
     {
         BatchHandlerQuad.prototype.updateShaderConfig.call(this);
@@ -160,7 +192,13 @@ var BatchHandlerTileSprite = new Class({
     },
 
     /**
-     * Add a quad to the batch.
+     * Adds a textured quad to the batch for rendering as a TileSprite or Tile.
+     * Each vertex receives the full frame region (texX, texY, texWidth, texHeight)
+     * so that the shader can clamp or wrap UV coordinates within the frame bounds.
+     * If the batch is full after this call, it is flushed immediately. If the
+     * render options differ from those used by the current batch, the batch is
+     * also flushed and the shader configuration is updated before the new quad
+     * is written.
      *
      * @method Phaser.Renderer.WebGL.RenderNodes.BatchHandlerTileSprite#batch
      * @since 4.0.0
@@ -178,7 +216,7 @@ var BatchHandlerTileSprite = new Class({
      * @param {number} texY - The top v coordinate (0-1).
      * @param {number} texWidth - The width of the texture (0-1).
      * @param {number} texHeight - The height of the texture (0-1).
-     * @param {boolean} tintFill - Whether to tint the fill color.
+     * @param {Phaser.TintModes} tintMode - The tint mode to use.
      * @param {number} tintTL - The tint color for the top-left corner.
      * @param {number} tintBL - The tint color for the bottom-left corner.
      * @param {number} tintTR - The tint color for the top-right corner.
@@ -202,7 +240,7 @@ var BatchHandlerTileSprite = new Class({
         x3, y3,
         texX, texY,
         texWidth, texHeight,
-        tintFill,
+        tintMode,
         tintTL, tintBL, tintTR, tintBR,
         renderOptions,
         u0, v0, u1, v1, u2, v2, u3, v3
@@ -240,7 +278,7 @@ var BatchHandlerTileSprite = new Class({
         vertexViewF32[vertexOffset32++] = texWidth;
         vertexViewF32[vertexOffset32++] = texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintFill;
+        vertexViewF32[vertexOffset32++] = tintMode;
         vertexViewU32[vertexOffset32++] = tintBL;
 
         // Top-left
@@ -253,7 +291,7 @@ var BatchHandlerTileSprite = new Class({
         vertexViewF32[vertexOffset32++] = texWidth;
         vertexViewF32[vertexOffset32++] = texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintFill;
+        vertexViewF32[vertexOffset32++] = tintMode;
         vertexViewU32[vertexOffset32++] = tintTL;
 
         // Bottom-right
@@ -266,7 +304,7 @@ var BatchHandlerTileSprite = new Class({
         vertexViewF32[vertexOffset32++] = texWidth;
         vertexViewF32[vertexOffset32++] = texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintFill;
+        vertexViewF32[vertexOffset32++] = tintMode;
         vertexViewU32[vertexOffset32++] = tintBR;
 
         // Top-right
@@ -279,7 +317,7 @@ var BatchHandlerTileSprite = new Class({
         vertexViewF32[vertexOffset32++] = texWidth;
         vertexViewF32[vertexOffset32++] = texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintFill;
+        vertexViewF32[vertexOffset32++] = tintMode;
         vertexViewU32[vertexOffset32++] = tintTR;
 
         // Increment the instance count.

@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -9,9 +9,15 @@ var Vector2 = require('../../math/Vector2');
 
 /**
  * @classdesc
- * Vertex data for the NineSlice Game Object.
+ * Represents a single vertex within a NineSlice Game Object.
  *
- * This class consists of all the information required for a single vertex.
+ * A NineSlice Game Object is divided into a 3x3 grid of regions, each defined by a mesh
+ * of vertices. This class stores all the data needed for one vertex: its normalized position
+ * (x, y inherited from Vector2), its projected screen-space position (vx, vy), and its
+ * UV texture coordinates (u, v) used during rendering.
+ *
+ * You do not typically create NineSliceVertex instances directly. They are created and
+ * managed internally by the NineSlice Game Object.
  *
  * @class NineSliceVertex
  * @memberof Phaser.GameObjects
@@ -72,7 +78,7 @@ var Vertex = new Class({
     },
 
     /**
-     * Sets the U and V properties.
+     * Sets the UV texture coordinates of this vertex.
      *
      * @method Phaser.GameObjects.NineSliceVertex#setUVs
      * @since 4.0.0
@@ -91,8 +97,12 @@ var Vertex = new Class({
     },
 
     /**
-     * Resizes this Vertex by setting the x and y coordinates, then transforms this vertex
-     * by an identity matrix and dimensions, storing the results in `vx` and `vy`.
+     * Updates this vertex's position and calculates its projected screen-space coordinates.
+     *
+     * Sets the normalized `x` and `y` position, then scales them by the parent object's
+     * `width` and `height` to produce the projected `vx` and `vy` values. The origin
+     * offset of the parent object is then factored in, shifting `vx` and `vy` so that the
+     * mesh is correctly aligned relative to the object's origin point.
      *
      * @method Phaser.GameObjects.NineSliceVertex#resize
      * @since 4.0.0

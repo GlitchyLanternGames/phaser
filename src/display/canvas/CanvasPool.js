@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -38,7 +38,7 @@ var CanvasPool = function ()
      * @param {number} [canvasType=Phaser.CANVAS] - The type of the Canvas. Either `Phaser.CANVAS` or `Phaser.WEBGL`.
      * @param {boolean} [selfParent=false] - Use the generated Canvas element as the parent?
      *
-     * @return {HTMLCanvasElement} The canvas element that was created or pulled from the pool
+     * @return {HTMLCanvasElement} The canvas element that was created or pulled from the pool.
      */
     var create = function (parent, width, height, canvasType, selfParent)
     {
@@ -89,7 +89,10 @@ var CanvasPool = function ()
     };
 
     /**
-     * Creates a new Canvas DOM element, or pulls one from the pool if free.
+     * Creates a new 2D Canvas DOM element, or pulls one from the pool if free.
+     *
+     * This is a convenience wrapper around `create` that forces `canvasType` to `Phaser.CANVAS`,
+     * ensuring the returned canvas is always intended for use with a 2D rendering context.
      *
      * @function Phaser.Display.Canvas.CanvasPool.create2D
      * @since 3.0.0
@@ -98,7 +101,7 @@ var CanvasPool = function ()
      * @param {number} [width=1] - The width of the Canvas.
      * @param {number} [height=1] - The height of the Canvas.
      *
-     * @return {HTMLCanvasElement} The created canvas.
+     * @return {HTMLCanvasElement} The canvas element that was created or pulled from the pool.
      */
     var create2D = function (parent, width, height)
     {
@@ -106,7 +109,11 @@ var CanvasPool = function ()
     };
 
     /**
-     * Creates a new Canvas DOM element, or pulls one from the pool if free.
+     * Creates a new WebGL Canvas DOM element.
+     *
+     * This is a convenience wrapper around `create` that forces `canvasType` to `Phaser.WEBGL`.
+     * WebGL canvases are never added to the pool, because once a WebGL context's options are set
+     * they cannot be changed, making pooling unsuitable for them.
      *
      * @function Phaser.Display.Canvas.CanvasPool.createWebGL
      * @since 3.0.0
@@ -123,7 +130,7 @@ var CanvasPool = function ()
     };
 
     /**
-     * Gets the first free canvas index from the pool.
+     * Gets the first free canvas container from the pool.
      *
      * @function Phaser.Display.Canvas.CanvasPool.first
      * @since 3.0.0

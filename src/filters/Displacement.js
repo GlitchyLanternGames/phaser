@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -18,6 +18,10 @@ var Controller = require('./Controller');
  * of depth, surface irregularities, or distortion in otherwise flat elements. It can be applied to
  * characters, objects, or backgrounds to enhance realism, convey movement, or achieve various
  * stylistic appearances.
+ *
+ * This effect samples across an area. To avoid missing data at the edges,
+ * use `controller.setPaddingOverride(null)` to automatically pad game objects,
+ * or `camera.getPaddingWrapper(x)` to enlarge a camera.
  *
  * A Displacement effect is added to a Camera via the FilterList component:
  *
@@ -93,7 +97,7 @@ var Displacement = new Class({
      * @method Phaser.Filters.Displacement#setTexture
      * @since 4.0.0
      * @param {string} [texture='__WHITE'] - The unique string-based key of the texture to use for displacement, which must exist in the Texture Manager.
-     * @returns {this} This Filter Controller.
+     * @return {this} This Filter Controller.
      */
     setTexture: function (texture)
     {
@@ -107,6 +111,16 @@ var Displacement = new Class({
         return this;
     },
 
+    /**
+     * Returns the amount of extra padding, in pixels, that this filter requires when rendering.
+     * The padding accounts for the displacement effect extending beyond the original bounds
+     * of the Camera's rendered output.
+     *
+     * @method Phaser.Filters.Displacement#getPadding
+     * @since 4.0.0
+     *
+     * @return {Phaser.Geom.Rectangle} The padding Rectangle.
+     */
     getPadding: function ()
     {
         var override = this.paddingOverride;

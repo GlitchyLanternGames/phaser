@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -10,7 +10,8 @@ var Vector2 = require('../../math/Vector2');
 
 /**
  * Calculates a random point that lies within the `outer` Rectangle, but outside of the `inner` Rectangle.
- * The inner Rectangle must be fully contained within the outer rectangle.
+ * The inner Rectangle must be fully contained within the outer rectangle for a point to be generated.
+ * If `inner` is not fully contained within `outer`, the function returns the `out` vector unchanged.
  *
  * @function Phaser.Geom.Rectangle.RandomOutside
  * @since 3.10.0

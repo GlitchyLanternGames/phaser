@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -16,6 +16,7 @@ var Frame = require('./Frame');
 var GameEvents = require('../core/events');
 var GetValue = require('../utils/object/GetValue');
 var ImageGameObject = require('../gameobjects/image/Image');
+var IntegerToColor = require('../display/color/IntegerToColor');
 var IsPlainObject = require('../utils/object/IsPlainObject');
 var Parser = require('./parsers');
 var Rectangle = require('../geom/rectangle/Rectangle');
@@ -25,7 +26,7 @@ var TileSpriteGameObject = require('../gameobjects/tilesprite/TileSprite');
 /**
  * @callback EachTextureCallback
  *
- * @param {Phaser.Textures.Texture} texture - Each texture in Texture Manager.
+ * @param {Phaser.Textures.Texture} texture - Each texture in the Texture Manager.
  * @param {...*} [args] - Additional arguments that will be passed to the callback, after the child.
  */
 
@@ -209,7 +210,7 @@ var TextureManager = new Class({
         {
             this.addBase64('__MISSING', config.missingImage);
         }
-        
+
         if (config.whiteImage !== null)
         {
             this.addBase64('__WHITE', config.whiteImage);
@@ -251,7 +252,7 @@ var TextureManager = new Class({
     },
 
     /**
-     * Checks the given texture key and throws a console.warn if the key is already in use, then returns false.
+     * Checks the given texture key and logs a console.error if the key is already in use, then returns false.
      *
      * If you wish to avoid the console.warn then use `TextureManager.exists` instead.
      *
@@ -762,12 +763,20 @@ var TextureManager = new Class({
     /**
      * Adds a Texture Atlas to this Texture Manager.
      *
-     * In Phaser terminology, a Texture Atlas is a combination of an atlas image and a JSON data file,
-     * such as those exported by applications like Texture Packer.
+     * In Phaser terminology, a Texture Atlas is a combination of an atlas image and a data file
+     * describing the frames within it, such as those exported by applications like Texture Packer.
      *
-     * It can accept either JSON Array or JSON Hash formats, as exported by Texture Packer and similar software.
+     * This method accepts three different atlas data formats:
      *
-     * As of Phaser 3.60 you can use this method to add a atlas data to an existing Phaser Texture.
+     * - **JSON Array** — the `frames` or `textures` field is an Array. Used by Texture Packer's
+     *   "JSON Array" and "Phaser (multi-atlas)" exports. Dispatched to `addAtlasJSONArray`.
+     * - **JSON Hash** — the `frames` field is an Object. Used by Texture Packer's "JSON Hash" export.
+     *   Dispatched to `addAtlasJSONHash`.
+     * - **Phaser Compact Texture (PCT)** — a decoded PCT data object with a `pages` array. This is
+     *   the compact line-oriented format loaded by `LoaderPlugin#atlasPCT`. Dispatched to `addAtlasPCT`.
+     *
+     * The format is detected automatically from the shape of the `data` argument. As of Phaser 3.60
+     * you can use this method to add an atlas data set to an existing Phaser Texture.
      *
      * @method Phaser.Textures.TextureManager#addAtlas
      * @since 3.0.0
@@ -781,6 +790,12 @@ var TextureManager = new Class({
      */
     addAtlas: function (key, source, data, dataSource)
     {
+        //  Phaser Compact Texture Atlas format?
+        if (data && !Array.isArray(data) && Array.isArray(data.pages) && data.frames && !Array.isArray(data.frames))
+        {
+            return this.addAtlasPCT(key, source, data, dataSource);
+        }
+
         //  New Texture Packer format?
         if (Array.isArray(data.textures) || Array.isArray(data.frames))
         {
@@ -802,7 +817,7 @@ var TextureManager = new Class({
      *
      * This is known as a JSON Array in software such as Texture Packer.
      *
-     * As of Phaser 3.60 you can use this method to add a atlas data to an existing Phaser Texture.
+     * As of Phaser 3.60 you can use this method to add an atlas data set to an existing Phaser Texture.
      *
      * @method Phaser.Textures.TextureManager#addAtlasJSONArray
      * @fires Phaser.Textures.Events#ADD
@@ -871,7 +886,7 @@ var TextureManager = new Class({
      *
      * This is known as a JSON Hash in software such as Texture Packer.
      *
-     * As of Phaser 3.60 you can use this method to add a atlas data to an existing Phaser Texture.
+     * As of Phaser 3.60 you can use this method to add an atlas data set to an existing Phaser Texture.
      *
      * @method Phaser.Textures.TextureManager#addAtlasJSONHash
      * @fires Phaser.Textures.Events#ADD
@@ -925,6 +940,60 @@ var TextureManager = new Class({
     },
 
     /**
+     * Adds a Phaser Compact Texture Atlas (PCT) to this Texture Manager.
+     *
+     * PCT is a compact line-oriented atlas format. A single PCT file can describe multiple atlas
+     * pages, each referencing a separate texture image. The `data` argument must be a decoded PCT
+     * structure as produced by `Phaser.Textures.Parsers.PCTDecode` — that is, an object containing
+     * `pages`, `folders`, and `frames` fields. The `source` argument should be a single Image or an
+     * Array of Images, one per page, in the same order as the `pages` field on the decoded data.
+     *
+     * You do not normally need to call this method directly. It is called automatically when the
+     * `LoaderPlugin#atlasPCT` method finishes loading a PCT file. You can also use this method to add a
+     * decoded PCT data set to an existing Phaser Texture.
+     *
+     * @method Phaser.Textures.TextureManager#addAtlasPCT
+     * @fires Phaser.Textures.Events#ADD
+     * @since 4.0.0
+     *
+     * @param {string} key - The unique string-based key of the Texture.
+     * @param {(HTMLImageElement|HTMLImageElement[]|Phaser.Textures.Texture)} source - The source Image element(s) — one per PCT page — or an existing Phaser Texture.
+     * @param {object} data - The decoded PCT data object.
+     * @param {HTMLImageElement|HTMLCanvasElement|HTMLImageElement[]|HTMLCanvasElement[]} [dataSource] - An optional data Image element (normal map source).
+     *
+     * @return {?Phaser.Textures.Texture} The Texture that was created, or `null` if the key is already in use.
+     */
+    addAtlasPCT: function (key, source, data, dataSource)
+    {
+        var texture = null;
+
+        if (source instanceof Texture)
+        {
+            key = source.key;
+            texture = source;
+        }
+        else if (this.checkKey(key))
+        {
+            texture = this.create(key, source);
+        }
+
+        if (texture)
+        {
+            Parser.PCT(texture, data);
+
+            if (dataSource)
+            {
+                texture.setDataSource(dataSource);
+            }
+
+            this.emit(Events.ADD, key, texture);
+            this.emit(Events.ADD_KEY + key, texture);
+        }
+
+        return texture;
+    },
+
+    /**
      * Adds a Texture Atlas to this Texture Manager.
      *
      * In Phaser terminology, a Texture Atlas is a combination of an atlas image and a data file,
@@ -932,7 +1001,7 @@ var TextureManager = new Class({
      *
      * The frame data of the atlas must be stored in an XML file.
      *
-     * As of Phaser 3.60 you can use this method to add a atlas data to an existing Phaser Texture.
+     * As of Phaser 3.60 you can use this method to add an atlas data set to an existing Phaser Texture.
      *
      * @method Phaser.Textures.TextureManager#addAtlasXML
      * @fires Phaser.Textures.Events#ADD
@@ -983,7 +1052,7 @@ var TextureManager = new Class({
      *
      * The frame data of the atlas must be stored in a Unity YAML file.
      *
-     * As of Phaser 3.60 you can use this method to add a atlas data to an existing Phaser Texture.
+     * As of Phaser 3.60 you can use this method to add an atlas data set to an existing Phaser Texture.
      *
      * @method Phaser.Textures.TextureManager#addUnityAtlas
      * @fires Phaser.Textures.Events#ADD
@@ -1179,13 +1248,66 @@ var TextureManager = new Class({
     },
 
     /**
+     * Creates a texture from a color and alpha.
+     * The texture will be filled with the given color and alpha.
+     *
+     * This may be used as a proxy texture,
+     * which can later be replaced with a real texture.
+     * See {@link Phaser.Textures.Texture#setSource}
+     * for more information on replacing the proxy with a real texture.
+     *
+     * This is only available in WebGL mode.
+     *
+     * @method Phaser.Textures.TextureManager#addFlatColor
+     * @fires Phaser.Textures.Events#ADD
+     * @since 4.0.0
+     * @webglonly
+     *
+     * @param {string} key - The unique string-based key of the Texture.
+     * @param {number} width - The width of the texture.
+     * @param {number} height - The height of the texture.
+     * @param {number} [color=0x000000] - The color of the texture.
+     * @param {number} [alpha=0] - The alpha of the texture.
+     * @return {?Phaser.Textures.Texture} The Texture that was created, or `null` if the key is already in use or the width or height is not positive.
+     */
+    addFlatColor: function (key, width, height, color, alpha)
+    {
+        if (
+            !this.checkKey(key) ||
+            width <= 0 ||
+            height <= 0
+        )
+        {
+            return null;
+        }
+
+        if (color === undefined) { color = 0x000000; }
+        if (alpha === undefined) { alpha = 0; }
+
+        var col = IntegerToColor(color);
+        var r = col.red;
+        var g = col.green;
+        var b = col.blue;
+        var data = new Uint8Array(width * height * 4);
+        for (var i = 0; i < width * height; i++)
+        {
+            data[i * 4] = r;
+            data[i * 4 + 1] = g;
+            data[i * 4 + 2] = b;
+            data[i * 4 + 3] = alpha * 255;
+        }
+
+        return this.addUint8Array(key, data, width, height);
+    },
+
+    /**
      * Creates a new Texture using the given source and dimensions.
      *
      * @method Phaser.Textures.TextureManager#create
      * @since 3.0.0
      *
      * @param {string} key - The unique string-based key of the Texture.
-     * @param {(HTMLImageElement|HTMLCanvasElement|HTMLImageElement[]|HTMLCanvasElement[]|Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper)} source - An array of sources that are used to create the texture. Usually Images, but can also be a Canvas.
+     * @param {Phaser.Types.Textures.TextureSource | Phaser.Types.Textures.TextureSource[]} source - A source or array of sources that are used to create the texture. Usually Images, but can also be a Canvas or other types.
      * @param {number} [width] - The width of the Texture. This is optional and automatically derived from the source images.
      * @param {number} [height] - The height of the Texture. This is optional and automatically derived from the source images.
      *

@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -14,7 +14,7 @@ var MATH_CONST = require('../const');
  *
  * @param {number} currentAngle - The current angle, in radians.
  * @param {number} targetAngle - The target angle to rotate to, in radians.
- * @param {number} [lerp=0.05] - The lerp value to add to the current angle.
+ * @param {number} [lerp=0.05] - The step size, in radians, to rotate by in this call. The angle will be rotated by this amount towards the target, either added or subtracted depending on the shortest rotation direction.
  *
  * @return {number} The adjusted angle.
  */

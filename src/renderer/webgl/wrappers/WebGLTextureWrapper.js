@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -29,7 +29,7 @@ var IsSizePowerOfTwo = require('../../../math/pow2/IsSizePowerOfTwo');
  * @param {number} wrapT - Wrapping mode of the texture.
  * @param {number} wrapS - Wrapping mode of the texture.
  * @param {number} format - Which format does the texture use.
- * @param {?object} pixels - pixel data.
+ * @param {?object} pixels - The pixel data used to populate the texture. Can be a Canvas, Video, ImageData, Uint8Array, or compressed texture object.
  * @param {number} width - Width of the texture in pixels.
  * @param {number} height - Height of the texture in pixels.
  * @param {boolean} [pma=true] - Does the texture have premultiplied alpha?
@@ -87,7 +87,9 @@ var WebGLTextureWrapper = new Class({
         this.mipLevel = mipLevel;
 
         /**
-         * Filtering of the texture.
+         * The minification filter for the texture, as a WebGL filter constant
+         * (e.g. `gl.LINEAR` or `gl.NEAREST`). Applied when the texture is
+         * scaled down.
          *
          * @name Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper#minFilter
          * @type {number}
@@ -96,7 +98,9 @@ var WebGLTextureWrapper = new Class({
         this.minFilter = minFilter;
 
         /**
-         * Filtering of the texture.
+         * The magnification filter for the texture, as a WebGL filter constant
+         * (e.g. `gl.LINEAR` or `gl.NEAREST`). Applied when the texture is
+         * scaled up.
          *
          * @name Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper#magFilter
          * @type {number}
@@ -105,7 +109,8 @@ var WebGLTextureWrapper = new Class({
         this.magFilter = magFilter;
 
         /**
-         * Wrapping mode of the texture.
+         * The wrapping mode for the T (vertical) axis of the texture,
+         * as a WebGL wrap constant (e.g. `gl.REPEAT` or `gl.CLAMP_TO_EDGE`).
          *
          * @name Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper#wrapT
          * @type {number}
@@ -114,7 +119,8 @@ var WebGLTextureWrapper = new Class({
         this.wrapT = wrapT;
 
         /**
-         * Wrapping mode of the texture.
+         * The wrapping mode for the S (horizontal) axis of the texture,
+         * as a WebGL wrap constant (e.g. `gl.REPEAT` or `gl.CLAMP_TO_EDGE`).
          *
          * @name Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper#wrapS
          * @type {number}
@@ -123,7 +129,7 @@ var WebGLTextureWrapper = new Class({
         this.wrapS = wrapS;
 
         /**
-         * Which format does the texture use.
+         * The WebGL pixel format of the texture (e.g. `gl.RGBA` or `gl.RGB`).
          *
          * @name Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper#format
          * @type {number}
@@ -212,6 +218,21 @@ var WebGLTextureWrapper = new Class({
          */
         this.batchUnit = -1;
 
+        /**
+         * Whether the mipmaps should be regenerated.
+         * This is only relevant to dynamic textures and framebuffers with
+         * rapidly changing content.
+         * The process which changes the content should set this flag.
+         * When the texture is next bound, the WebGLTextureUnitsWrapper
+         * should trigger the `generateMipmap` method.
+         *
+         * @name Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper#needsMipmapRegeneration
+         * @type {boolean}
+         * @since 4.1.0
+         * @default false
+         */
+        this.needsMipmapRegeneration = false;
+
         this.createResource();
     },
 
@@ -258,6 +279,16 @@ var WebGLTextureWrapper = new Class({
      * Resizes the WebGLTexture to the new dimensions.
      * This will destroy the contents of the texture.
      *
+     * Wrap mode will be updated: REPEAT if the new size is power-of-two,
+     * CLAMP_TO_EDGE if not.
+     *
+     * Texture minification filter will be updated:
+     * - Uses mipmap settings from game config if:
+     *   - Size is power-of-two
+     *   - There is a mipmap setting
+     *   - This is not a render texture, OR mipmap regeneration is enabled
+     * - Uses regular texture filter otherwise.
+     *
      * @method Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper#resize
      * @since 4.0.0
      * @param {number} width - The new width of the WebGLTexture.
@@ -272,6 +303,36 @@ var WebGLTextureWrapper = new Class({
 
         this.width = width;
         this.height = height;
+
+        var renderer = this.renderer;
+        var gl = renderer.gl;
+        var isPOT = IsSizePowerOfTwo(width, height);
+
+        // Repeat modes
+        if (isPOT)
+        {
+            this.wrapS = gl.REPEAT;
+            this.wrapT = gl.REPEAT;
+        }
+        else
+        {
+            this.wrapS = gl.CLAMP_TO_EDGE;
+            this.wrapT = gl.CLAMP_TO_EDGE;
+        }
+
+        // Mipmap modes
+        if (isPOT && renderer.mipmapFilter && (!this.isRenderTexture || renderer.config.mipmapRegeneration))
+        {
+            this.minFilter = renderer.mipmapFilter;
+        }
+        else if (renderer.config.antialias)
+        {
+            this.minFilter = gl.LINEAR;
+        }
+        else
+        {
+            this.minFilter = gl.NEAREST;
+        }
 
         this._processTexture();
     },
@@ -290,7 +351,7 @@ var WebGLTextureWrapper = new Class({
      * @param {?object} source - The source to update the WebGLTexture with.
      * @param {number} width - The new width of the WebGLTexture.
      * @param {number} height - The new height of the WebGLTexture.
-     * @param {boolean} flipY - Should the WebGLTexture set `UNPACK_MULTIPLY_FLIP_Y`?
+     * @param {boolean} flipY - Should the WebGLTexture set `UNPACK_FLIP_Y_WEBGL`?
      * @param {number} wrapS - The new wrapping mode for the WebGLTexture.
      * @param {number} wrapT - The new wrapping mode for the WebGLTexture.
      * @param {number} minFilter - The new minification filter for the WebGLTexture.
@@ -350,19 +411,16 @@ var WebGLTextureWrapper = new Class({
         var height = this.height;
         var format = this.format;
 
-        var generateMipmap = false;
-
         if (pixels === null || pixels === undefined)
         {
             gl.texImage2D(gl.TEXTURE_2D, mipLevel, format, width, height, 0, format, gl.UNSIGNED_BYTE, null);
 
-            generateMipmap = IsSizePowerOfTwo(width, height);
+            this.generateMipmap();
         }
         else if (pixels.compressed)
         {
             width = pixels.width;
             height = pixels.height;
-            generateMipmap = pixels.generateMipmap;
 
             for (var i = 0; i < pixels.mipmaps.length; i++)
             {
@@ -373,7 +431,7 @@ var WebGLTextureWrapper = new Class({
         {
             gl.texImage2D(gl.TEXTURE_2D, mipLevel, format, width, height, 0, format, gl.UNSIGNED_BYTE, pixels);
 
-            generateMipmap = IsSizePowerOfTwo(width, height);
+            this.generateMipmap();
         }
         else
         {
@@ -385,13 +443,49 @@ var WebGLTextureWrapper = new Class({
 
             gl.texImage2D(gl.TEXTURE_2D, mipLevel, format, format, gl.UNSIGNED_BYTE, pixels);
 
-            generateMipmap = IsSizePowerOfTwo(width, height);
+            this.generateMipmap();
+        }
+    },
+
+    /**
+     * Return whether the texture is set to use a mipmap minification filter.
+     *
+     * @name Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper#isMipmap
+     * @since 4.1.0
+     * @returns {boolean} Whether the texture is set to use a mipmap minification filter.
+     */
+    isMipmap: function ()
+    {
+        var minFilter = this.minFilter;
+        var gl = this.renderer.gl;
+        return minFilter === gl.NEAREST_MIPMAP_NEAREST ||
+            minFilter === gl.LINEAR_MIPMAP_NEAREST ||
+            minFilter === gl.LINEAR_MIPMAP_LINEAR ||
+            minFilter === gl.NEAREST_MIPMAP_LINEAR;
+    },
+
+    /**
+     * Generate mipmap levels for the texture.
+     * This method is called internally.
+     *
+     * Mipmaps are only generated if this texture is mipmap-enabled
+     * and has a size which is a power of two.
+     * Otherwise this function returns without side effects.
+     *
+     * @name Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper#generateMipmap
+     * @since 4.1.0
+     */
+    generateMipmap: function ()
+    {
+        this.needsMipmapRegeneration = false;
+
+        var gl = this.renderer.gl;
+        if (!(this.isMipmap() && IsSizePowerOfTwo(this.width, this.height)))
+        {
+            return;
         }
 
-        if (generateMipmap)
-        {
-            gl.generateMipmap(gl.TEXTURE_2D);
-        }
+        gl.generateMipmap(gl.TEXTURE_2D);
     },
 
     /**

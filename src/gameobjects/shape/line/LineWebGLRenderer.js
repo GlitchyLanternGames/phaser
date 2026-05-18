@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -60,7 +60,9 @@ var LineWebGLRenderer = function (renderer, src, drawingContext, parentMatrix)
             1,
             true,
             calcMatrix,
-            color, color, color, color
+            color, color, color, color,
+            undefined,
+            src.lighting
         );
     }
 };

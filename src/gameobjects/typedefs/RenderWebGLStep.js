@@ -18,5 +18,5 @@
  * @param {Phaser.GameObjects.GameObject[]} [displayList] - The display list which is currently being rendered.
  * @param {number} [displayListIndex] - The index of the Game Object within the display list.
  *
- * @returns {void}
+ * @return {void}
  */

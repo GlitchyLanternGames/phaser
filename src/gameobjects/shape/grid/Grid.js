@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -83,7 +83,8 @@ var Grid = new Class({
         this.cellHeight = cellHeight;
 
         /**
-         * Will the grid render the alternating cells in the `altFillColor`?
+         * Controls whether the grid renders alternating cells using the `altFillColor` and `altFillAlpha` values.
+         * Set this via the `setAltFillStyle` method.
          *
          * @name Phaser.GameObjects.Grid#showAltCells
          * @type {boolean}
@@ -142,7 +143,7 @@ var Grid = new Class({
          * @name Phaser.GameObjects.Grid#strokeOutsideIncomplete
          * @type {boolean}
          * @since 4.0.0
-         * @default false
+         * @default true
          */
         this.strokeOutsideIncomplete = true;
 
@@ -153,7 +154,7 @@ var Grid = new Class({
 
         if (strokeFillColor !== undefined)
         {
-            this.setStrokeStyle(strokeFillColor, strokeFillAlpha);
+            this.setStrokeStyle(1, strokeFillColor, strokeFillAlpha);
         }
 
         this.updateDisplayOrigin();
@@ -216,7 +217,10 @@ var Grid = new Class({
     },
 
     /**
-     * Sets how to stroke the outside of the Grid object.
+     * Controls whether a stroke is drawn around the outer perimeter of the entire Grid object,
+     * in addition to the lines drawn between cells. Optionally, you can also control whether the
+     * outer edge is stroked on partial cells, i.e. where the grid dimensions do not divide evenly
+     * by the cell dimensions, leaving an incomplete cell on the right or bottom edge.
      *
      * This call can be chained.
      *

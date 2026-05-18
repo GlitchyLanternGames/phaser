@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -10,7 +10,13 @@ var Vector2 = require('../../math/Vector2');
 
 /**
  * @classdesc
- * A Matrix used for display transformations for rendering.
+ * A TransformMatrix is a 3x3 affine transformation matrix used to encode
+ * the position, rotation, scale, and skew of a Game Object for rendering.
+ *
+ * It is used internally by Phaser during the render pipeline to accumulate
+ * parent-child transform chains and apply camera transformations. You will
+ * typically interact with it when writing custom renderers or working with
+ * the camera or display list transform pipeline.
  *
  * It is represented like so:
  *
@@ -484,7 +490,7 @@ var TransformMatrix = new Class({
      * Multiply this Matrix by the matrix given, including the offset.
      *
      * The offsetX is added to the tx value: `offsetX * a + offsetY * c + tx`.
-     * The offsetY is added to the ty value: `offsetY * b + offsetY * d + ty`.
+     * The offsetY is added to the ty value: `offsetX * b + offsetY * d + ty`.
      *
      * @method Phaser.GameObjects.Components.TransformMatrix#multiplyWithOffset
      * @since 3.11.0
@@ -689,7 +695,7 @@ var TransformMatrix = new Class({
      * @param {number} scrollFactorX - The horizontal scroll factor to apply.
      * @param {number} scrollFactorY - The vertical scroll factor to apply.
      *
-     * @returns {this} This TransformMatrix.
+     * @return {this} This TransformMatrix.
      */
     copyWithScrollFactorFrom: function (src, scrollX, scrollY, scrollFactorX, scrollFactorY)
     {
@@ -705,7 +711,7 @@ var TransformMatrix = new Class({
 
         matrix[4] = src.a * sx + src.c * sy + src.e;
         matrix[5] = src.b * sx + src.d * sy + src.f;
-        
+
         return this;
     },
 
@@ -953,7 +959,7 @@ var TransformMatrix = new Class({
      * @param {number} y - The y value of the top-left vertex of the quad.
      * @param {number} xw - The x value of the bottom-right vertex of the quad. This is the x + width.
      * @param {number} yh - The y value of the bottom-right vertex of the quad. This is the y + height.
-     * @param {Float32Array} [quad] - Optional Float32Array to store the results in. Otherwises uses the local quad array.
+     * @param {Float32Array} [quad] - Optional Float32Array to store the results in. Otherwise uses the local quad array.
      *
      * @return {Float32Array} The quad Float32Array.
      */

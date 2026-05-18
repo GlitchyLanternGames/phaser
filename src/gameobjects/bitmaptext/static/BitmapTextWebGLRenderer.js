@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -59,7 +59,7 @@ var BitmapTextWebGLRenderer = function (renderer, src, drawingContext, parentMat
 
     var getTint = Utils.getTintAppendFloatAlpha;
 
-    tempTintData1.tintFill = src.tintFill;
+    tempTintData1.tintEffect = src.tintMode;
     tempTintData1.tintTopLeft = getTint(src.tintTopLeft, src._alphaTL);
     tempTintData1.tintTopRight = getTint(src.tintTopRight, src._alphaTR);
     tempTintData1.tintBottomLeft = getTint(src.tintBottomLeft, src._alphaBL);
@@ -84,7 +84,7 @@ var BitmapTextWebGLRenderer = function (renderer, src, drawingContext, parentMat
         var srcShadowColor = src.dropShadowColor;
         var srcShadowAlpha = src.dropShadowAlpha;
 
-        tempTintData2.tintFill = 1;
+        tempTintData2.tintEffect = 1;
         tempTintData2.tintTopLeft = getTint(srcShadowColor, srcShadowAlpha * src._alphaTL);
         tempTintData2.tintTopRight = getTint(srcShadowColor, srcShadowAlpha * src._alphaTR);
         tempTintData2.tintBottomLeft = getTint(srcShadowColor, srcShadowAlpha * src._alphaBL);
@@ -118,7 +118,7 @@ var BitmapTextWebGLRenderer = function (renderer, src, drawingContext, parentMat
         {
             var color = charColors[char.i];
 
-            tempTintData2.tintFill = color.tintEffect;
+            tempTintData2.tintEffect = color.tintEffect;
             tempTintData2.tintTopLeft = getTint(color.tintTL, src._alphaTL);
             tempTintData2.tintTopRight = getTint(color.tintTR, src._alphaTR);
             tempTintData2.tintBottomLeft = getTint(color.tintBL, src._alphaBL);

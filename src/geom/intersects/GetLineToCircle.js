@@ -1,7 +1,7 @@
 /**
  * @author       Florian Vazelle
  * @author       Geoffrey Glaive
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -10,7 +10,7 @@ var LineToCircle = require('./LineToCircle');
 
 /**
  * Checks for intersection between the line segment and circle,
- * and returns the intersection points as a Point object array.
+ * and returns the intersection points as a Vector2 object array.
  *
  * @function Phaser.Geom.Intersects.GetLineToCircle
  * @since 3.0.0

@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -89,7 +89,7 @@ if (typeof WEBGL_RENDERER)
         },
 
         /**
-         * Add a render step.
+         * Adds a render step function to this Game Object's WebGL render pipeline.
          *
          * The first render step in `_renderSteps` is run first.
          * It should call the next render step in the list.

@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -19,6 +19,11 @@ var Sprite = require('../sprite/Sprite');
 /**
  * @classdesc
  * A Group is a way for you to create, manipulate, or recycle similar Game Objects.
+ *
+ * Groups are commonly used to implement object pools, where a fixed set of Game Objects
+ * are created up front and then recycled by toggling their `active` and `visible` states,
+ * avoiding the overhead of repeated construction and garbage collection. This pattern is
+ * especially useful for frequently spawned objects such as bullets, particles, or enemies.
  *
  * Group membership is non-exclusive. A Game Object can belong to several groups, one group, or none.
  *
@@ -259,13 +264,25 @@ var Group = new Class({
         this.on(Events.REMOVED_FROM_SCENE, this.removedFromScene, this);
     },
 
-    //  Overrides Game Object method
+    /**
+     * Called when this Group is added to a Scene. Registers this Group with the Scene's update list
+     * so that its `preUpdate` method is called each game step.
+     *
+     * @method Phaser.GameObjects.Group#addedToScene
+     * @since 3.0.0
+     */
     addedToScene: function ()
     {
         this.scene.sys.updateList.add(this);
     },
 
-    //  Overrides Game Object method
+    /**
+     * Called when this Group is removed from a Scene. Unregisters this Group from the Scene's
+     * update list so that its `preUpdate` method is no longer called each game step.
+     *
+     * @method Phaser.GameObjects.Group#removedFromScene
+     * @since 3.0.0
+     */
     removedFromScene: function ()
     {
         this.scene.sys.updateList.remove(this);
@@ -766,7 +783,7 @@ var Group = new Class({
      * @method Phaser.GameObjects.Group#getLength
      * @since 3.0.0
      *
-     * @return {number}
+     * @return {number} The total number of members in this Group.
      */
     getLength: function ()
     {
@@ -841,7 +858,7 @@ var Group = new Class({
      * @param {(string|number)} [frame=defaultFrame] - A texture frame assigned to a new Game Object (if one is created).
      * @param {boolean} [visible=true] - The {@link Phaser.GameObjects.Components.Visible#visible} state of a new Game Object (if one is created).
      *
-     * @return {?any} The first matching group member, or a newly created member, or null.
+     * @return {?any} The nth matching group member, or a newly created member, or null.
      */
     getFirstNth: function (nth, state, createIfNull, x, y, key, frame, visible)
     {
@@ -866,7 +883,7 @@ var Group = new Class({
      * @param {(string|number)} [frame=defaultFrame] - A texture frame assigned to a new Game Object (if one is created).
      * @param {boolean} [visible=true] - The {@link Phaser.GameObjects.Components.Visible#visible} state of a new Game Object (if one is created).
      *
-     * @return {?any} The first matching group member, or a newly created member, or null.
+     * @return {?any} The last matching group member, or a newly created member, or null.
      */
     getLast: function (state, createIfNull, x, y, key, frame, visible)
     {
@@ -892,7 +909,7 @@ var Group = new Class({
      * @param {(string|number)} [frame=defaultFrame] - A texture frame assigned to a new Game Object (if one is created).
      * @param {boolean} [visible=true] - The {@link Phaser.GameObjects.Components.Visible#visible} state of a new Game Object (if one is created).
      *
-     * @return {?any} The first matching group member, or a newly created member, or null.
+     * @return {?any} The nth matching group member (searching from the end), or a newly created member, or null.
      */
     getLastNth: function (nth, state, createIfNull, x, y, key, frame, visible)
     {
@@ -1094,7 +1111,7 @@ var Group = new Class({
     },
 
     /**
-     * Whether this group's size at its {@link Phaser.GameObjects.Group#maxSize maximum}.
+     * Whether this group's size is at its {@link Phaser.GameObjects.Group#maxSize maximum}.
      *
      * @method Phaser.GameObjects.Group#isFull
      * @since 3.0.0
@@ -1161,7 +1178,7 @@ var Group = new Class({
      * @method Phaser.GameObjects.Group#getTotalFree
      * @since 3.0.0
      *
-     * @return {number} maxSize minus the number of active group numbers; or a large number (if maxSize is -1).
+     * @return {number} maxSize minus the number of active group members; or a large number (if maxSize is -1).
      */
     getTotalFree: function ()
     {
@@ -1235,7 +1252,7 @@ var Group = new Class({
      * @since 3.21.0
      *
      * @param {string} key - The property to be updated.
-     * @param {number} value - The amount to set the property to.
+     * @param {number} value - The amount to add to the property.
      * @param {number} [step=0] - This is added to the `value` amount, multiplied by the iteration counter.
      * @param {number} [index=0] - An optional offset to start searching from within the items array.
      * @param {number} [direction=1] - The direction to iterate through the array. 1 is from beginning to end, -1 from end to beginning.
@@ -1384,12 +1401,12 @@ var Group = new Class({
     },
 
     /**
-     * Sets the angle of each group member.
+     * Adds the given value to the angle of each group member.
      *
      * @method Phaser.GameObjects.Group#angle
      * @since 3.21.0
      *
-     * @param {number} value - The amount to set the angle to, in degrees.
+     * @param {number} value - The amount to add to the angle, in degrees.
      * @param {number} [step=0] - This is added to the `value` amount, multiplied by the iteration counter.
      *
      * @return {this} This Group object.
@@ -1556,8 +1573,8 @@ var Group = new Class({
      * @method Phaser.GameObjects.Group#scaleXY
      * @since 3.21.0
      *
-     * @param {number} scaleX - The amount to be added to the `scaleX` property.
-     * @param {number} [scaleY] - The amount to be added to the `scaleY` property. If `undefined` or `null` it uses the `scaleX` value.
+     * @param {number} scaleX - The amount to set the `scaleX` property to.
+     * @param {number} [scaleY] - The amount to set the `scaleY` property to. If `undefined` or `null` it uses the `scaleX` value.
      * @param {number} [stepX=0] - This is added to the `scaleX` amount, multiplied by the iteration counter.
      * @param {number} [stepY=0] - This is added to the `scaleY` amount, multiplied by the iteration counter.
      *
@@ -1594,7 +1611,7 @@ var Group = new Class({
      * @method Phaser.GameObjects.Group#setBlendMode
      * @since 3.21.0
      *
-     * @param {number} value - The amount to set the property to.
+     * @param {number} value - The blend mode value to set. See `Phaser.BlendModes` for valid values.
      *
      * @return {this} This Group object.
      */
@@ -1672,7 +1689,7 @@ var Group = new Class({
     },
 
     /**
-     * Sets the visible of each group member.
+     * Sets the visibility of each group member.
      *
      * @method Phaser.GameObjects.Group#setVisible
      * @since 3.21.0

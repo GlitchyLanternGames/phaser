@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -10,6 +10,14 @@ var CONST = require('./const');
 var Extend = require('./utils/object/Extend');
 
 /**
+ * The Phaser namespace is the root namespace for the entire Phaser game framework.
+ * It contains all sub-namespaces, classes, and constants that make up the framework,
+ * including the Game class, Scene management, Game Objects, physics systems, input
+ * handling, asset loading, cameras, tweens, tilemaps, and more.
+ *
+ * When Phaser is built as a bundle, this namespace is also exported to `Phaser`,
+ * making it available as a browser global.
+ *
  * @namespace Phaser
  */
 
@@ -45,6 +53,7 @@ var Phaser = {
     Textures: require('./textures'),
     Tilemaps: require('./tilemaps'),
     Time: require('./time'),
+    TintModes: require('./renderer/TintModes'),
     Tweens: require('./tweens'),
     Utils: require('./utils')
 

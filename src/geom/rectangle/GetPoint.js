@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -23,7 +23,7 @@ var Vector2 = require('../../math/Vector2');
  * @param {number} position - The normalized distance into the Rectangle's perimeter to return.
  * @param {Phaser.Math.Vector2} [out] - A Vector2 object to update with the `x` and `y` coordinates of the point.
  *
- * @return {Phaser.Math.Vector2} The updated `output` object, or a new Vector2 if no `output` object was given.
+ * @return {Phaser.Math.Vector2} The updated `out` object, or a new Vector2 if no `out` object was given.
  */
 var GetPoint = function (rectangle, position, out)
 {

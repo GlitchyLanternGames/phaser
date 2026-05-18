@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -28,7 +28,7 @@ var ShaderRender = require('./ShaderRender');
  * to draw a quad. The shader program can be loaded from the Shader Cache,
  * or provided in-line as strings.
  *
- * Please see the Phaser 3 Examples GitHub repo for several examples
+ * Please see the Phaser Examples GitHub repo for several examples
  * of loading and creating shaders dynamically.
  *
  * Due to the way in which they work, you cannot directly change the alpha
@@ -462,7 +462,7 @@ var Shader = new Class({
      * `drawingContext` is a reference to the current drawing context,
      * which may be useful if you need to query the camera or similar.
      *
-     * Note that `uProjectionMatrix`is set for you automatically.
+     * Note that `uProjectionMatrix` is set for you automatically.
      *
      * @method Phaser.GameObjects.Shader#setupUniforms
      * @since 4.0.0

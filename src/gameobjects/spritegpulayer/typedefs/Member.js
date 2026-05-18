@@ -9,7 +9,7 @@
  * @property {number|Phaser.Types.GameObjects.SpriteGPULayer.MemberAnimation} scaleY - The y scale of the member.
  * @property {number} originX - The X pivot of the frame. Default 0.5, in the range 0 to 1 across the frame. If the frame has a custom pivot, it will offset this value.
  * @property {number} originY - The Y pivot of the frame. Default 0.5, in the range 0 to 1 across the frame. If the frame has a custom pivot, it will offset this value.
- * @property {boolean} tintFill - Whether the member should be filled with the tint color. If false, the member texture will be multiplied by the tint. If true, the member will use the texture alpha and the tint color.
+ * @property {Phaser.TintModes} tintMode - The tint mode of the member.
  * @property {number} creationTime - The time the member was created. This is measured from the initialization of `layer.timeElapsed`. Use this to control members added after the layer was created.
  * @property {number} scrollFactorX - The horizontal camera scroll factor of the member.
  * @property {number} scrollFactorY - The vertical camera scroll factor y of the member.

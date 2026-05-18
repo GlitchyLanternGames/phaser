@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -8,7 +8,7 @@ var Vector2 = require('../../math/Vector2');
 var DegToRad = require('../../math/DegToRad');
 
 /**
- * Returns a Point from the perimeter of a Rectangle based on the given angle.
+ * Returns a point from the perimeter of a Rectangle based on the given angle, measured in degrees from the center of the Rectangle.
  *
  * @function Phaser.Geom.Rectangle.PerimeterPoint
  * @since 3.0.0
@@ -19,7 +19,7 @@ var DegToRad = require('../../math/DegToRad');
  * @param {number} angle - The angle of the point, in degrees.
  * @param {Phaser.Math.Vector2} [out] - The Vector2 object to store the position in. If not given, a new Vector2 instance is created.
  *
- * @return {Phaser.Math.Vector2} A Vector2 object holding the coordinates of the Rectangle perimeter.
+ * @return {Phaser.Math.Vector2} A Vector2 object holding the coordinates of the point on the Rectangle's perimeter.
  */
 var PerimeterPoint = function (rectangle, angle, out)
 {

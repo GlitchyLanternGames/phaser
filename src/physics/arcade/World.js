@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -42,6 +42,10 @@ var Wrap = require('../../math/Wrap');
  * The World is responsible for creating, managing, colliding and updating all of the bodies within it.
  *
  * An instance of the World belongs to a Phaser.Scene and is accessed via the property `physics.world`.
+ *
+ * It uses an RTree spatial index for fast broad-phase collision detection and supports
+ * tilemap collision. The World fires events for collisions, overlaps, world bounds
+ * contacts, and pause/resume state changes.
  *
  * @class World
  * @extends Phaser.Events.EventEmitter
@@ -573,7 +577,7 @@ var World = new Class({
      * to this method.
      *
      * The body itself is not deleted, it just has its `enable` property set to false, which
-     * means you can re-enable it again at any point by passing it to enable `World.enable` or `World.add`.
+     * means you can re-enable it again at any point by passing it to `World.enable` or `World.add`.
      *
      * @method Phaser.Physics.Arcade.World#disable
      * @since 3.0.0
@@ -623,7 +627,7 @@ var World = new Class({
      * The body is disabled and removed from the local search trees.
      *
      * The body itself is not deleted, it just has its `enable` property set to false, which
-     * means you can re-enable it again at any point by passing it to enable `World.enable` or `World.add`.
+     * means you can re-enable it again at any point by passing it to `World.enable` or `World.add`.
      *
      * @method Phaser.Physics.Arcade.World#disableBody
      * @since 3.0.0
@@ -643,7 +647,7 @@ var World = new Class({
      * The body is disabled and removed from the local search trees.
      *
      * The body itself is not deleted, it just has its `enabled` property set to false, which
-     * means you can re-enable it again at any point by passing it to enable `enable` or `add`.
+     * means you can re-enable it again at any point by passing it to `World.enable` or `World.add`.
      *
      * @method Phaser.Physics.Arcade.World#remove
      * @since 3.0.0
@@ -805,7 +809,7 @@ var World = new Class({
      *
      * Colliders are run as part of the World update, after all of the Bodies have updated.
      *
-     * By creating a Collider you don't need then call `World.collide` in your `update` loop,
+     * By creating a Collider you don't need to then call `World.collide` in your `update` loop,
      * as it will be handled for you automatically.
      *
      * @method Phaser.Physics.Arcade.World#addCollider
@@ -841,7 +845,7 @@ var World = new Class({
      *
      * Colliders are run as part of the World update, after all of the Bodies have updated.
      *
-     * By creating a Collider you don't need then call `World.overlap` in your `update` loop,
+     * By creating a Collider you don't need to then call `World.overlap` in your `update` loop,
      * as it will be handled for you automatically.
      *
      * @method Phaser.Physics.Arcade.World#addOverlap
@@ -1343,7 +1347,7 @@ var World = new Class({
      * @param {Phaser.Physics.Arcade.Body} body2 - The second Body to be separated.
      * @param {Phaser.Types.Physics.Arcade.ArcadePhysicsCallback} [processCallback] - The process callback.
      * @param {*} [callbackContext] - The context in which to invoke the callback.
-     * @param {boolean} [overlapOnly] - If this a collide or overlap check?
+     * @param {boolean} [overlapOnly] - If this is a collide or overlap check?
      *
      * @return {boolean} True if separation occurred, otherwise false.
      */
@@ -1360,7 +1364,9 @@ var World = new Class({
             !body2.enable ||
             body1.checkCollision.none ||
             body2.checkCollision.none ||
-            !this.intersects(body1, body2))
+            !this.intersects(body1, body2) ||
+            (body1.collisionMask & body2.collisionCategory) === 0 ||
+            (body2.collisionMask & body1.collisionCategory) === 0)
         {
             return result;
         }
@@ -1456,7 +1462,7 @@ var World = new Class({
      *
      * @param {Phaser.Physics.Arcade.Body} body1 - The first Body to be separated.
      * @param {Phaser.Physics.Arcade.Body} body2 - The second Body to be separated.
-     * @param {boolean} [overlapOnly] - If this a collide or overlap check?
+     * @param {boolean} [overlapOnly] - If this is a collide or overlap check?
      *
      * @return {boolean} True if separation occurred, otherwise false.
      */
@@ -1629,7 +1635,7 @@ var World = new Class({
             //  We'll only move the circle (if we can) and let
             //  the runSeparation handle the rectangle
 
-            if (!body1Immovable || body1.pushable || deadlock)
+            if (!body1Immovable && (body1.pushable || deadlock))
             {
                 body1.x -= overlapX;
                 body1.y -= overlapY;
@@ -2192,7 +2198,7 @@ var World = new Class({
      * @param {Phaser.Types.Physics.Arcade.ArcadePhysicsCallback} [processCallback] - An optional callback function that lets you perform additional checks against the two objects if they collide. If this is set then `collideCallback` will only be called if this callback returns `true`.
      * @param {any} [callbackContext] - The context in which to run the callbacks.
      *
-     * @return {boolean} True if any objects overlap (with `overlapOnly`); or true if any overlapping objects were separated.
+     * @return {boolean} True if any overlapping objects were separated, otherwise false.
      */
     collideTiles: function (sprite, tiles, collideCallback, processCallback, callbackContext)
     {
@@ -2229,7 +2235,7 @@ var World = new Class({
      * @param {Phaser.Types.Physics.Arcade.ArcadePhysicsCallback} [processCallback] - An optional callback function that lets you perform additional checks against the two objects if they collide. If this is set then `overlapCallback` will only be called if this callback returns `true`.
      * @param {any} [callbackContext] - The context in which to run the callbacks.
      *
-     * @return {boolean} True if any objects overlap (with `overlapOnly`); or true if any overlapping objects were separated.
+     * @return {boolean} True if any objects overlap, otherwise false.
      */
     overlapTiles: function (sprite, tiles, overlapCallback, processCallback, callbackContext)
     {

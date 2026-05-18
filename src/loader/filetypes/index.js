@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -30,6 +30,7 @@ module.exports = {
     MultiAtlasFile: require('./MultiAtlasFile'),
     MultiScriptFile: require('./MultiScriptFile'),
     PackFile: require('./PackFile'),
+    PCTAtlasFile: require('./PCTAtlasFile'),
     PluginFile: require('./PluginFile'),
     SceneFile: require('./SceneFile'),
     ScenePluginFile: require('./ScenePluginFile'),

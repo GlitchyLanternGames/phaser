@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -13,11 +13,15 @@ var StampRender = require('./StampRender');
  * @classdesc
  * A Stamp Game Object.
  *
- * A Stamp is a light-weight Game Object which ignores camera scroll and transform,
- * so it is rendered at a fixed position on-screen.
- * This is useful for HUDs, counters, etc.
- * Its main role is for DynamicTexture rendering.
- * It is otherwise similar to Image.
+ * A Stamp is a lightweight Game Object which ignores camera scroll and transform,
+ * so it is always rendered at a fixed position on-screen regardless of where the
+ * camera is looking. This makes it ideal for HUDs, score counters, overlays, and
+ * other screen-space elements that should not move with the game world.
+ *
+ * Its primary role is as an internal helper for DynamicTexture rendering, where it
+ * is used to draw (stamp) textures onto a DynamicTexture surface without the overhead
+ * of a full scene Game Object lifecycle. It is otherwise functionally similar to
+ * an Image Game Object.
  *
  * @class Stamp
  * @extends Phaser.GameObjects.Image

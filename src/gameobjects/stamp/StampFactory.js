@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -13,7 +13,7 @@ var GameObjectFactory = require('../GameObjectFactory');
  * Note: This method will only be available if the Stamp Game Object has been built into Phaser.
  *
  * @method Phaser.GameObjects.GameObjectFactory#stamp
- * @since 3.0.0
+ * @since 4.0.0
  *
  * @param {number} x - The horizontal position of this Game Object in the world.
  * @param {number} y - The vertical position of this Game Object in the world.

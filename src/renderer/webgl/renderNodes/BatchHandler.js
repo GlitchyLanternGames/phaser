@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -376,7 +376,7 @@ var BatchHandler = new Class({
     resize: function (width, height) {},
 
     /**
-     * Update the number of draw calls per batch.
+     * Update the number of parallel texture units available per batch.
      * This should be overridden by subclasses.
      *
      * This is called automatically by a listener
@@ -385,7 +385,7 @@ var BatchHandler = new Class({
      *
      * @method Phaser.Renderer.WebGL.RenderNodes.BatchHandler#updateTextureCount
      * @since 4.0.0
-     * @param {number} [count] - The new number of draw calls per batch. If undefined, the maximum number of texture units is used.
+     * @param {number} [count] - The new number of parallel texture units available per batch. If undefined, the maximum number of texture units is used.
      */
     updateTextureCount: function (count) {},
 

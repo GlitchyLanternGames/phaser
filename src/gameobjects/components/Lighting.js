@@ -1,13 +1,19 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
 /**
- * Provides methods for enabling lighting effects on a Game Object.
+ * Provides methods for enabling WebGL-based per-pixel lighting effects on a Game Object,
+ * using normal maps to simulate surface depth under dynamic light sources.
  *
- * This should only be applied to GameObjects that have RenderNodes.
+ * When lighting is enabled, the Game Object will respond to lights added to the scene
+ * via the Lights plugin. This component also supports self-shadowing, which creates
+ * contact shadows on the surface based on the object's normal map.
+ *
+ * This component should only be applied to Game Objects that have RenderNodes, and
+ * requires the WebGL renderer. It has no effect in Canvas rendering mode.
  *
  * @namespace Phaser.GameObjects.Components.Lighting
  * @webglOnly
@@ -16,9 +22,11 @@
 var Lighting = {
 
     /**
-     * Should this GameObject use lighting?
+     * Controls whether this Game Object participates in the WebGL lighting system.
+     * When `true`, the object will respond to dynamic lights added via the Lights plugin,
+     * using normal maps to calculate per-pixel diffuse lighting.
      *
-     * This flag is used to set up WebGL shaders for rendering.
+     * This flag is used to select the appropriate WebGL shader at render time.
      *
      * @name Phaser.GameObjects.Components.Lighting#lighting
      * @type {boolean}
@@ -30,12 +38,15 @@ var Lighting = {
     lighting: false,
 
     /**
-     * Should this GameObject use self-shadowing?
-     * Self-shadowing is only enabled if `lighting` is enabled.
+     * Configuration object controlling self-shadowing for this Game Object.
+     * Self-shadowing causes surfaces to cast contact shadows on themselves based on
+     * the normal map, giving the appearance of depth. It is only active when
+     * `lighting` is also enabled.
      *
-     * The game config option `render.selfShadow` is used if this is not a boolean.
+     * If `enabled` is `null`, the value from the game config option `render.selfShadow`
+     * is used instead.
      *
-     * This flag is used to set up WebGL shaders for rendering.
+     * This object is used to select and configure the appropriate WebGL shader at render time.
      *
      * @name Phaser.GameObjects.Components.Lighting#selfShadow
      * @type {{ enabled: boolean, penumbra: number, diffuseFlatThreshold: number }}
@@ -49,7 +60,10 @@ var Lighting = {
     },
 
     /**
-     * Sets whether this GameObject should use lighting.
+     * Enables or disables WebGL-based per-pixel lighting for this Game Object.
+     * When enabled, the object will respond to dynamic lights added to the scene
+     * via the Lights plugin, using a normal map for lighting calculations.
+     * Disabling lighting restores the standard unlit rendering path.
      *
      * @method Phaser.GameObjects.Components.Lighting#setLighting
      * @webglOnly
@@ -65,8 +79,12 @@ var Lighting = {
     },
 
     /**
-     * Sets whether this GameObject should use self-shadowing.
-     * Self-shadowing is only enabled if `lighting` is also enabled.
+     * Configures the self-shadowing properties of this Game Object.
+     * Self-shadowing uses the normal map to cast contact shadows on the surface itself,
+     * giving the impression of depth and raised detail. It is only active when
+     * `lighting` is also enabled on this Game Object.
+     *
+     * Parameters that are `undefined` are left unchanged, allowing partial updates.
      *
      * @method Phaser.GameObjects.Components.Lighting#setSelfShadow
      * @webglOnly

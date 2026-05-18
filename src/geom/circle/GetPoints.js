@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -17,9 +17,9 @@ var MATH_CONST = require('../../math/const');
  * @since 3.0.0
  *
  * @param {Phaser.Geom.Circle} circle - The Circle to get the points from.
- * @param {number} quantity - The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+ * @param {number} quantity - The amount of points to return. If a falsy value the quantity will be derived from the `stepRate` instead.
  * @param {number} [stepRate] - Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
- * @param {array} [output] - An array to insert the points in to. If not provided a new array will be created.
+ * @param {array} [out] - An array to insert the points in to. If not provided a new array will be created.
  *
  * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle.
  */

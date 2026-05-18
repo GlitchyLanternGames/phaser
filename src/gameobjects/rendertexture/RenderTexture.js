@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -46,6 +46,18 @@ var RenderTextureRenderModes = require('./RenderTextureRenderModes');
  * This means that when drawing objects such as Shapes or Graphics instances to this texture, they may appear
  * to be drawn with no aliasing around the edges. This is a technical limitation of WebGL1. To get around it,
  * create your shape as a texture in an art package, then draw that to this texture.
+ *
+ * If you activate mipmap support in your game, it will not automatically
+ * be applied to DynamicTextures.
+ * This is because regenerating the mipmap for a texture
+ * costs over 10 microseconds, a big performance loss for a single frame.
+ * If you want to render your DynamicTextures with mipmaps,
+ * you must also activate the render config option `mipmapRegeneration`.
+ *
+ * In the event that the WebGL context is lost, this DynamicTexture will
+ * lose its contents. Once context is restored (signalled by the `restorewebgl`
+ * event), you can choose to redraw the contents of the DynamicTexture.
+ * You are responsible for the redrawing logic.
  *
  * @class RenderTexture
  * @extends Phaser.GameObjects.Image
@@ -185,7 +197,10 @@ var RenderTexture = new Class({
      * In Canvas it will resize the underlying canvas element.
      *
      * Both approaches will erase everything currently drawn to the Render Texture.
-     * 
+     *
+     * Calling this will then invoke the `setSize` method, setting the internal size of this Game Object
+     * to the values given to this method.
+     *
      * Calling this will then invoke the `setSize` method, setting the internal size of this Game Object
      * to the values given to this method.
      *
@@ -237,6 +252,11 @@ var RenderTexture = new Class({
      * stop rendering. Ensure you remove the texture from the Texture Manager and any Game Objects
      * using it first, before destroying this Render Texture.
      *
+     * Note that the texture is assigned a random key on creation.
+     * This key will be replaced with the new key.
+     * If the texture was previously removed from the texture manager,
+     * it will be added back so it can be reused.
+     *
      * @method Phaser.GameObjects.RenderTexture#saveTexture
      * @since 3.12.0
      *
@@ -247,12 +267,22 @@ var RenderTexture = new Class({
     saveTexture: function (key)
     {
         var texture = this.texture;
-
-        texture.key = key;
-
-        if (texture.manager.addDynamicTexture(texture))
+        var oldKey = texture.key;
+        var textureManager = texture.manager;
+        if (textureManager.exists(oldKey) && textureManager.get(oldKey) === texture)
         {
+            textureManager.renameTexture(oldKey, key);
+
             this._saved = true;
+        }
+        else
+        {
+            texture.key = key;
+
+            if (texture.manager.addDynamicTexture(texture))
+            {
+                this._saved = true;
+            }
         }
 
         return texture;
@@ -272,7 +302,7 @@ var RenderTexture = new Class({
      * @since 4.0.0
      * @param {'render'|'redraw'|'all'} mode - The render mode to set.
      * @param {boolean} [preserve=false] - Whether to call `preserve(true)` to preserve the current command buffer.
-     * @returns {this} This Render Texture instance.
+     * @return {this} This Render Texture instance.
      */
     setRenderMode: function (mode, preserve)
     {
@@ -334,10 +364,10 @@ var RenderTexture = new Class({
      * @method Phaser.GameObjects.RenderTexture#clear
      * @since 3.2.0
      *
-     * @param {number} [x=0] - The left coordinate of the fill rectangle.
-     * @param {number} [y=0] - The top coordinate of the fill rectangle.
-     * @param {number} [width=this.width] - The width of the fill rectangle.
-     * @param {number} [height=this.height] - The height of the fill rectangle.
+     * @param {number} [x=0] - The left coordinate of the clear rectangle.
+     * @param {number} [y=0] - The top coordinate of the clear rectangle.
+     * @param {number} [width=this.width] - The width of the clear rectangle.
+     * @param {number} [height=this.height] - The height of the clear rectangle.
      *
      * @return {this} This Render Texture instance.
      */
@@ -470,7 +500,7 @@ var RenderTexture = new Class({
      * @param {Phaser.GameObjects.GameObject} entry - Any renderable GameObject.
      * @param {Phaser.Types.Textures.CaptureConfig} config - The configuration object for the capture.
      *
-     * @return {this} This Dynamic Texture instance.
+     * @return {this} This Render Texture instance.
      */
     capture: function (entry, config)
     {
@@ -526,7 +556,7 @@ var RenderTexture = new Class({
      * @method Phaser.GameObjects.RenderTexture#preserve
      * @since 4.0.0
      * @param {boolean} preserve - Whether to preserve the command buffer after rendering.
-     * @returns {this} This Render Texture instance.
+     * @return {this} This Render Texture instance.
      */
     preserve: function (preserve)
     {
@@ -545,7 +575,7 @@ var RenderTexture = new Class({
      * @method Phaser.GameObjects.RenderTexture#callback
      * @since 4.0.0
      * @param {Function} callback - A callback function to run during the render process.
-     * @returns {this} This Render Texture instance.
+     * @return {this} This Render Texture instance.
      */
     callback: function (callback)
     {

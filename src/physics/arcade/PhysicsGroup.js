@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -16,8 +16,8 @@ var IsPlainObject = require('../../utils/object/IsPlainObject');
  * @classdesc
  * An Arcade Physics Group object.
  *
- * The primary use of a Physics Group is a way to collect together physics enable objects
- * that share the same intrinsic structure into a single pool. They can they be easily
+ * The primary use of a Physics Group is a way to collect together physics-enabled objects
+ * that share the same intrinsic structure into a single pool. They can then be easily
  * compared against other Groups, or Game Objects.
  *
  * All Game Objects created by, or added to this Group will automatically be given **dynamic**
@@ -259,8 +259,8 @@ var PhysicsGroup = new Class({
      * @method Phaser.Physics.Arcade.Group#setVelocity
      * @since 3.0.0
      *
-     * @param {number} x - The horizontal velocity.
-     * @param {number} y - The vertical velocity.
+     * @param {number} x - The horizontal velocity, in pixels per second.
+     * @param {number} y - The vertical velocity, in pixels per second.
      * @param {number} [step=0] - The velocity increment. When set, the first member receives velocity (x, y), the second (x + step, y + step), and so on.
      *
      * @return {Phaser.Physics.Arcade.Group} This Physics Group object.
@@ -285,7 +285,7 @@ var PhysicsGroup = new Class({
      * @method Phaser.Physics.Arcade.Group#setVelocityX
      * @since 3.0.0
      *
-     * @param {number} value - The velocity value.
+     * @param {number} value - The velocity value, in pixels per second.
      * @param {number} [step=0] - The velocity increment. When set, the first member receives velocity (x), the second (x + step), and so on.
      *
      * @return {Phaser.Physics.Arcade.Group} This Physics Group object.
@@ -310,7 +310,7 @@ var PhysicsGroup = new Class({
      * @method Phaser.Physics.Arcade.Group#setVelocityY
      * @since 3.0.0
      *
-     * @param {number} value - The velocity value.
+     * @param {number} value - The velocity value, in pixels per second.
      * @param {number} [step=0] - The velocity increment. When set, the first member receives velocity (y), the second (y + step), and so on.
      *
      * @return {Phaser.Physics.Arcade.Group} This Physics Group object.

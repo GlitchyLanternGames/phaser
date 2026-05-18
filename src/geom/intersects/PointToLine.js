@@ -1,12 +1,12 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
  * @author       Florian Mertens
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
 /**
- * Checks if the a Point falls between the two end-points of a Line, based on the given line thickness.
+ * Checks if a Point falls between the two end-points of a Line, based on the given line thickness.
  *
  * Assumes that the line end points are circular, not square.
  *

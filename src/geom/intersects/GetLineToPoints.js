@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -15,8 +15,9 @@ var segment = new Line();
 var tempIntersect = new Vector3();
 
 /**
- * Checks for the closest point of intersection between a line segment and an array of points, where each pair
- * of points are converted to line segments for the intersection tests.
+ * Checks for the closest point of intersection between a line segment and an array of points, where each consecutive pair
+ * of points is converted to a line segment for the intersection tests. The array is treated as a closed shape, meaning
+ * the last point is connected back to the first point.
  *
  * If no intersection is found, this function returns `null`.
  *

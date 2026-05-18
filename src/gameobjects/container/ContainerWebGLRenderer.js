@@ -1,7 +1,7 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
  * @author       Felipe Alfonso <@bitnenfer>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -37,7 +37,7 @@ var ContainerWebGLRenderer = function (renderer, container, drawingContext, pare
         return;
     }
 
-    var currentContext = drawingContext;
+    var baseContext = drawingContext;
 
     var transformMatrix = container.localTransform;
 
@@ -56,13 +56,15 @@ var ContainerWebGLRenderer = function (renderer, container, drawingContext, pare
 
     var containerHasBlendMode = (container.blendMode !== -1);
 
-    if (!containerHasBlendMode && currentContext.blendMode !== 0)
+    if (!containerHasBlendMode && baseContext.blendMode !== 0)
     {
         //  If Container is SKIP_TEST then set blend mode to be Normal
-        currentContext = currentContext.getClone();
-        currentContext.setBlendMode(0);
-        currentContext.use();
+        baseContext = baseContext.getClone();
+        baseContext.setBlendMode(0);
+        baseContext.use();
     }
+
+    var currentContext = baseContext;
 
     var alpha = container.alpha;
 
@@ -110,24 +112,37 @@ var ContainerWebGLRenderer = function (renderer, container, drawingContext, pare
         )
         {
             //  If Container doesn't have its own blend mode, then a child can have one
-            currentContext = currentContext.getClone();
+            currentContext = baseContext.getClone();
             currentContext.setBlendMode(child.blendMode);
             currentContext.use();
         }
 
         //  Set parent values
-        child.setScrollFactor(childScrollFactorX * scrollFactorX, childScrollFactorY * scrollFactorY);
 
-        child.setAlpha(childAlphaTopLeft * alpha, childAlphaTopRight * alpha, childAlphaBottomLeft * alpha, childAlphaBottomRight * alpha);
+        if (child.setScrollFactor)
+        {
+            child.setScrollFactor(childScrollFactorX * scrollFactorX, childScrollFactorY * scrollFactorY);
+        }
+
+        if (child.setAlpha)
+        {
+            child.setAlpha(childAlphaTopLeft * alpha, childAlphaTopRight * alpha, childAlphaBottomLeft * alpha, childAlphaBottomRight * alpha);
+        }
 
         //  Render
         child.renderWebGLStep(renderer, child, currentContext, transformMatrix, undefined, children, i);
 
         //  Restore original values
 
-        child.setAlpha(childAlphaTopLeft, childAlphaTopRight, childAlphaBottomLeft, childAlphaBottomRight);
+        if (child.setAlpha)
+        {
+            child.setAlpha(childAlphaTopLeft, childAlphaTopRight, childAlphaBottomLeft, childAlphaBottomRight);
+        }
 
-        child.setScrollFactor(childScrollFactorX, childScrollFactorY);
+        if (child.setScrollFactor)
+        {
+            child.setScrollFactor(childScrollFactorX, childScrollFactorY);
+        }
     }
 
     // Release any remaining context.

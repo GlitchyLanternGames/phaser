@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -66,7 +66,9 @@ var StrokePathWebGL = function (drawingContext, submitter, matrix, src, alpha, d
         lineWidth,
         openPath,
         matrix,
-        strokeTintColor, strokeTintColor, strokeTintColor, strokeTintColor
+        strokeTintColor, strokeTintColor, strokeTintColor, strokeTintColor,
+        undefined,
+        src.lighting
     );
 };
 

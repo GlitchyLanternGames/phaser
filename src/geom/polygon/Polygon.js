@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -13,7 +13,7 @@ var GEOM_CONST = require('../const');
  * @classdesc
  * A Polygon object
  *
- * The polygon is a closed shape consists of a series of connected straight lines defined by list of ordered points.
+ * The polygon is a closed shape consisting of a series of connected straight lines defined by a list of ordered points.
  * Several formats are supported to define the list of points, check the setTo method for details.
  * This is a geometry object allowing you to define and inspect the shape.
  * It is not a Game Object, in that you cannot add it to the display list, and it has no texture.
@@ -158,7 +158,7 @@ var Polygon = new Class({
     },
 
     /**
-     * Calculates the area of the Polygon. This is available in the property Polygon.area
+     * Calculates the area of the Polygon using the Shoelace formula. The result is stored in the `area` property.
      *
      * @method Phaser.Geom.Polygon#calculateArea
      * @since 3.0.0
@@ -205,7 +205,7 @@ var Polygon = new Class({
      *
      * @generic {Phaser.Math.Vector2[]} O - [output,$return]
      *
-     * @param {number} quantity - The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+     * @param {number} quantity - The amount of points to return. If a falsy value the quantity will be derived from the `stepRate` instead.
      * @param {number} [stepRate] - Sets the quantity by getting the perimeter of the Polygon and dividing it by the stepRate.
      * @param {Phaser.Math.Vector2[]} [output] - An array to insert the points in to. If not provided a new array will be created.
      *

@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -12,7 +12,19 @@ var RenderNode = require('./RenderNode');
 
 /**
  * @classdesc
- * This RenderNode handles rendering for DynamicTextures.
+ * A RenderNode responsible for executing the recorded drawing commands of a
+ * `DynamicTexture`. A `DynamicTexture` accumulates drawing operations (stamps,
+ * repeats, fills, clears, game object draws, callbacks, and captures) into a
+ * command buffer. Each time this handler's `run` method is called, it iterates
+ * through that buffer and executes every command against the texture's WebGL
+ * framebuffer.
+ *
+ * The handler manages all necessary WebGL state during execution: it unbinds
+ * the framebuffer's own texture to prevent feedback loops, configures scissor
+ * boxes, and creates or releases cloned drawing contexts as blend modes and
+ * erase mode change across commands. When a PRESERVE command is not present
+ * the command buffer is cleared after rendering, ready for the next frame's
+ * drawing calls.
  *
  * @class DynamicTextureHandler
  * @memberof Phaser.Renderer.WebGL.RenderNodes
@@ -39,7 +51,15 @@ var DynamicTextureHandler = new Class({
     },
 
     /**
-     * Renders the DynamicTexture.
+     * Processes the command buffer of the given DynamicTexture and executes
+     * each recorded drawing operation against its WebGL framebuffer. This
+     * includes stamping textures, tiling sprites, filling rectangles, clearing
+     * regions, drawing arbitrary game objects, toggling erase mode, invoking
+     * custom callbacks, and capturing game objects to sub-regions. Drawing
+     * contexts are cloned and released as blend modes change across commands.
+     * After all commands have been executed, the command buffer is cleared
+     * unless a PRESERVE command was encountered, and a POST_RENDER camera
+     * event is emitted.
      *
      * @method Phaser.Renderer.WebGL.RenderNodes.DynamicTextureHandler#run
      * @since 4.0.0
@@ -319,6 +339,9 @@ var DynamicTextureHandler = new Class({
 
         // Finish rendering.
         currentContext.release();
+
+        // Regenerate any mipmap before using the texture.
+        glTexture.needsMipmapRegeneration = true;
 
         camera.emit(CameraEvents.POST_RENDER, camera);
 

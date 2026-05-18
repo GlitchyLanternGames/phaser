@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -29,11 +29,6 @@ var tempTransformData = {
  * @param {number} offsetY - The y offset.
  * @param {Phaser.GameObjects.Components.TransformMatrix} calcMatrix - The transform matrix.
  * @param {object} tintData - The tint data to pass to the submitter node.
- * @param {number} tintData.tintFill - The tint effect mode.
- * @param {number} tintData.tintTopLeft - The top-left tint value.
- * @param {number} tintData.tintTopRight - The top-right tint value.
- * @param {number} tintData.tintBottomLeft - The bottom-left tint value.
- * @param {number} tintData.tintBottomRight - The bottom-right tint value.
  */
 var BatchChar = function (drawingContext, submitterNode, src, char, glyph, offsetX, offsetY, calcMatrix, tintData)
 {

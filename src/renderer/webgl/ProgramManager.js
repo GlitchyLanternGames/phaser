@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -160,7 +160,9 @@ var ProgramManager = new Class({
     },
 
     /**
-     * Resets the current configuration object.
+     * Resets the current configuration object to its default empty state,
+     * clearing the base vertex and fragment shaders, all shader additions,
+     * and all features.
      *
      * @method Phaser.Renderer.WebGL.ProgramManager#resetCurrentConfig
      * @since 4.0.0
@@ -208,14 +210,18 @@ var ProgramManager = new Class({
      */
     clearUniforms: function ()
     {
-        this.uniforms.length = 0;
+        this.uniforms = {};
     },
 
     /**
-     * Set the stored uniforms on a shader program.
+     * Applies all stored uniform values to the given shader program.
+     * This is used to restore uniform state when switching between
+     * shader programs, ensuring the new program receives the same
+     * uniform values as the previous one.
      *
      * @method Phaser.Renderer.WebGL.ProgramManager#applyUniforms
      * @since 4.0.0
+     * @param {Phaser.Renderer.WebGL.Wrappers.WebGLProgramWrapper} program - The shader program to apply the uniforms to.
      */
     applyUniforms: function (program)
     {
@@ -270,7 +276,7 @@ var ProgramManager = new Class({
      * @method Phaser.Renderer.WebGL.ProgramManager#getAddition
      * @since 4.0.0
      * @param {string} name - The name to find.
-     * @returns {?Phaser.Types.Renderer.WebGL.ShaderAdditionConfig} The addition, or `null` if it was not found.
+     * @return {?Phaser.Types.Renderer.WebGL.ShaderAdditionConfig} The addition, or `null` if it was not found.
      */
     getAddition: function (name)
     {
@@ -293,7 +299,7 @@ var ProgramManager = new Class({
      * @method Phaser.Renderer.WebGL.ProgramManager#getAdditionsByTag
      * @since 4.0.0
      * @param {string} tag - The tag to filter by.
-     * @returns {Phaser.Types.Renderer.WebGL.ShaderAdditionConfig[]} The shader additions with the tag.
+     * @return {Phaser.Types.Renderer.WebGL.ShaderAdditionConfig[]} The shader additions with the tag.
      */
     getAdditionsByTag: function (tag)
     {
@@ -313,7 +319,7 @@ var ProgramManager = new Class({
      * @method Phaser.Renderer.WebGL.ProgramManager#getAdditionIndex
      * @since 4.0.0
      * @param {string} name - The name to find.
-     * @returns {number} The index of the addition, or `-1` if it was not found.
+     * @return {number} The index of the addition, or `-1` if it was not found.
      */
     getAdditionIndex: function (name)
     {

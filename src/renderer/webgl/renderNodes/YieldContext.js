@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -48,7 +48,7 @@ var YieldContext = new Class({
     /**
      * Sets the WebGL context to a default state.
      * This will flush any existing batch, set the blend mode to NORMAL,
-     * and unbind any current VAO.
+     * unbind any current VAO, and unbind all texture units.
      *
      * @method Phaser.Renderer.WebGL.RenderNodes.YieldContext#run
      * @since 4.0.0

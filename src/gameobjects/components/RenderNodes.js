@@ -1,13 +1,13 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
 var DeepCopy = require('../../utils/object/DeepCopy');
 
 /**
- * Provides methods for setting the WebGL render nodes of a Game Object.
+ * Provides methods for configuring WebGL render nodes on a Game Object. Render nodes are modular units responsible for different phases of the rendering pipeline (submitting draw calls, transforming vertices, handling textures). Each Game Object has a set of default render nodes, but you can override them with custom nodes for advanced rendering effects. This component is WebGL only.
  *
  * @namespace Phaser.GameObjects.Components.RenderNodes
  * @webglOnly
@@ -17,8 +17,8 @@ var RenderNodes = {
     /**
      * Customized WebGL render nodes of this Game Object.
      * RenderNodes are responsible for managing the rendering process of this Game Object.
-     * A default set of RenderNodes are coded into the engine,
-     * but they will check here first to see if a custom one exists.
+     * A default set of RenderNodes is coded into the engine,
+     * but the renderer will check this object first to see if a custom node has been set.
      *
      * @name Phaser.GameObjects.Components.RenderNodes#customRenderNodes
      * @type {object}
@@ -165,7 +165,7 @@ var RenderNodes = {
     },
 
     /**
-     * Adds an entry to the `renderNodeData` object of this game object.
+     * Sets or removes a property in the data object for a specific render node within `renderNodeData`.
      *
      * If `key` is not set, it is created. If it is set, it is updated.
      *

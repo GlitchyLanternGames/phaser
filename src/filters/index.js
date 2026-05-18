@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -17,14 +17,23 @@ var Filters = {
     Blur: require('./Blur'),
     Bokeh: require('./Bokeh'),
     ColorMatrix: require('./ColorMatrix'),
+    CombineColorMatrix: require('./CombineColorMatrix'),
     Displacement: require('./Displacement'),
     Glow: require('./Glow'),
+    GradientMap: require('./GradientMap'),
+    ImageLight: require('./ImageLight'),
+    Key: require('./Key'),
     Mask: require('./Mask'),
+    NormalTools: require('./NormalTools'),
+    PanoramaBlur: require('./PanoramaBlur'),
     ParallelFilters: require('./ParallelFilters'),
     Pixelate: require('./Pixelate'),
+    Quantize: require('./Quantize'),
     Sampler: require('./Sampler'),
     Shadow: require('./Shadow'),
-    Threshold: require('./Threshold')
+    Threshold: require('./Threshold'),
+    Vignette: require('./Vignette'),
+    Wipe: require('./Wipe')
 };
 
 module.exports = Filters;

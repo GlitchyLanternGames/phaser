@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -9,9 +9,13 @@ var Rectangle = require('../geom/rectangle/Rectangle');
 
 /**
  * @classdesc
- * The Controller for a filter effect.
+ * The base class for a post-processing filter effect applied to a Camera.
  *
- * You should not normally create an instance of this class directly, but instead use one of the built-in filters that extend it.
+ * Filters are visual effects rendered on top of a Camera's output, such as blur, glow, or color grading.
+ * Each filter is managed by a Controller, which holds its configuration and provides padding information to the renderer.
+ *
+ * You should not normally create an instance of this class directly, but instead use one of the built-in filters that extend it,
+ * such as those found in the `Phaser.Filters` namespace.
  *
  * You should not use a Controller for more than one Camera.
  * Create a new instance for each Camera that you wish to apply the filter to.
@@ -29,7 +33,7 @@ var Controller = new Class({
     {
         /**
          * Toggle this boolean to enable or disable this filter,
-         * without removing and adding it from the Game Object.
+         * without removing it from and re-adding it to the Camera's filter list.
          *
          * @name Phaser.Filters.Controller#active
          * @type {boolean}
@@ -68,7 +72,7 @@ var Controller = new Class({
 
         /**
          * The padding currently being used by this filter.
-         * This is set and used during rendering using `getPadding`.
+         * This is read during rendering via `getPadding`, and may be updated by subclass implementations.
          * It is necessary for filters being used in an external list.
          * You should not modify this value directly.
          *
@@ -111,18 +115,16 @@ var Controller = new Class({
     },
 
     /**
-     * Returns the padding required for this filter,
-     * and sets `currentPadding` to the result.
-     * Most filters don't need extra padding,
-     * but some might sample beyond the texture size, such as a blur.
+     * Returns the raw padding required for this filter.
+     * This is typically not what you want to call; use `getPaddingCeil` instead.
+     * Values from this method are not rounded, which can cause quality loss.
      *
-     * The bounds are encoded as a Rectangle.
-     * To enlarge the bounds, the top and left values should be negative,
-     * and the bottom and right values should be positive.
+     * Override this method when creating a Filter that requires extra room,
+     * e.g. a blur or glow effect.
      *
      * @method Phaser.Filters.Controller#getPadding
      * @since 4.0.0
-     * @returns {Phaser.Geom.Rectangle} The padding required by this filter.
+     * @return {Phaser.Geom.Rectangle} The padding required by this filter.
      */
     getPadding: function ()
     {
@@ -130,14 +132,50 @@ var Controller = new Class({
     },
 
     /**
+     * Returns the rounded padding required for this filter.
+     *
+     * Most filters don't need extra padding,
+     * but some may sample beyond the texture boundaries, such as a blur or glow effect.
+     *
+     * The bounds are encoded as a Rectangle.
+     * To enlarge the bounds, the top and left values should be negative,
+     * and the bottom and right values should be positive.
+     *
+     * This method calls `getPadding()` to get the raw padding values,
+     * and uses `Math.ceil()` to set the values of `paddingOverride`
+     * and `currentPadding`.
+     *
+     * @method Phaser.Filters.Controller#getPaddingCeil
+     * @since 4.1.0
+     * @returns {Phaser.Geom.Rectangle} The rounded padding required by this filter.
+     */
+    getPaddingCeil: function ()
+    {
+        var padding = this.getPadding();
+        var paddingCeil = new Rectangle(
+            Math.ceil(padding.x),
+            Math.ceil(padding.y),
+            Math.ceil(padding.width),
+            Math.ceil(padding.height)
+        );
+        this.currentPadding.setTo(
+            paddingCeil.x,
+            paddingCeil.y,
+            paddingCeil.width,
+            paddingCeil.height
+        );
+        return paddingCeil;
+    },
+
+    /**
      * Sets the padding override.
-     * If this is set, the filter will use this padding instead of calculating them.
-     *it Call `setPaddingOverride(null)` to clear the override.
+     * If this is set, the filter will use this padding instead of calculating it.
+     * Call `setPaddingOverride(null)` to clear the override.
      * Call `setPaddingOverride()` to set the padding to 0.
      *
      * @method Phaser.Filters.Controller#setPaddingOverride
      * @since 4.0.0
-     * @param {number|null} [left=0] - The top padding.
+     * @param {number|null} [left=0] - The left padding.
      * @param {number} [top=0] - The top padding.
      * @param {number} [right=0] - The right padding.
      * @param {number} [bottom=0] - The bottom padding.
@@ -168,7 +206,7 @@ var Controller = new Class({
      * @method Phaser.Filters.Controller#setActive
      * @since 4.0.0
      * @param {boolean} value - `true` to enable this filter, or `false` to disable it.
-     * @returns {this} This filter instance.
+     * @return {this} This filter instance.
      */
     setActive: function (value)
     {

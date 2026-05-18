@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -52,7 +52,7 @@ if (typeof FEATURE_SOUND)
  * @fires Phaser.Core.Events#VISIBLE
  * @since 3.0.0
  *
- * @param {Phaser.Types.Core.GameConfig} [GameConfig] - The configuration object for your Phaser Game instance.
+ * @param {Phaser.Types.Core.GameConfig} [config] - The configuration object for your Phaser Game instance.
  */
 var Game = new Class({
 
@@ -387,7 +387,7 @@ var Game = new Class({
      *
      * @method Phaser.Game#texturesReady
      * @private
-     * @fires Phaser.Game#READY
+     * @fires Phaser.Core.Events#READY
      * @since 3.12.0
      */
     texturesReady: function ()
@@ -513,8 +513,8 @@ var Game = new Class({
      * This process emits `prerender` and `postrender` events, even though nothing actually displays.
      *
      * @method Phaser.Game#headlessStep
-     * @fires Phaser.Game#PRE_RENDER
-     * @fires Phaser.Game#POST_RENDER
+     * @fires Phaser.Core.Events#PRE_RENDER
+     * @fires Phaser.Core.Events#POST_RENDER
      * @since 3.2.0
      *
      * @param {number} time - The current time. Either a High Resolution Timer value if it comes from Request Animation Frame, or Date.now if using SetTimeout.
@@ -697,9 +697,9 @@ var Game = new Class({
      *
      * It will wait until the current frame has completed and then call `runDestroy` internally.
      *
-     * If you need to react to the games eventual destruction, listen for the `DESTROY` event.
+     * If you need to react to the game's eventual destruction, listen for the `DESTROY` event.
      *
-     * If you **do not** need to run Phaser again on the same web page you can set the `noReturn` argument to `true` and it will free-up
+     * If you **do not** need to run Phaser again on the same web page you can set the `noReturn` argument to `true` and it will free up
      * memory being held by the core Phaser plugins. If you do need to create another game instance on the same page, leave this as `false`.
      *
      * @method Phaser.Game#destroy

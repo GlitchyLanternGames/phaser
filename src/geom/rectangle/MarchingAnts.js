@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -8,8 +8,14 @@ var Perimeter = require('./Perimeter');
 var Vector2 = require('../../math/Vector2');
 
 /**
- * Returns an array of Vector2 points from the perimeter of the Rectangle, where each point is spaced out based
- * on either the `step` value, or the `quantity`.
+ * Returns an array of Vector2 points evenly distributed around the perimeter of the Rectangle. This is
+ * commonly used to create a "marching ants" selection effect, where the returned points are used to
+ * animate a dashed outline that appears to march around the border of the rectangle.
+ *
+ * You can control the spacing of the points either by providing a pixel `step` distance between each
+ * point, or by specifying the total `quantity` of points to distribute evenly around the full perimeter.
+ * If both are omitted, an empty array is returned. If `step` is provided, `quantity` is derived from
+ * the perimeter length divided by the step. If only `quantity` is provided, the step is derived instead.
  *
  * @function Phaser.Geom.Rectangle.MarchingAnts
  * @since 3.0.0

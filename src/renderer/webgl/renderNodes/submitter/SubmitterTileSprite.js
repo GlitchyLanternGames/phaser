@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -53,7 +53,12 @@ var SubmitterTileSprite = new Class({
     },
 
     /**
-     * Submit data for rendering.
+     * Submits vertex, texture, and tint data for a single TileSprite GameObject
+     * to the appropriate batch handler for WebGL rendering. This method invokes
+     * the texturer, transformer, and tinter nodes in sequence to populate the
+     * required rendering data, then passes it to the batch handler along with
+     * the UV matrix quad for tile scrolling and wrapping, and any lighting
+     * options including the tile's rotation applied to the normal map.
      *
      * @method Phaser.Renderer.WebGL.RenderNodes.SubmitterTileSprite#run
      * @since 4.0.0
@@ -81,7 +86,7 @@ var SubmitterTileSprite = new Class({
     {
         this.onRunBegin(drawingContext);
 
-        var tintFill, tintTopLeft, tintBottomLeft, tintTopRight, tintBottomRight;
+        var tintEffect, tintTopLeft, tintBottomLeft, tintTopRight, tintBottomRight;
 
         if (texturerNode.run)
         {
@@ -97,7 +102,7 @@ var SubmitterTileSprite = new Class({
             {
                 tinterNode.run(drawingContext, gameObject, element);
             }
-            tintFill = tinterNode.tintFill;
+            tintEffect = tinterNode.tintEffect;
             tintTopLeft = tinterNode.tintTopLeft;
             tintBottomLeft = tinterNode.tintBottomLeft;
             tintTopRight = tinterNode.tintTopRight;
@@ -105,7 +110,7 @@ var SubmitterTileSprite = new Class({
         }
         else
         {
-            tintFill = gameObject.tintFill;
+            tintEffect = gameObject.tintMode;
             tintTopLeft = getTint(gameObject.tintTopLeft, gameObject._alphaTL);
             tintBottomLeft = getTint(gameObject.tintBottomLeft, gameObject._alphaBL);
             tintTopRight = getTint(gameObject.tintTopRight, gameObject._alphaTR);
@@ -145,7 +150,7 @@ var SubmitterTileSprite = new Class({
             // Texture coordinates in X, Y, Width, Height:
             u0, v0, u1 - u0, v1 - v0,
 
-            tintFill,
+            tintEffect,
 
             // Tint colors in order TL, BL, TR, BR:
             tintTopLeft, tintBottomLeft, tintTopRight, tintBottomRight,

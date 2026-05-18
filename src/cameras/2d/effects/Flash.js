@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -128,7 +128,7 @@ var Flash = new Class({
         this._elapsed = 0;
 
         /**
-         * This is an internal copy of the initial value of `this.alpha`, used to calculate the current alpha value of the fade effect.
+         * This is an internal copy of the initial value of `this.alpha`, used to calculate the current alpha value of the flash effect.
          *
          * @name Phaser.Cameras.Scene2D.Effects.Flash#_alpha
          * @type {number}
@@ -150,7 +150,7 @@ var Flash = new Class({
         this._onUpdate;
 
         /**
-         * On Complete callback scope.
+         * On Update callback scope.
          *
          * @name Phaser.Cameras.Scene2D.Effects.Flash#_onUpdateScope
          * @type {any}

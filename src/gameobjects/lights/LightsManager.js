@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -22,9 +22,21 @@ var Utils = require('../../renderer/webgl/Utils');
 
 /**
  * @classdesc
- * Manages Lights for a Scene.
+ * The Lights Manager is responsible for managing all of the {@link Phaser.GameObjects.Light} objects
+ * in a Scene, as well as the ambient light color that applies to all lit Game Objects.
  *
- * Affects the rendering of Game Objects with `lighting` enabled.
+ * It is created automatically by the Scene Systems and is accessed via `this.lights` within a Scene.
+ * To use the lighting system, call `this.lights.enable()` and ensure that any Game Objects you want
+ * to be affected by lighting have `setLighting(true)` applied to them.
+ *
+ * The Lights Manager works in conjunction with the Light Filter (WebGL only). Game Objects rendered
+ * with this filter sample the active lights and the ambient color, and use any normal maps assigned
+ * to their textures to produce a dynamic lighting effect. Lighting has no effect in Canvas rendering.
+ *
+ * Each Scene supports a fixed maximum number of simultaneous lights, set via the `maxLights` property
+ * in the game config. When more lights exist than the maximum, the manager culls the furthest lights
+ * from the camera each frame. Use {@link Phaser.GameObjects.LightsManager#addLight} to create a
+ * Light and {@link Phaser.GameObjects.LightsManager#setAmbientColor} to control the base illumination.
  *
  * @class LightsManager
  * @memberof Phaser.GameObjects
@@ -99,7 +111,7 @@ var LightsManager = new Class({
      * The difference is that the Point Light renders using a custom shader, designed to give the
      * impression of a point light source, of variable radius, intensity and color, in your game.
      * However, unlike the Light Game Object, it does not impact any other Game Objects, or use their
-     * normal maps for calcuations. This makes them extremely fast to render compared to Lights
+     * normal maps for calculations. This makes them extremely fast to render compared to Lights
      * and perfect for special effects, such as flickering torches or muzzle flashes.
      *
      * For maximum performance you should batch Point Light Game Objects together. This means
@@ -125,7 +137,7 @@ var LightsManager = new Class({
      * @param {number} [color=0xffffff] - The color of the Point Light, given as a hex value.
      * @param {number} [radius=128] - The radius of the Point Light.
      * @param {number} [intensity=1] - The intensity, or color blend, of the Point Light.
-     * @param {number} [attenuation=0.1] - The attenuation  of the Point Light. This is the reduction of light from the center point.
+     * @param {number} [attenuation=0.1] - The attenuation of the Point Light. This is the reduction of light from the center point.
      *
      * @return {Phaser.GameObjects.PointLight} The Game Object that was created.
      */
@@ -135,7 +147,9 @@ var LightsManager = new Class({
     },
 
     /**
-     * Enable the Lights Manager.
+     * Enable the Lights Manager. This activates the lighting system for the Scene, causing all
+     * Game Objects using the Light Filter to be affected by the configured lights and ambient
+     * color. On first enable, the `maxLights` value is read from the renderer configuration.
      *
      * @method Phaser.GameObjects.LightsManager#enable
      * @since 3.0.0
@@ -155,7 +169,10 @@ var LightsManager = new Class({
     },
 
     /**
-     * Disable the Lights Manager.
+     * Disable the Lights Manager. When disabled, the lighting system no longer affects the rendering
+     * of Game Objects using the Light Filter, effectively switching them back to unlit rendering.
+     * The existing lights and ambient color are preserved and will take effect again if the manager
+     * is re-enabled.
      *
      * @method Phaser.GameObjects.LightsManager#disable
      * @since 3.0.0
@@ -220,6 +237,17 @@ var LightsManager = new Class({
         return visibleLights;
     },
 
+    /**
+     * Sort function to sort lights by distance from the camera.
+     * The sort is in reverse order, so that the furthest light is culled first.
+     *
+     * @method Phaser.GameObjects.LightsManager#sortByDistance
+     * @since 4.0.0
+     *
+     * @param {number} a - A light entry object with a `distance` property representing its distance from the camera center.
+     * @param {number} b - A light entry object with a `distance` property representing its distance from the camera center.
+     * @return {boolean} True if `a` is further than `b`, otherwise false.
+     */
     sortByDistance: function (a, b)
     {
         return (a.distance >= b.distance);
@@ -271,7 +299,10 @@ var LightsManager = new Class({
     },
 
     /**
-     * Add a Light.
+     * Creates a new {@link Phaser.GameObjects.Light} object, adds it to this Lights Manager, and returns it.
+     * The Light will influence all Game Objects using the Light Filter that are within its radius,
+     * using the texture's normal map data to compute shading. You can configure its position, radius,
+     * color, intensity, and z-height (which affects the angle of the shading effect).
      *
      * @method Phaser.GameObjects.LightsManager#addLight
      * @since 3.0.0
@@ -304,7 +335,9 @@ var LightsManager = new Class({
     },
 
     /**
-     * Remove a Light.
+     * Removes a {@link Phaser.GameObjects.Light} from this Lights Manager. The Light will no longer
+     * influence the rendering of any Game Objects. The Light object itself is not destroyed; it is
+     * simply removed from the manager's active list.
      *
      * @method Phaser.GameObjects.LightsManager#removeLight
      * @since 3.0.0
@@ -326,10 +359,9 @@ var LightsManager = new Class({
     },
 
     /**
-     * Shut down the Lights Manager.
-     *
-     * Recycles all active Lights into the Light pool, resets ambient light color and clears the lists of Lights and
-     * culled Lights.
+     * Shuts down the Lights Manager and clears all active Lights. This is called automatically
+     * when a Scene shuts down. The Lights Manager can be re-enabled afterwards by calling
+     * {@link Phaser.GameObjects.LightsManager#enable}.
      *
      * @method Phaser.GameObjects.LightsManager#shutdown
      * @since 3.0.0

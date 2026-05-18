@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -41,7 +41,7 @@ var Tileset = require('./Tileset');
  * @param {number} index - The index of the object within the array.
  * @param {Phaser.GameObjects.GameObject[]} array - An array of all the objects found.
  *
- * @return {boolean} `true` if the callback should be invoked, otherwise `false`.
+ * @return {boolean} `true` if the object matches the search criteria, otherwise `false`.
  */
 
 /**
@@ -54,18 +54,15 @@ var Tileset = require('./Tileset');
  * software package specifically for creating tile maps, and is available from:
  * http://www.mapeditor.org
  *
- * As of Phaser 3.50.0 the Tilemap API now supports the following types of map:
+ * The Tilemap API supports the following types of map:
  *
  * 1) Orthogonal
  * 2) Isometric
  * 3) Hexagonal
  * 4) Staggered
  *
- * Prior to this release, only orthogonal maps were supported.
- *
- * Another large change in 3.50 was the consolidation of Tilemap Layers. Previously, you created
- * either a Static or Dynamic Tilemap Layer. However, as of 3.50 the features of both have been
- * merged and the API simplified, so now there is just the single `TilemapLayer` class.
+ * All map types use the unified `TilemapLayer` class, which combines the capabilities of the
+ * former Static and Dynamic layers into a single, simplified API.
  *
  * A Tilemap has handy methods for getting and manipulating the tiles within a layer, allowing
  * you to build or modify the tilemap data at runtime.
@@ -73,7 +70,7 @@ var Tileset = require('./Tileset');
  * Note that all Tilemaps use a base tile size to calculate dimensions from, but that a
  * TilemapLayer may have its own unique tile size that overrides this.
  *
- * As of Phaser 3.21.0, if your tilemap includes layer groups (a feature of Tiled 1.2.0+) these
+ * If your tilemap includes layer groups (a feature of Tiled 1.2.0+) these
  * will be traversed and the following properties will impact children:
  *
  * - Opacity (blended with parent) and visibility (parent overrides child)
@@ -105,223 +102,223 @@ var Tilemap = new Class({
 
     initialize:
 
-    function Tilemap (scene, mapData)
-    {
-        /**
-         * @name Phaser.Tilemaps.Tilemap#scene
-         * @type {Phaser.Scene}
-         * @since 3.0.0
-         */
-        this.scene = scene;
+        function Tilemap (scene, mapData)
+        {
+            /**
+             * @name Phaser.Tilemaps.Tilemap#scene
+             * @type {Phaser.Scene}
+             * @since 3.0.0
+             */
+            this.scene = scene;
 
-        /**
-         * The base width of a tile in pixels. Note that individual layers may have a different tile
-         * width.
-         *
-         * @name Phaser.Tilemaps.Tilemap#tileWidth
-         * @type {number}
-         * @since 3.0.0
-         */
-        this.tileWidth = mapData.tileWidth;
+            /**
+             * The base width of a tile in pixels. Note that individual layers may have a different tile
+             * width.
+             *
+             * @name Phaser.Tilemaps.Tilemap#tileWidth
+             * @type {number}
+             * @since 3.0.0
+             */
+            this.tileWidth = mapData.tileWidth;
 
-        /**
-         * The base height of a tile in pixels. Note that individual layers may have a different
-         * tile height.
-         *
-         * @name Phaser.Tilemaps.Tilemap#tileHeight
-         * @type {number}
-         * @since 3.0.0
-         */
-        this.tileHeight = mapData.tileHeight;
+            /**
+             * The base height of a tile in pixels. Note that individual layers may have a different
+             * tile height.
+             *
+             * @name Phaser.Tilemaps.Tilemap#tileHeight
+             * @type {number}
+             * @since 3.0.0
+             */
+            this.tileHeight = mapData.tileHeight;
 
-        /**
-         * The width of the map (in tiles).
-         *
-         * @name Phaser.Tilemaps.Tilemap#width
-         * @type {number}
-         * @since 3.0.0
-         */
-        this.width = mapData.width;
+            /**
+             * The width of the map (in tiles).
+             *
+             * @name Phaser.Tilemaps.Tilemap#width
+             * @type {number}
+             * @since 3.0.0
+             */
+            this.width = mapData.width;
 
-        /**
-         * The height of the map (in tiles).
-         *
-         * @name Phaser.Tilemaps.Tilemap#height
-         * @type {number}
-         * @since 3.0.0
-         */
-        this.height = mapData.height;
+            /**
+             * The height of the map (in tiles).
+             *
+             * @name Phaser.Tilemaps.Tilemap#height
+             * @type {number}
+             * @since 3.0.0
+             */
+            this.height = mapData.height;
 
-        /**
-         * The orientation of the map data (as specified in Tiled), usually 'orthogonal'.
-         *
-         * @name Phaser.Tilemaps.Tilemap#orientation
-         * @type {string}
-         * @since 3.0.0
-         */
-        this.orientation = mapData.orientation;
+            /**
+             * The orientation of the map data (as specified in Tiled), usually 'orthogonal'.
+             *
+             * @name Phaser.Tilemaps.Tilemap#orientation
+             * @type {string}
+             * @since 3.0.0
+             */
+            this.orientation = mapData.orientation;
 
-        /**
-         * The render (draw) order of the map data (as specified in Tiled), usually 'right-down'.
-         *
-         * The draw orders are:
-         *
-         * right-down
-         * left-down
-         * right-up
-         * left-up
-         *
-         * This can be changed via the `setRenderOrder` method.
-         *
-         * @name Phaser.Tilemaps.Tilemap#renderOrder
-         * @type {string}
-         * @since 3.12.0
-         */
-        this.renderOrder = mapData.renderOrder;
+            /**
+             * The render (draw) order of the map data (as specified in Tiled), usually 'right-down'.
+             *
+             * The draw orders are:
+             *
+             * right-down
+             * left-down
+             * right-up
+             * left-up
+             *
+             * This can be changed via the `setRenderOrder` method.
+             *
+             * @name Phaser.Tilemaps.Tilemap#renderOrder
+             * @type {string}
+             * @since 3.12.0
+             */
+            this.renderOrder = mapData.renderOrder;
 
-        /**
-         * The format of the map data.
-         *
-         * @name Phaser.Tilemaps.Tilemap#format
-         * @type {number}
-         * @since 3.0.0
-         */
-        this.format = mapData.format;
+            /**
+             * The format of the map data.
+             *
+             * @name Phaser.Tilemaps.Tilemap#format
+             * @type {number}
+             * @since 3.0.0
+             */
+            this.format = mapData.format;
 
-        /**
-         * The version of the map data (as specified in Tiled, usually 1).
-         *
-         * @name Phaser.Tilemaps.Tilemap#version
-         * @type {number}
-         * @since 3.0.0
-         */
-        this.version = mapData.version;
+            /**
+             * The version of the map data (as specified in Tiled, usually 1).
+             *
+             * @name Phaser.Tilemaps.Tilemap#version
+             * @type {number}
+             * @since 3.0.0
+             */
+            this.version = mapData.version;
 
-        /**
-         * Map specific properties as specified in Tiled.
-         *
-         * Depending on the version of Tiled and the JSON export used, this will be either
-         * an object or an array of objects. For Tiled 1.2.0+ maps, it will be an array.
-         *
-         * @name Phaser.Tilemaps.Tilemap#properties
-         * @type {object|object[]}
-         * @since 3.0.0
-         */
-        this.properties = mapData.properties;
+            /**
+             * Map specific properties as specified in Tiled.
+             *
+             * Depending on the version of Tiled and the JSON export used, this will be either
+             * an object or an array of objects. For Tiled 1.2.0+ maps, it will be an array.
+             *
+             * @name Phaser.Tilemaps.Tilemap#properties
+             * @type {object|object[]}
+             * @since 3.0.0
+             */
+            this.properties = mapData.properties;
 
-        /**
-         * The width of the map in pixels based on width * tileWidth.
-         *
-         * @name Phaser.Tilemaps.Tilemap#widthInPixels
-         * @type {number}
-         * @since 3.0.0
-         */
-        this.widthInPixels = mapData.widthInPixels;
+            /**
+             * The width of the map in pixels based on width * tileWidth.
+             *
+             * @name Phaser.Tilemaps.Tilemap#widthInPixels
+             * @type {number}
+             * @since 3.0.0
+             */
+            this.widthInPixels = mapData.widthInPixels;
 
-        /**
-         * The height of the map in pixels based on height * tileHeight.
-         *
-         * @name Phaser.Tilemaps.Tilemap#heightInPixels
-         * @type {number}
-         * @since 3.0.0
-         */
-        this.heightInPixels = mapData.heightInPixels;
+            /**
+             * The height of the map in pixels based on height * tileHeight.
+             *
+             * @name Phaser.Tilemaps.Tilemap#heightInPixels
+             * @type {number}
+             * @since 3.0.0
+             */
+            this.heightInPixels = mapData.heightInPixels;
 
-        /**
-         * A collection of Images, as parsed from Tiled map data.
-         *
-         * @name Phaser.Tilemaps.Tilemap#imageCollections
-         * @type {Phaser.Tilemaps.ImageCollection[]}
-         * @since 3.0.0
-         */
-        this.imageCollections = mapData.imageCollections;
+            /**
+             * A collection of Images, as parsed from Tiled map data.
+             *
+             * @name Phaser.Tilemaps.Tilemap#imageCollections
+             * @type {Phaser.Tilemaps.ImageCollection[]}
+             * @since 3.0.0
+             */
+            this.imageCollections = mapData.imageCollections;
 
-        /**
-         * An array of Tiled Image Layers.
-         *
-         * @name Phaser.Tilemaps.Tilemap#images
-         * @type {array}
-         * @since 3.0.0
-         */
-        this.images = mapData.images;
+            /**
+             * An array of Tiled Image Layers.
+             *
+             * @name Phaser.Tilemaps.Tilemap#images
+             * @type {array}
+             * @since 3.0.0
+             */
+            this.images = mapData.images;
 
-        /**
-         * An array of Tilemap layer data.
-         *
-         * @name Phaser.Tilemaps.Tilemap#layers
-         * @type {Phaser.Tilemaps.LayerData[]}
-         * @since 3.0.0
-         */
-        this.layers = mapData.layers;
+            /**
+             * An array of Tilemap layer data.
+             *
+             * @name Phaser.Tilemaps.Tilemap#layers
+             * @type {Phaser.Tilemaps.LayerData[]}
+             * @since 3.0.0
+             */
+            this.layers = mapData.layers;
 
-        /**
-         * Master list of tiles -> x, y, index in tileset.
-         *
-         * @name Phaser.Tilemaps.Tilemap#tiles
-         * @type {array}
-         * @since 3.60.0
-         * @see Phaser.Tilemaps.Parsers.Tiled.BuildTilesetIndex
-         */
-        this.tiles = mapData.tiles;
+            /**
+             * Master list of tiles -> x, y, index in tileset.
+             *
+             * @name Phaser.Tilemaps.Tilemap#tiles
+             * @type {array}
+             * @since 3.60.0
+             * @see Phaser.Tilemaps.Parsers.Tiled.BuildTilesetIndex
+             */
+            this.tiles = mapData.tiles;
 
-        /**
-         * An array of Tilesets used in the map.
-         *
-         * @name Phaser.Tilemaps.Tilemap#tilesets
-         * @type {Phaser.Tilemaps.Tileset[]}
-         * @since 3.0.0
-         */
-        this.tilesets = mapData.tilesets;
+            /**
+             * An array of Tilesets used in the map.
+             *
+             * @name Phaser.Tilemaps.Tilemap#tilesets
+             * @type {Phaser.Tilemaps.Tileset[]}
+             * @since 3.0.0
+             */
+            this.tilesets = mapData.tilesets;
 
-        /**
-         * An array of ObjectLayer instances parsed from Tiled object layers.
-         *
-         * @name Phaser.Tilemaps.Tilemap#objects
-         * @type {Phaser.Tilemaps.ObjectLayer[]}
-         * @since 3.0.0
-         */
-        this.objects = mapData.objects;
+            /**
+             * An array of ObjectLayer instances parsed from Tiled object layers.
+             *
+             * @name Phaser.Tilemaps.Tilemap#objects
+             * @type {Phaser.Tilemaps.ObjectLayer[]}
+             * @since 3.0.0
+             */
+            this.objects = mapData.objects;
 
-        /**
-         * The index of the currently selected LayerData object.
-         *
-         * @name Phaser.Tilemaps.Tilemap#currentLayerIndex
-         * @type {number}
-         * @since 3.0.0
-         */
-        this.currentLayerIndex = 0;
+            /**
+             * The index of the currently selected LayerData object.
+             *
+             * @name Phaser.Tilemaps.Tilemap#currentLayerIndex
+             * @type {number}
+             * @since 3.0.0
+             */
+            this.currentLayerIndex = 0;
 
-        /**
-         * The length of the horizontal sides of the hexagon.
-         * Only used for hexagonal orientation Tilemaps.
-         *
-         * @name Phaser.Tilemaps.Tilemap#hexSideLength
-         * @type {number}
-         * @since 3.50.0
-         */
-        this.hexSideLength = mapData.hexSideLength;
+            /**
+             * The length of the horizontal sides of the hexagon.
+             * Only used for hexagonal orientation Tilemaps.
+             *
+             * @name Phaser.Tilemaps.Tilemap#hexSideLength
+             * @type {number}
+             * @since 3.50.0
+             */
+            this.hexSideLength = mapData.hexSideLength;
 
-        var orientation = this.orientation;
+            var orientation = this.orientation;
 
-        /**
-         * Functions used to handle world to tile, and tile to world, conversion.
-         * Cached here for internal use by public methods such as `worldToTileXY`, etc.
-         *
-         * @name Phaser.Tilemaps.Tilemap#_convert
-         * @private
-         * @type {object}
-         * @since 3.50.0
-         */
-        this._convert = {
-            WorldToTileXY: TilemapComponents.GetWorldToTileXYFunction(orientation),
-            WorldToTileX: TilemapComponents.GetWorldToTileXFunction(orientation),
-            WorldToTileY: TilemapComponents.GetWorldToTileYFunction(orientation),
-            TileToWorldXY: TilemapComponents.GetTileToWorldXYFunction(orientation),
-            TileToWorldX: TilemapComponents.GetTileToWorldXFunction(orientation),
-            TileToWorldY: TilemapComponents.GetTileToWorldYFunction(orientation),
-            GetTileCorners: TilemapComponents.GetTileCornersFunction(orientation)
-        };
-    },
+            /**
+             * Functions used to handle world to tile, and tile to world, conversion.
+             * Cached here for internal use by public methods such as `worldToTileXY`, etc.
+             *
+             * @name Phaser.Tilemaps.Tilemap#_convert
+             * @private
+             * @type {object}
+             * @since 3.50.0
+             */
+            this._convert = {
+                WorldToTileXY: TilemapComponents.GetWorldToTileXYFunction(orientation),
+                WorldToTileX: TilemapComponents.GetWorldToTileXFunction(orientation),
+                WorldToTileY: TilemapComponents.GetWorldToTileYFunction(orientation),
+                TileToWorldXY: TilemapComponents.GetTileToWorldXYFunction(orientation),
+                TileToWorldX: TilemapComponents.GetTileToWorldXFunction(orientation),
+                TileToWorldY: TilemapComponents.GetTileToWorldYFunction(orientation),
+                GetTileCorners: TilemapComponents.GetTileCornersFunction(orientation)
+            };
+        },
 
     /**
      * Sets the rendering (draw) order of the tiles in this map.
@@ -358,7 +355,7 @@ var Tilemap = new Class({
 
         if (typeof renderOrder === 'number')
         {
-            renderOrder = orders[renderOrder];
+            renderOrder = orders[ renderOrder ];
         }
 
         if (orders.indexOf(renderOrder) > -1)
@@ -463,7 +460,7 @@ var Tilemap = new Class({
      * coordinates) within the layer. This copies all tile properties & recalculates collision
      * information in the destination region.
      *
-     * If no layer specified, the map's current layer is used. This cannot be applied to StaticTilemapLayers.
+     * If no layer specified, the map's current layer is used.
      *
      * @method Phaser.Tilemaps.Tilemap#copy
      * @since 3.0.0
@@ -590,9 +587,9 @@ var Tilemap = new Class({
      * @param {(string|string[]|Phaser.Tilemaps.Tileset|Phaser.Tilemaps.Tileset[])} tileset - The tileset, or an array of tilesets, used to render this layer. Can be a string or a Tileset object. When this is an array, if `gpu` is `true`, only the first element in the array is used as the tileset.
      * @param {number} [x=0] - The x position to place the layer in the world. If not specified, it will default to the layer offset from Tiled or 0.
      * @param {number} [y=0] - The y position to place the layer in the world. If not specified, it will default to the layer offset from Tiled or 0.
-     * @param {boolean} [gpu=false] - Create a TilemapGPULayer instead of a TilemapLayer. This option is WebGL-only. A TilemapGPULayer is less flexible, but can be much faster.
+     * @param {boolean} [gpu=false] - Create a TilemapGPULayer instead of a TilemapLayer. This option is WebGL-only. A TilemapGPULayer is less flexible, but can be much faster. It only works properly with orthographic tilemaps.
      *
-     * @return {?Phaser.Tilemaps.TilemapLayer|?Phaser.Tilemaps.TilemapGPULayer} Returns the new layer was created, or null if it failed.
+     * @return {?Phaser.Tilemaps.TilemapLayer|?Phaser.Tilemaps.TilemapGPULayer} Returns the new layer that was created, or null if it failed.
      */
     createLayer: function (layerID, tileset, x, y, gpu)
     {
@@ -827,6 +824,11 @@ var Tilemap = new Class({
 
         var objects = objectLayer.objects;
 
+        if (config.sortByY)
+        {
+            objects.sort(function (a, b) { return a.y > b.y ? 1 : -1; });
+        }
+
         for (var c = 0; c < config.length; c++)
         {
             var singleConfig = config[ c ];
@@ -979,7 +981,7 @@ var Tilemap = new Class({
      * @param {Phaser.Cameras.Scene2D.Camera} [camera] - The Camera to use when calculating the tile index from the world values.
      * @param {(string|number|Phaser.Tilemaps.TilemapLayer)} [layer] - The tile layer to use. If not given the current layer is used.
      *
-     * @return {?Phaser.GameObjects.Sprite[]} Returns an array of Tiles, or null if the layer given was invalid.
+     * @return {?Phaser.GameObjects.Sprite[]} Returns an array of Sprites, or null if the layer given was invalid.
      */
     createFromTiles: function (indexes, replacements, spriteConfig, scene, camera, layer)
     {
@@ -996,7 +998,6 @@ var Tilemap = new Class({
      * Collision information in the region will be recalculated.
      *
      * If no layer specified, the map's current layer is used.
-     * This cannot be applied to StaticTilemapLayers.
      *
      * @method Phaser.Tilemaps.Tilemap#fill
      * @since 3.0.0
@@ -1059,7 +1060,7 @@ var Tilemap = new Class({
     /**
      * For each tile in the given rectangular area (in tile coordinates) of the layer, run the given
      * filter callback function. Any tiles that pass the filter test (i.e. where the callback returns
-     * true) will returned as a new array. Similar to Array.prototype.Filter in vanilla JS.
+     * true) will be returned as a new array. Similar to Array.prototype.Filter in vanilla JS.
      * If no layer specified, the map's current layer is used.
      *
      * @method Phaser.Tilemaps.Tilemap#filterTiles
@@ -1103,7 +1104,7 @@ var Tilemap = new Class({
      * @param {boolean} [reverse=false] - If true it will scan the layer in reverse, starting at the bottom-right. Otherwise it scans from the top-left.
      * @param {(string|number|Phaser.Tilemaps.TilemapLayer)} [layer] - The tile layer to use. If not given the current layer is used.
      *
-     * @return {?Phaser.Tilemaps.Tile} Returns a Tiles, or null if the layer given was invalid.
+     * @return {?Phaser.Tilemaps.Tile} Returns a Tile, or null if the layer given was invalid.
      */
     findByIndex: function (findIndex, skip, reverse, layer)
     {
@@ -1150,7 +1151,7 @@ var Tilemap = new Class({
      * Find the first tile in the given rectangular area (in tile coordinates) of the layer that
      * satisfies the provided testing function. I.e. finds the first tile for which `callback` returns
      * true. Similar to Array.prototype.find in vanilla JS.
-     * If no layer specified, the maps current layer is used.
+     * If no layer specified, the map's current layer is used.
      *
      * @method Phaser.Tilemaps.Tilemap#findTile
      * @since 3.0.0
@@ -1164,7 +1165,7 @@ var Tilemap = new Class({
      * @param {Phaser.Types.Tilemaps.FilteringOptions} [filteringOptions] - Optional filters to apply when getting the tiles.
      * @param {(string|number|Phaser.Tilemaps.TilemapLayer)} [layer] - The Tile layer to run the search on. If not provided will use the current layer.
      *
-     * @return {?Phaser.Tilemaps.Tile} Returns a Tiles, or null if the layer given was invalid.
+     * @return {?Phaser.Tilemaps.Tile} Returns a Tile, or null if the layer given was invalid.
      */
     findTile: function (callback, context, tileX, tileY, width, height, filteringOptions, layer)
     {
@@ -2610,7 +2611,7 @@ var Tilemap = new Class({
      *  { index: 6, weight: 4 },    // Probability of index 6 is 4 / 8
      *  { index: 7, weight: 2 },    // Probability of index 7 would be 2 / 8
      *  { index: 8, weight: 1.5 },  // Probability of index 8 would be 1.5 / 8
-     *  { index: 26, weight: 0.5 }  // Probability of index 27 would be 0.5 / 8
+     *  { index: 26, weight: 0.5 }  // Probability of index 26 would be 0.5 / 8
      * ]
      *
      * The probability of any index being picked is (the indexs weight) / (sum of all weights). This
@@ -2716,7 +2717,7 @@ var Tilemap = new Class({
      * @param {Phaser.Cameras.Scene2D.Camera} [camera] - The Camera to use when calculating the tile index from the world values.
      * @param {(string|number|Phaser.Tilemaps.TilemapLayer)} [layer] - The tile layer to use. If not given the current layer is used.
      *
-     * @return {?Phaser.Math.Vector2} Returns a vec2, or null if the layer given was invalid.
+     * @return {?Phaser.Math.Vector2} Returns a Vector2, or null if the layer given was invalid.
      */
     worldToTileXY: function (worldX, worldY, snapToFloor, vec2, camera, layer)
     {

@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -60,7 +60,7 @@ var Rectangle = new Class({
          * Do not modify this property. Instead, call the method `setRounded` to set the
          * radius of the rounded corners.
          *
-         * @name Phaser.GameObjects.Shape#radius
+         * @name Phaser.GameObjects.Rectangle#radius
          * @type {number}
          * @readonly
          * @since 3.89.0
@@ -73,7 +73,7 @@ var Rectangle = new Class({
          * Do not modify this property. Instead, call the method `setRounded` to set the
          * radius state of this rectangle.
          *
-         * @name Phaser.GameObjects.Shape#isRounded
+         * @name Phaser.GameObjects.Rectangle#isRounded
          * @type {boolean}
          * @readonly
          * @since 3.89.0
@@ -93,7 +93,7 @@ var Rectangle = new Class({
     },
 
     /**
-     * Sets this rectangle to have rounded corners by specifying the radius of the corner.
+     * Sets this rectangle to have rounded corners by specifying the radius of the corners.
      * 
      * The radius of the rounded corners is limited by the smallest dimension of the rectangle.
      * 
@@ -117,7 +117,7 @@ var Rectangle = new Class({
     },
 
     /**
-     * Sets the internal size of this Rectangle, as used for frame or physics body creation.
+     * Sets the size of this Rectangle. This updates the underlying geometry, path data, display origin, and the default input hit area.
      *
      * If you have assigned a custom input hit area for this Rectangle, changing the Rectangle size will _not_ change the
      * size of the hit area. To do this you should adjust the `input.hitArea` object directly.

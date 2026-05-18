@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -42,6 +42,9 @@ var PhaserMath = {
     GetCentroid: require('./GetCentroid'),
     GetSpeed: require('./GetSpeed'),
     GetVec2Bounds: require('./GetVec2Bounds'),
+    Hash: require('./Hash'),
+    HashCell: require('./HashCell'),
+    HashSimplex: require('./HashSimplex'),
     IsEven: require('./IsEven'),
     IsEvenStrict: require('./IsEvenStrict'),
     Linear: require('./Linear'),

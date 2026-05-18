@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -13,11 +13,16 @@ var Random = require('./Random');
 
 /**
  * @classdesc
- * A Circle object.
+ * A Circle geometry object defined by a center position and radius.
  *
  * This is a geometry object, containing numerical values and related methods to inspect and modify them.
  * It is not a Game Object, in that you cannot add it to the display list, and it has no texture.
  * To render a Circle you should look at the capabilities of the Graphics class.
+ *
+ * Circle objects are commonly used for hit-testing, overlap checks, masking, and defining circular
+ * regions of interest within a Scene. They can be used directly with Phaser's geometry intersection
+ * methods, such as `Phaser.Geom.Intersects.CircleToCircle` or `Phaser.Geom.Intersects.CircleToRectangle`,
+ * making them useful for simple spatial queries without requiring a physics body.
  *
  * @class Circle
  * @memberof Phaser.Geom
@@ -135,7 +140,7 @@ var Circle = new Class({
      *
      * @generic {Phaser.Math.Vector2[]} O - [output,$return]
      *
-     * @param {number} quantity - The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+     * @param {number} quantity - The amount of points to return. If a falsy value the quantity will be derived from the `stepRate` instead.
      * @param {number} [stepRate] - Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
      * @param {Phaser.Math.Vector2[]} [output] - An array to insert the Vector2s in to. If not provided a new array will be created.
      *
@@ -203,7 +208,8 @@ var Circle = new Class({
     },
 
     /**
-     * Sets the position of this Circle.
+     * Sets the position of this Circle. If the `y` argument is omitted, both the x and y
+     * positions will be set to the value of `x`.
      *
      * @method Phaser.Geom.Circle#setPosition
      * @since 3.0.0
@@ -237,7 +243,7 @@ var Circle = new Class({
     },
 
     /**
-     * The radius of the Circle.
+     * The radius of the Circle. Setting this value also updates the diameter accordingly.
      *
      * @name Phaser.Geom.Circle#radius
      * @type {number}
@@ -259,7 +265,7 @@ var Circle = new Class({
     },
 
     /**
-     * The diameter of the Circle.
+     * The diameter of the Circle, which is twice the radius. Setting this value also updates the radius accordingly.
      *
      * @name Phaser.Geom.Circle#diameter
      * @type {number}
@@ -281,7 +287,8 @@ var Circle = new Class({
     },
 
     /**
-     * The left position of the Circle.
+     * The leftmost point of the Circle, equal to `x - radius`. Setting this value adjusts the
+     * x position of the circle's center while keeping the radius unchanged.
      *
      * @name Phaser.Geom.Circle#left
      * @type {number}
@@ -302,7 +309,8 @@ var Circle = new Class({
     },
 
     /**
-     * The right position of the Circle.
+     * The rightmost point of the Circle, equal to `x + radius`. Setting this value adjusts the
+     * x position of the circle's center while keeping the radius unchanged.
      *
      * @name Phaser.Geom.Circle#right
      * @type {number}
@@ -323,7 +331,8 @@ var Circle = new Class({
     },
 
     /**
-     * The top position of the Circle.
+     * The topmost point of the Circle, equal to `y - radius`. Setting this value adjusts the
+     * y position of the circle's center while keeping the radius unchanged.
      *
      * @name Phaser.Geom.Circle#top
      * @type {number}
@@ -344,7 +353,8 @@ var Circle = new Class({
     },
 
     /**
-     * The bottom position of the Circle.
+     * The bottommost point of the Circle, equal to `y + radius`. Setting this value adjusts the
+     * y position of the circle's center while keeping the radius unchanged.
      *
      * @name Phaser.Geom.Circle#bottom
      * @type {number}

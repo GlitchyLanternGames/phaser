@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -36,7 +36,7 @@ var Controller = require('./Controller');
  * ```js
  * const camera = this.cameras.main;
  * camera.filters.internal.addBlocky({ size: 4 });
- * camera.filters.external.addBlocky({ size: { x: 2, y: 4 } }, offset: { x: 1, y: 2 });
+ * camera.filters.external.addBlocky({ size: { x: 2, y: 4 }, offset: { x: 1, y: 2 } });
  * ```
  *
  * @class Blocky

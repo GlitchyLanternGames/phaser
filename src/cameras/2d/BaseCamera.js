@@ -1,16 +1,17 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
 var Class = require('../../utils/Class');
-var Components = require('../../gameobjects/components');
 var DegToRad = require('../../math/DegToRad');
 var EventEmitter = require('eventemitter3');
 var Events = require('./events');
 var Rectangle = require('../../geom/rectangle/Rectangle');
+var AlphaSingle = require('../../gameobjects/components/AlphaSingle');
 var TransformMatrix = require('../../gameobjects/components/TransformMatrix');
+var Visible = require('../../gameobjects/components/Visible');
 var ValueToColor = require('../../display/color/ValueToColor');
 var Vector2 = require('../../math/Vector2');
 
@@ -48,7 +49,7 @@ var Vector2 = require('../../math/Vector2');
  * @since 3.12.0
  *
  * @extends Phaser.Events.EventEmitter
- * @extends Phaser.GameObjects.Components.Alpha
+ * @extends Phaser.GameObjects.Components.AlphaSingle
  * @extends Phaser.GameObjects.Components.Visible
  *
  * @param {number} x - The x position of the Camera, relative to the top-left of the game canvas.
@@ -61,8 +62,8 @@ var BaseCamera = new Class({
     Extends: EventEmitter,
 
     Mixins: [
-        Components.AlphaSingle,
-        Components.Visible
+        AlphaSingle,
+        Visible
     ],
 
     initialize:
@@ -560,7 +561,7 @@ var BaseCamera = new Class({
 
         /**
          * Can this Camera render rounded pixel values?
-         * 
+         *
          * This property is updated during the `preRender` method and should not be
          * set directly. It is set based on the `roundPixels` property of the Camera
          * combined with the zoom level. If the zoom is an integer then the WebGL
@@ -576,7 +577,7 @@ var BaseCamera = new Class({
     },
 
     /**
-     * Adds the given Game Object to this cameras render list.
+     * Adds the given Game Object to this camera's render list.
      *
      * This is invoked during the rendering stage. Only objects that are actually rendered
      * will appear in the render list.
@@ -919,7 +920,7 @@ var BaseCamera = new Class({
      * @method Phaser.Cameras.Scene2D.BaseCamera#ignore
      * @since 3.0.0
      *
-     * @param {(Phaser.GameObjects.GameObject|Phaser.GameObjects.GameObject[]|Phaser.GameObjects.Group|Phaser.GameObjects.Layer|Phaser.GameObjects.Layer[])} entries - The Game Object, or array of Game Objects, to be ignored by this Camera.
+     * @param {(Phaser.GameObjects.GameObject|Phaser.GameObjects.GameObject[]|Phaser.GameObjects.Group)} entries - The Game Object, or array of Game Objects, to be ignored by this Camera.
      *
      * @return {this} This Camera instance.
      */
@@ -1049,7 +1050,7 @@ var BaseCamera = new Class({
      * @method Phaser.Cameras.Scene2D.BaseCamera#setAngle
      * @since 3.0.0
      *
-     * @param {number} [value=0] - The cameras angle of rotation, given in degrees.
+     * @param {number} [value=0] - The camera's angle of rotation, given in degrees.
      *
      * @return {this} This Camera instance.
      */
@@ -1152,7 +1153,7 @@ var BaseCamera = new Class({
      *
      * @param {boolean} value - The value to set the property to.
      *
-     * @returns {this} This Camera instance.
+     * @return {this} This Camera instance.
      */
     setForceComposite: function (value)
     {
@@ -1364,6 +1365,16 @@ var BaseCamera = new Class({
      * allowing you to create mini-cam style effects by creating and positioning a smaller Camera
      * viewport within your game.
      *
+     * Note that this is a limited method, and comes with several caveats:
+     *
+     * - The viewport is an axis-aligned rectangle, and cannot be rotated.
+     * - Filters and masks may appear in the wrong place if the viewport changes.
+     *
+     * It is more powerful and reliable to use a
+     * `RenderTexture` or `DynamicTexture` instead.
+     * Point its camera where you want the viewport,
+     * set its size, and then draw your game objects to it.
+     *
      * @method Phaser.Cameras.Scene2D.BaseCamera#setViewport
      * @since 3.0.0
      *
@@ -1546,8 +1557,8 @@ var BaseCamera = new Class({
     },
 
     /**
-     * Set if this Camera is being used as a Scene Camera, or a Texture
-     * Camera.
+     * Sets whether this Camera is being used as a Scene Camera (the default),
+     * or a Texture Camera used to render to a texture.
      *
      * @method Phaser.Cameras.Scene2D.BaseCamera#setIsSceneCamera
      * @since 3.60.0

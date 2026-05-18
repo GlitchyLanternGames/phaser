@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -18,7 +18,7 @@ var SpriteGPULayer = require('./SpriteGPULayer');
  * @method Phaser.GameObjects.GameObjectCreator#spriteGPULayer
  * @since 4.0.0
  *
- * @param {Phaser.Types.GameObjects.SpriteGPULayer.SpriteGPULayerConfig} config - The configuration object this Game Object will use to create itself. Must include `{ size: number }`.
+ * @param {Phaser.Types.GameObjects.SpriteGPULayer.SpriteGPULayerConfig} config - The configuration object this Game Object will use to create itself. The `size` property sets the maximum number of sprites the layer can hold, and defaults to 1 if not specified.
  * @param {boolean} [addToScene] - Add this Game Object to the Scene after creating it? If set this argument overrides the `add` property in the config object.
  *
  * @return {Phaser.GameObjects.SpriteGPULayer} The Game Object that was created.

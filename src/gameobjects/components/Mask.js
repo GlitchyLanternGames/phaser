@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -8,9 +8,13 @@ var CONST = require('../../const');
 var GeometryMask = require('../../display/mask/GeometryMask');
 
 /**
- * Provides methods used for getting and setting the mask of a Game Object.
+ * Provides methods used for setting, clearing, and creating masks on a Game Object.
  *
- * This only works under the Canvas Renderer.
+ * A mask clips the rendered output of a Game Object to the shape defined by a Graphics
+ * or Shape Game Object. Only pixels that fall within the mask geometry are drawn to the screen.
+ * Masks have no effect on physics or input detection; they are purely a visual rendering tool.
+ *
+ * This component only works under the Canvas Renderer.
  * For WebGL, see {@link Phaser.GameObjects.Components.FilterList#addMask}.
  *
  * @namespace Phaser.GameObjects.Components.Mask
@@ -20,7 +24,7 @@ var GeometryMask = require('../../display/mask/GeometryMask');
 var Mask = {
 
     /**
-     * The Mask this Game Object is using during render.
+     * The Mask this Game Object is using during render, or `null` if no mask has been set.
      *
      * @name Phaser.GameObjects.Components.Mask#mask
      * @type {Phaser.Display.Masks.GeometryMask}

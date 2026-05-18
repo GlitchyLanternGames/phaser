@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -99,7 +99,8 @@ var WebGLFramebufferWrapper = new Class({
         this.useCanvas = !colorAttachments || colorAttachments.length === 0;
 
         /**
-         * Width of the depth stencil.
+         * The width of the framebuffer, in pixels. This is derived from the
+         * first color attachment and is used when allocating renderbuffer storage.
          *
          * @name Phaser.Renderer.WebGL.Wrappers.WebGLFramebufferWrapper#width
          * @type {number}
@@ -108,7 +109,8 @@ var WebGLFramebufferWrapper = new Class({
         this.width = 0;
 
         /**
-         * Height of the depth stencil.
+         * The height of the framebuffer, in pixels. This is derived from the
+         * first color attachment and is used when allocating renderbuffer storage.
          *
          * @name Phaser.Renderer.WebGL.Wrappers.WebGLFramebufferWrapper#height
          * @type {number}

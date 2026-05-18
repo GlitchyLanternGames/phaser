@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -14,7 +14,14 @@ var Random = require('./Random');
 
 /**
  * @classdesc
- * Encapsulates a 2D rectangle defined by its corner point in the top-left and its extends in x (width) and y (height)
+ * A Rectangle is an axis-aligned region of 2D space defined by its top-left corner position (`x`, `y`) and its
+ * dimensions (`width`, `height`). It is one of the core geometric primitives in Phaser and is used extensively
+ * throughout the framework for bounds checking, camera viewports, hit areas, culling regions, and UI layout.
+ *
+ * Rectangles support containment tests, perimeter point sampling, and many other geometric operations available
+ * via the `Phaser.Geom.Rectangle` static methods. The `left`, `right`, `top`, `bottom`, `centerX`, and `centerY`
+ * properties provide convenient access to derived positional values and can be set directly to reposition or
+ * resize the Rectangle.
  *
  * @class Rectangle
  * @memberof Phaser.Geom
@@ -247,7 +254,7 @@ var Rectangle = new Class({
      * @method Phaser.Geom.Rectangle#isEmpty
      * @since 3.0.0
      *
-     * @return {boolean} `true` if the Rectangle is empty. A Rectangle object is empty if its width or height is less than or equal to 0.
+     * @return {boolean} `true` if the Rectangle is empty, otherwise `false`.
      */
     isEmpty: function ()
     {

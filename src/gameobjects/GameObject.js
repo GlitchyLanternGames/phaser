@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -14,9 +14,20 @@ var SceneEvents = require('../scene/events');
 
 /**
  * @classdesc
- * The base class that all Game Objects extend.
- * You don't create GameObjects directly and they cannot be added to the display list.
- * Instead, use them as the base for your own custom classes.
+ * The base class that all Game Objects in Phaser extend.
+ *
+ * A Game Object is anything that can be added to a Scene's display list and rendered to screen,
+ * such as a Sprite, Image, Text, or Graphics object. Game Objects are the building blocks of
+ * every Phaser game — they represent visual entities that live in a Scene, can be positioned,
+ * scaled, rotated, and interacted with.
+ *
+ * This class provides the core shared functionality used by all Game Objects: lifecycle management
+ * (active/destroy), data storage via the Data Manager, input handling, physics body attachment,
+ * display list and update list membership, and event emission.
+ *
+ * You do not instantiate `GameObject` directly. Instead, use it as the base class for your own
+ * custom Game Object types by extending it through Phaser's `Class` utility, or simply use one
+ * of the many built-in Game Object types provided by Phaser.
  *
  * @class GameObject
  * @memberof Phaser.GameObjects
@@ -244,6 +255,24 @@ var GameObject = new Class({
          */
         this.ignoreDestroy = false;
 
+        /**
+         * Whether this Game Object has been destroyed.
+         * Check this property to avoid bugs caused by calling methods on a
+         * destroyed Game Object, e.g. in a Tween or Timer.
+         *
+         * This is a read-only property that is automatically set to `true`
+         * when the Game Object is destroyed.
+         * You should not set this property directly.
+         * It is set before `preDestroy` is called or the DESTROY event is emitted.
+         *
+         * @name Phaser.GameObjects.GameObject#isDestroyed
+         * @type {boolean}
+         * @default false
+         * @readonly
+         * @since 4.0.0
+         */
+        this.isDestroyed = false;
+
         // Initialize RenderSteps mixin.
         if (this.addRenderStep)
         {
@@ -382,7 +411,7 @@ var GameObject = new Class({
      * @genericUse {(string|T)} - [key]
      *
      * @param {(string|object)} key - The key to set the value for. Or an object of key value pairs. If an object the `data` argument is ignored.
-     * @param {*} [data] - The value to set for the given key. If an object is provided as the key this argument is ignored.
+     * @param {*} [value] - The value to set for the given key. If an object is provided as the key this argument is ignored.
      *
      * @return {this} This GameObject.
      */
@@ -399,7 +428,7 @@ var GameObject = new Class({
     },
 
     /**
-     * Increase a value for the given key within this Game Objects Data Manager. If the key doesn't already exist in the Data Manager then it is increased from 0.
+     * Increase a value for the given key within this Game Object's Data Manager. If the key doesn't already exist in the Data Manager then it is created with a value of 0 before being increased.
      *
      * If the Game Object has not been enabled for data (via `setDataEnabled`) then it will be enabled
      * before setting the value.
@@ -429,7 +458,7 @@ var GameObject = new Class({
     },
 
     /**
-     * Toggle a boolean value for the given key within this Game Objects Data Manager. If the key doesn't already exist in the Data Manager then it is toggled from false.
+     * Toggle a boolean value for the given key within this Game Object's Data Manager. If the key doesn't already exist in the Data Manager then it is created with a value of `false` before being toggled to `true`.
      *
      * If the Game Object has not been enabled for data (via `setDataEnabled`) then it will be enabled
      * before setting the value.
@@ -606,7 +635,7 @@ var GameObject = new Class({
     /**
      * This callback is invoked when this Game Object is added to a Scene.
      *
-     * Can be overriden by custom Game Objects, but be aware of some Game Objects that
+     * Can be overridden by custom Game Objects, but be aware of some Game Objects that
      * will use this, such as Sprites, to add themselves into the Update List.
      *
      * You can also listen for the `ADDED_TO_SCENE` event from this Game Object.
@@ -621,8 +650,8 @@ var GameObject = new Class({
     /**
      * This callback is invoked when this Game Object is removed from a Scene.
      *
-     * Can be overriden by custom Game Objects, but be aware of some Game Objects that
-     * will use this, such as Sprites, to removed themselves from the Update List.
+     * Can be overridden by custom Game Objects, but be aware of some Game Objects that
+     * will use this, such as Sprites, to remove themselves from the Update List.
      *
      * You can also listen for the `REMOVED_FROM_SCENE` event from this Game Object.
      *
@@ -634,12 +663,18 @@ var GameObject = new Class({
     },
 
     /**
-     * To be overridden by custom GameObjects. Allows base objects to be used in a Pool.
+     * Override this method in your own custom Game Objects to perform per-frame update logic.
+     * This method is called by the Scene's Update List on every game frame, if the Game Object
+     * is on that list. It is not called automatically — the Game Object must be added to the
+     * Update List via `addToUpdateList` or by having a `preUpdate` method.
+     *
+     * This base implementation is intentionally empty, allowing Game Objects to be used in an
+     * Object Pool without requiring any update logic.
      *
      * @method Phaser.GameObjects.GameObject#update
      * @since 3.0.0
      *
-     * @param {...*} [args] - args
+     * @param {...*} [args] - Any arguments that are passed to the update method.
      */
     update: function ()
     {
@@ -720,7 +755,7 @@ var GameObject = new Class({
      * @method Phaser.GameObjects.GameObject#setVertexRoundMode
      * @since 4.0.0
      * @param {string} mode - The vertex round mode to set. Can be 'off', 'safe', 'safeAuto', 'full' or 'fullAuto'.
-     * @returns {this} This GameObject.
+     * @return {this} This GameObject.
      */
     setVertexRoundMode: function (mode)
     {
@@ -791,7 +826,7 @@ var GameObject = new Class({
      *
      * You can query which list it is on by looking at the `Phaser.GameObjects.GameObject#displayList` property.
      *
-     * If a Game Object isn't on any display list, it will not be rendered. If you just wish to temporarly
+     * If a Game Object isn't on any display list, it will not be rendered. If you just wish to temporarily
      * disable it from rendering, consider using the `setVisible` method, instead.
      *
      * @method Phaser.GameObjects.GameObject#addToDisplayList
@@ -833,7 +868,7 @@ var GameObject = new Class({
      * Adds this Game Object to the Update List belonging to the Scene.
      *
      * When a Game Object is added to the Update List it will have its `preUpdate` method called
-     * every game frame. This method is passed two parameters: `delta` and `time`.
+     * every game frame. This method is passed two parameters: `time` and `delta`.
      *
      * If you wish to run your own logic within `preUpdate` then you should always call
      * `super.preUpdate(time, delta)` within it, or it may fail to process required operations,
@@ -857,12 +892,12 @@ var GameObject = new Class({
     /**
      * Removes this Game Object from the Display List it is currently on.
      *
-     * A Game Object can only exist on one Display List at any given time, but may move freely removed
+     * A Game Object can only exist on one Display List at any given time, but may be freely removed
      * and added back at a later stage.
      *
      * You can query which list it is on by looking at the `Phaser.GameObjects.GameObject#displayList` property.
      *
-     * If a Game Object isn't on any Display List, it will not be rendered. If you just wish to temporarly
+     * If a Game Object isn't on any Display List, it will not be rendered. If you just wish to temporarily
      * disable it from rendering, consider using the `setVisible` method, instead.
      *
      * @method Phaser.GameObjects.GameObject#removeFromDisplayList
@@ -977,6 +1012,8 @@ var GameObject = new Class({
         }
 
         if (fromScene === undefined) { fromScene = false; }
+
+        this.isDestroyed = true;
 
         if (this.preDestroy)
         {

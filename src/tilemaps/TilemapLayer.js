@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -9,12 +9,23 @@ var Class = require('../utils/Class');
 var TilemapComponents = require('./components');
 var TilemapLayerRender = require('./TilemapLayerRender');
 var TilemapLayerBase = require('./TilemapLayerBase');
+var TintModes = require('../renderer/TintModes');
 
 /**
  * @classdesc
- * A Tilemap Layer is a Game Object that renders LayerData from a Tilemap when used in combination
- * with one, or more, Tilesets.
- * 
+ * A TilemapLayer is a Game Object responsible for rendering a single layer of tile data from a
+ * Tilemap. It works in combination with one or more Tileset objects, which provide the actual
+ * tile imagery. You would typically create a TilemapLayer via `Tilemap.createLayer`, rather than
+ * instantiating it directly.
+ *
+ * Each layer corresponds to a LayerData entry within the Tilemap, and supports all four map
+ * orientations: Orthogonal, Isometric, Hexagonal, and Staggered. The layer handles its own
+ * camera culling, only sending visible tiles to the renderer each frame, which keeps performance
+ * efficient even for large maps.
+ *
+ * TilemapLayers support physics via both Arcade Physics and Matter.js, and can have tints,
+ * alpha, and other standard Game Object properties applied to them.
+ *
  * A TilemapLayer can be placed inside a Container, but its physics
  * will work as though it was placed directly in the world.
  * This is rarely what you want.
@@ -283,7 +294,7 @@ var TilemapLayer = new Class({
     },
 
     /**
-     * Returns the tiles in the given layer that are within the cameras viewport.
+     * Returns the tiles in the given layer that are within the camera's viewport.
      * This is used internally during rendering.
      *
      * @method Phaser.Tilemaps.TilemapLayer#cull
@@ -379,29 +390,32 @@ var TilemapLayer = new Class({
         var tintTile = function (tile)
         {
             tile.tint = tint;
-            tile.tintFill = false;
         };
 
         return this.forEachTile(tintTile, this, tileX, tileY, width, height, filteringOptions);
     },
 
     /**
-     * Sets a fill-based tint on each Tile within the given area.
+     * Sets the tint mode to use when applying the tint to the texture.
      *
-     * Unlike an additive tint, a fill-tint literally replaces the pixel colors from the texture
-     * with those in the tint.
+     * Available modes are:
      *
-     * If no area values are given then all tiles will be tinted to the given color.
+     * - Phaser.TintModes.MULTIPLY (default)
+     * - Phaser.TintModes.FILL
+     * - Phaser.TintModes.ADD
+     * - Phaser.TintModes.SCREEN
+     * - Phaser.TintModes.OVERLAY
+     * - Phaser.TintModes.HARD_LIGHT
      *
-     * To remove a tint call this method with either no parameters, or by passing white `0xffffff` as the tint color.
+     * Call this method with no parameters to reset the tint mode to the default.
      *
-     * If a tile already has a tint set then calling this method will override that.
+     * If a tile already has a tint mode set then calling this method will override that.
      *
-     * @method Phaser.Tilemaps.TilemapLayer#setTintFill
+     * @method Phaser.Tilemaps.TilemapLayer#setTintMode
      * @webglOnly
-     * @since 3.70.0
+     * @since 4.0.0
      *
-     * @param {number} [tint=0xffffff] - The tint color being applied to each tile within the region. Given as a hex value, i.e. `0xff0000` for red. Set to white (`0xffffff`) to reset the tint.
+     * @param {Phaser.TintModes} [tintMode=Phaser.TintModes.MULTIPLY] - The tint mode to use.
      * @param {number} [tileX] - The left most tile index (in tile coordinates) to use as the origin of the area to search.
      * @param {number} [tileY] - The top most tile index (in tile coordinates) to use as the origin of the area to search.
      * @param {number} [width] - How many tiles wide from the `tileX` index the area will be.
@@ -410,19 +424,27 @@ var TilemapLayer = new Class({
      *
      * @return {this} This Tilemap Layer object.
      */
-    setTintFill: function (tint, tileX, tileY, width, height, filteringOptions)
+    setTintMode: function (tintMode, tileX, tileY, width, height, filteringOptions)
     {
-        if (tint === undefined) { tint = 0xffffff; }
+        if (tintMode === undefined) { tintMode = TintModes.MULTIPLY; }
 
         var tintTile = function (tile)
         {
-            tile.tint = tint;
-            tile.tintFill = true;
+            tile.tintMode = tintMode;
         };
 
         return this.forEachTile(tintTile, this, tileX, tileY, width, height, filteringOptions);
     },
 
+    /**
+     * Destroys this TilemapLayer, clearing the culled tiles array and removing the cull callback.
+     * Also removes the layer from its parent Tilemap if `removeFromTilemap` is set to `true`.
+     *
+     * @method Phaser.Tilemaps.TilemapLayer#destroy
+     * @since 3.50.0
+     *
+     * @param {boolean} [removeFromTilemap=true] - Remove this layer from the parent Tilemap before destroying it.
+     */
     destroy: function (removeFromTilemap)
     {
         this.culledTiles.length = 0;

@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -60,7 +60,8 @@ var TriangleWebGLRenderer = function (renderer, src, drawingContext, parentMatri
             y3,
             fillTintColor,
             fillTintColor,
-            fillTintColor
+            fillTintColor,
+            src.lighting
         );
     }
 

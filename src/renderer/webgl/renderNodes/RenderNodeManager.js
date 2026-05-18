@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -35,14 +35,23 @@ var FilterBlurLow = require('./filters/FilterBlurLow');
 var FilterBlurMed = require('./filters/FilterBlurMed');
 var FilterBokeh = require('./filters/FilterBokeh');
 var FilterColorMatrix = require('./filters/FilterColorMatrix');
+var FilterCombineColorMatrix = require('./filters/FilterCombineColorMatrix');
 var FilterDisplacement = require('./filters/FilterDisplacement');
 var FilterGlow = require('./filters/FilterGlow');
+var FilterGradientMap = require('./filters/FilterGradientMap');
+var FilterImageLight = require('./filters/FilterImageLight');
+var FilterKey = require('./filters/FilterKey');
 var FilterMask = require('./filters/FilterMask');
+var FilterNormalTools = require('./filters/FilterNormalTools');
+var FilterPanoramaBlur = require('./filters/FilterPanoramaBlur');
 var FilterParallelFilters = require('./filters/FilterParallelFilters');
 var FilterPixelate = require('./filters/FilterPixelate');
+var FilterQuantize = require('./filters/FilterQuantize');
 var FilterSampler = require('./filters/FilterSampler');
 var FilterShadow = require('./filters/FilterShadow');
 var FilterThreshold = require('./filters/FilterThreshold');
+var FilterVignette = require('./filters/FilterVignette');
+var FilterWipe = require('./filters/FilterWipe');
 
 var ListCompositor = require('./ListCompositor');
 var RebindContext = require('./RebindContext');
@@ -67,7 +76,21 @@ var YieldContext = require('./YieldContext');
  */
 
 /**
- * Provides and manages the nodes in the rendering graph.
+ * The RenderNodeManager creates, stores, and provides access to all RenderNode
+ * instances used by the WebGL renderer. Render nodes are the fundamental units
+ * of the WebGL rendering pipeline — each node is responsible for a specific
+ * rendering task, such as batching sprites, applying post-processing filters,
+ * compositing layered render lists, transforming geometry, or managing WebGL
+ * drawing contexts. The manager lazily constructs built-in nodes on first
+ * request via `getNode` and caches them for reuse. Custom nodes and
+ * constructors can be registered with `addNode` and `addNodeConstructor`.
+ *
+ * The manager also tracks the currently active batch node so that an
+ * in-progress batch can be flushed automatically when a different rendering
+ * operation begins, controls the `maxParallelTextureUnits` limit used to tune
+ * multi-texture batching performance on desktop and mobile, and provides an
+ * optional debug mode that captures a single frame's complete render graph as
+ * a tree structure inspectable via `debugToString`.
  *
  * @class RenderNodeManager
  * @memberof Phaser.Renderer.WebGL.RenderNodes
@@ -169,14 +192,23 @@ var RenderNodeManager = new Class({
             FilterBlurMed: FilterBlurMed,
             FilterBokeh: FilterBokeh,
             FilterColorMatrix: FilterColorMatrix,
+            FilterCombineColorMatrix: FilterCombineColorMatrix,
             FilterDisplacement: FilterDisplacement,
             FilterGlow: FilterGlow,
+            FilterGradientMap: FilterGradientMap,
+            FilterImageLight: FilterImageLight,
+            FilterKey: FilterKey,
             FilterMask: FilterMask,
+            FilterNormalTools: FilterNormalTools,
+            FilterPanoramaBlur: FilterPanoramaBlur,
             FilterParallelFilters: FilterParallelFilters,
             FilterPixelate: FilterPixelate,
+            FilterQuantize: FilterQuantize,
             FilterSampler: FilterSampler,
             FilterShadow: FilterShadow,
             FilterThreshold: FilterThreshold,
+            FilterVignette: FilterVignette,
+            FilterWipe: FilterWipe,
 
             ListCompositor: ListCompositor,
             RebindContext: RebindContext,
@@ -380,7 +412,7 @@ var RenderNodeManager = new Class({
      *
      * @method Phaser.Renderer.WebGL.RenderNodes.RenderNodeManager#setMaxParallelTextureUnits
      * @since 4.0.0
-     * @param {number} [value] - The new value for `maxParallelTextureUnits`. If not provided, it will be set to the renderer's `maxTextures`.
+     * @param {number} [value] - The new value for `maxParallelTextureUnits`. Must be a number; it will be clamped to the range [1, renderer.maxTextures].
      * @fires Phaser.Renderer.Events#SET_PARALLEL_TEXTURE_UNITS
      */
     setMaxParallelTextureUnits: function (value)

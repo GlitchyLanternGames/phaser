@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -59,7 +59,7 @@ var Render = require('./PointLightRender');
  * @param {number} [color=0xffffff] - The color of the Point Light, given as a hex value.
  * @param {number} [radius=128] - The radius of the Point Light.
  * @param {number} [intensity=1] - The intensity, or color blend, of the Point Light.
- * @param {number} [attenuation=0.1] - The attenuation  of the Point Light. This is the reduction of light from the center point.
+ * @param {number} [attenuation=0.1] - The attenuation of the Point Light. This is the reduction of light from the center point.
  */
 var PointLight = new Class({
 
@@ -152,7 +152,8 @@ var PointLight = new Class({
     },
 
     /**
-     * The radius of the Point Light.
+     * The radius of the Point Light, in pixels. Changing this value also updates
+     * the `width` and `height` properties of this Game Object to `radius * 2`.
      *
      * @name Phaser.GameObjects.PointLight#radius
      * @type {number}
@@ -174,6 +175,14 @@ var PointLight = new Class({
 
     },
 
+    /**
+     * The horizontal origin of this Point Light. This is always fixed at 0.5 and cannot be changed.
+     *
+     * @name Phaser.GameObjects.PointLight#originX
+     * @type {number}
+     * @readonly
+     * @since 3.50.0
+     */
     originX: {
 
         get: function ()
@@ -183,6 +192,14 @@ var PointLight = new Class({
 
     },
 
+    /**
+     * The vertical origin of this Point Light. This is always fixed at 0.5 and cannot be changed.
+     *
+     * @name Phaser.GameObjects.PointLight#originY
+     * @type {number}
+     * @readonly
+     * @since 3.50.0
+     */
     originY: {
 
         get: function ()
@@ -192,6 +209,14 @@ var PointLight = new Class({
 
     },
 
+    /**
+     * The horizontal display origin of this Point Light, in pixels. This is equal to the radius of the light.
+     *
+     * @name Phaser.GameObjects.PointLight#displayOriginX
+     * @type {number}
+     * @readonly
+     * @since 3.50.0
+     */
     displayOriginX: {
 
         get: function ()
@@ -201,6 +226,14 @@ var PointLight = new Class({
 
     },
 
+    /**
+     * The vertical display origin of this Point Light, in pixels. This is equal to the radius of the light.
+     *
+     * @name Phaser.GameObjects.PointLight#displayOriginY
+     * @type {number}
+     * @readonly
+     * @since 3.50.0
+     */
     displayOriginY: {
 
         get: function ()

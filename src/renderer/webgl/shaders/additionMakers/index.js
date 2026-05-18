@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -11,7 +11,6 @@
 module.exports = {
 
     MakeAnimLength: require('./MakeAnimLength'),
-    MakeApplyFlatLighting: require('./MakeApplyFlatLighting'),
     MakeApplyLighting: require('./MakeApplyLighting'),
     MakeApplyTint: require('./MakeApplyTint'),
     MakeBoundedSampler: require('./MakeBoundedSampler'),

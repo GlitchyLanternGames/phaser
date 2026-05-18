@@ -46,7 +46,7 @@ in vec4 inTintTL;
 in vec4 inTintTR;
 in vec4 inTintBL;
 in vec4 inTintBR;
-in vec4 inOriginAndTintFillAndCreationTime;
+in vec4 inOriginAndTintModeAndCreationTime;
 in vec2 inScrollFactor;
 
 out vec2 outTexCoord;
@@ -84,7 +84,7 @@ float animate (vec4 anim)
     float duration = b;
     float delay = mod(c, 1.0) * 2.0;
 
-    float rawTime = ((uTime - inOriginAndTintFillAndCreationTime.w) / duration) - delay;
+    float rawTime = ((uTime - inOriginAndTintModeAndCreationTime.w) / duration) - delay;
     float time = mod(rawTime, 1.0);
     if (yoyo && (mod(rawTime, 2.0) >= 1.0))
     {
@@ -568,8 +568,8 @@ void main ()
     float tintBlend = animate(inTintBlend);
     float alpha = animate(inAlpha);
 
-    vec2 origin = inOriginAndTintFillAndCreationTime.xy;
-    float tintFill = inOriginAndTintFillAndCreationTime.z;
+    vec2 origin = inOriginAndTintModeAndCreationTime.xy;
+    float tintMode = inOriginAndTintModeAndCreationTime.z;
     float scrollFactorX = inScrollFactor.x;
     float scrollFactorY = inScrollFactor.y;
 
@@ -651,7 +651,7 @@ void main ()
 
     outTexCoord = vec2(u, 1.0 - v);
     outTint = mix(vec4(1.0, 1.0, 1.0, tint.a), tint, tintBlend);
-    outTintEffect = tintFill;
+    outTintEffect = tintMode;
 
     #pragma phaserTemplate(vertexProcess)
 }

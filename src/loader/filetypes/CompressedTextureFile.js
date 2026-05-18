@@ -21,7 +21,13 @@ var verifyCompressedTexture = require('../../textures/parsers/VerifyCompressedTe
 
 /**
  * @classdesc
- * A Compressed Texture File suitable for loading by the Loader.
+ * A Compressed Texture File is a special MultiFile that handles loading GPU-native compressed texture formats such
+ * as PVR and KTX container files. It supports a range of internal compression formats including ASTC, S3TC, ETC,
+ * PVRTC, and others, selecting the best format supported by the current GPU at load time.
+ *
+ * It can load a single compressed texture, a compressed texture with an accompanying JSON atlas, or a multi-atlas
+ * as exported by Texture Packer Pro. An `IMG` fallback entry may also be provided for browsers or GPUs that do
+ * not support any of the compressed formats.
  *
  * These are created when you use the Phaser.Loader.LoaderPlugin#texture method and are not typically created directly.
  *
@@ -95,7 +101,11 @@ var CompressedTextureFile = new Class({
     },
 
     /**
-     * Called by each File when it finishes loading.
+     * Called by each File when it finishes loading. Decrements the pending file count and, when loading
+     * a multi-atlas configuration, parses the completed JSON manifest to dynamically queue additional
+     * BinaryFile instances for each texture referenced in the atlas, along with any associated normal maps.
+     * The loader's base URL, path, and prefix are temporarily adjusted to the multi-atlas settings during
+     * this process and then restored afterwards.
      *
      * @method Phaser.Loader.FileTypes.CompressedTextureFile#onFileComplete
      * @since 3.60.0
@@ -184,7 +194,12 @@ var CompressedTextureFile = new Class({
     },
 
     /**
-     * Adds this file to its target cache upon successful loading and processing.
+     * Adds this file to its target cache upon successful loading and processing. If the file is a
+     * multi-atlas it delegates to `addMultiToCache`. Otherwise, it parses the binary texture data
+     * using either the PVR or KTX parser, verifies that the texture dimensions meet the requirements
+     * of the compression format, and checks that the GPU supports the internal format. If all checks
+     * pass the texture is added to the Texture Manager, optionally with JSON atlas data if one was
+     * loaded alongside it. A console warning is issued for any texture that fails validation.
      *
      * @method Phaser.Loader.FileTypes.CompressedTextureFile#addToCache
      * @since 3.60.0
@@ -255,7 +270,12 @@ var CompressedTextureFile = new Class({
     },
 
     /**
-     * Adds all of the multi-file entties to their target caches upon successful loading and processing.
+     * Adds all of the multi-file entries to their target caches upon successful loading and processing.
+     * Iterates over each binary texture file in the multi-atlas, parses it using the PVR or KTX parser,
+     * and matches it against its corresponding entry in the JSON manifest. Only textures whose compression
+     * format is supported by the current GPU are included. Any associated normal maps are collected and
+     * passed through as well. The resulting images, atlas data, and normal maps are registered together
+     * with the Texture Manager as a JSON array atlas.
      *
      * @method Phaser.Loader.FileTypes.CompressedTextureFile#addMultiToCache
      * @since 3.60.0
@@ -450,7 +470,7 @@ var CompressedTextureFile = new Class({
  *
  * - PVRTC must have a power-of-two width and height.
  * - MIPMaps, if present, must have a power-of-two width and height.
- * - S3TC S3TCSRGB, RGTC, and BPTC must have width and height divisible by 4.
+ * - S3TC, S3TCSRGB, RGTC, and BPTC must have width and height divisible by 4.
  * - ASTC must have a Channel Type of Unsigned Normalized Bytes (UNorm). In fact, all compressed textures should be UNorm, but ASTC presents many other options.
  *
  * If in doubt, a power-of-two resolution is always a safe bet.
@@ -468,7 +488,7 @@ var CompressedTextureFile = new Class({
  * Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
  * then remove it from the Texture Manager first, before loading a new one.
  *
- * If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
+ * If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this file's
  * key. For example, if the prefix was `LEVEL1.` and the key was `Data` the final key will be `LEVEL1.Data` and
  * this is what you would use to retrieve the text from the Texture Manager.
  *

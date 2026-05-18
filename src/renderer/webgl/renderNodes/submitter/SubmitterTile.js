@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -9,7 +9,12 @@ var SubmitterQuad = require('./SubmitterQuad');
 
 /**
  * @classdesc
- * The SubmitterTile RenderNode submits data for tiles.
+ * A specialized RenderNode that extends SubmitterQuad to handle the submission
+ * of tile rendering data to the WebGL batch handler. It is used internally by
+ * Tilemap layers to render individual tiles. Unlike the base SubmitterQuad,
+ * SubmitterTile enables frame clamping (`clampFrame = true`) on its render
+ * options, which prevents texture bleeding between adjacent tiles that share a
+ * tileset texture atlas.
  *
  * @class SubmitterTile
  * @extends Phaser.Renderer.WebGL.RenderNodes.SubmitterQuad
@@ -42,7 +47,12 @@ var SubmitterTile = new Class({
     },
 
     /**
-     * Submit data for rendering.
+     * Submits rendering data for a single tile to the WebGL batch handler.
+     * Optionally executes the texturer, transformer, and tinter nodes to resolve
+     * texture coordinates, transformed quad geometry, and per-corner tint colors.
+     * If no tinter node is provided, the tile is rendered without tinting using
+     * a full white (0xffffffff) color. The resolved data is then passed to the
+     * appropriate batch handler for GPU submission.
      *
      * @method Phaser.Renderer.WebGL.RenderNodes.SubmitterTile#run
      * @since 4.0.0
@@ -70,7 +80,7 @@ var SubmitterTile = new Class({
     {
         this.onRunBegin(drawingContext);
 
-        var tintFill, tintTopLeft, tintBottomLeft, tintTopRight, tintBottomRight;
+        var tintEffect, tintTopLeft, tintBottomLeft, tintTopRight, tintBottomRight;
 
         if (texturerNode.run)
         {
@@ -86,7 +96,7 @@ var SubmitterTile = new Class({
             {
                 tinterNode.run(drawingContext, gameObject, element);
             }
-            tintFill = tinterNode.tintFill;
+            tintEffect = tinterNode.tintEffect;
             tintTopLeft = tinterNode.tintTopLeft;
             tintBottomLeft = tinterNode.tintBottomLeft;
             tintTopRight = tinterNode.tintTopRight;
@@ -94,7 +104,7 @@ var SubmitterTile = new Class({
         }
         else
         {
-            tintFill = gameObject.tintFill;
+            tintEffect = gameObject.tintMode;
             var tint = 0xffffffff;
             tintTopLeft = tint;
             tintBottomLeft = tint;
@@ -131,7 +141,7 @@ var SubmitterTile = new Class({
             // Texture coordinates in X, Y, Width, Height:
             u0, v0, u1 - u0, v1 - v0,
 
-            tintFill,
+            tintEffect,
 
             // Tint colors in order TL, BL, TR, BR:
             tintTopLeft, tintBottomLeft, tintTopRight, tintBottomRight,

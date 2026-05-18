@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -18,6 +18,10 @@ var ValueToColor = require('../display/color/ValueToColor');
 /**
  * @classdesc
  * The active game configuration settings, parsed from a {@link Phaser.Types.Core.GameConfig} object.
+ * This class takes the raw configuration object passed to `new Phaser.Game()` and resolves all
+ * values, applying defaults where properties are not specified. The resulting Config instance is
+ * read-only and available via `game.config`. It controls fundamental aspects of the game including
+ * canvas dimensions, renderer type, physics settings, audio configuration, and plugin loading.
  *
  * @class Config
  * @memberof Phaser.Core
@@ -37,11 +41,9 @@ var Config = new Class({
         if (config === undefined) { config = {}; }
 
         var defaultBannerColor = [
-            '#ff0000',
-            '#ffff00',
-            '#00ff00',
-            '#00ffff',
-            '#000000'
+            '#000814',
+            '#001d3d',
+            '#003566'
         ];
 
         var defaultBannerTextColor = '#ffffff';
@@ -365,6 +367,11 @@ var Config = new Class({
         this.mipmapFilter = GetValue(renderConfig, 'mipmapFilter', '', config);
 
         /**
+         * @const {boolean} Phaser.Core.Config#mipmapRegeneration -  - Whether to regenerate mipmaps for framebuffers. If this is false, framebuffers will not use mipmaps. If this is true, framebuffers will use the `mipmapFilter` setting, and regenerate mipmaps if redrawn. This affects filters and DynamicTextures. Mipmap generation is expensive (10 microseconds or more per texture), so be careful with this setting.
+         */
+        this.mipmapRegeneration = GetValue(renderConfig, 'mipmapRegeneration', false, config);
+
+        /**
          * @const {boolean} Phaser.Core.Config#desynchronized - When set to `true` it will create a desynchronized context for both 2D and WebGL. See https://developers.google.com/web/updates/2019/05/desynchronized for details.
          */
         this.desynchronized = GetValue(renderConfig, 'desynchronized', false, config);
@@ -385,9 +392,9 @@ var Config = new Class({
         this.pathDetailThreshold = GetValue(renderConfig, 'pathDetailThreshold', 1, config);
 
         /**
-         * @const {boolean} Phaser.Core.Config#pixelArt - Prevent pixel art from becoming blurred when scaled. It will remain crisp (tells the WebGL renderer to automatically create textures using a linear filter mode).
+         * @const {boolean} Phaser.Core.Config#pixelArt - Prevent pixel art from becoming blurred when scaled. It will remain crisp (tells the WebGL renderer to automatically create textures using a nearest-neighbor filter mode). When enabled, this also sets `antialias` and `antialiasGL` to `false` and `roundPixels` to `true`.
          */
-        this.pixelArt = GetValue(renderConfig, 'pixelArt', this.zoom !== 1, config);
+        this.pixelArt = GetValue(renderConfig, 'pixelArt', false, config);
 
         if (this.pixelArt)
         {
@@ -492,7 +499,7 @@ var Config = new Class({
         this.physics = GetValue(config, 'physics', {});
 
         /**
-         * @const {(boolean|string)} Phaser.Core.Config#defaultPhysicsSystem - The default physics system. It will be started for each scene. Either 'arcade', 'impact' or 'matter'.
+         * @const {(boolean|string)} Phaser.Core.Config#defaultPhysicsSystem - The default physics system. It will be started for each scene. Either 'arcade' or 'matter'.
          */
         this.defaultPhysicsSystem = GetValue(this.physics, 'default', false);
 
@@ -507,7 +514,7 @@ var Config = new Class({
         this.loaderPath = GetValue(config, 'loader.path', '');
 
         /**
-         * @const {number} Phaser.Core.Config#loaderMaxParallelDownloads - Maximum parallel downloads allowed for resources (Default to 32).
+         * @const {number} Phaser.Core.Config#loaderMaxParallelDownloads - The maximum number of files the Loader will attempt to download in parallel. Defaults to 32, or 6 on Android where parallel connections are more constrained.
          */
         this.loaderMaxParallelDownloads = GetValue(config, 'loader.maxParallelDownloads', (Device.os.android) ? 6 : 32);
 
@@ -647,7 +654,7 @@ var Config = new Class({
         this.missingImage = GetValue(config, 'images.missing', pngPrefix + 'CAIAAAD8GO2jAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAJ9JREFUeNq01ssOwyAMRFG46v//Mt1ESmgh+DFmE2GPOBARKb2NVjo+17PXLD8a1+pl5+A+wSgFygymWYHBb0FtsKhJDdZlncG2IzJ4ayoMDv20wTmSMzClEgbWYNTAkQ0Z+OJ+A/eWnAaR9+oxCF4Os0H8htsMUp+pwcgBBiMNnAwF8GqIgL2hAzaGFFgZauDPKABmowZ4GL369/0rwACp2yA/ttmvsQAAAABJRU5ErkJggg==');
 
         /**
-         * @const {string} Phaser.Core.Config#whiteImage - A base64 encoded PNG that will be used as the default texture when a texture is assigned that is white or not loaded.
+         * @const {string} Phaser.Core.Config#whiteImage - A base64 encoded PNG used as the default solid white texture. This small 4x4 white image is used internally by Phaser for colored Game Objects and tinting.
          */
         this.whiteImage = GetValue(config, 'images.white', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABdJREFUeNpi/P//PwMMMDEgAdwcgAADAJZuAwXJYZOzAAAAAElFTkSuQmCC');
 

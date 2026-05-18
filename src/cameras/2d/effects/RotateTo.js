@@ -12,9 +12,9 @@ var WrapAngle = require('../../../math/angle/Wrap');
 
 /**
  * @classdesc
- * A Camera Rotate effect.
+ * A Camera Rotate effect that smoothly rotates the Camera to a target angle over a specified duration.
  *
- * This effect will rotate the Camera so that the its viewport finishes at the given angle in radians,
+ * This effect will rotate the Camera so that its viewport finishes at the given angle in radians,
  * over the duration and with the ease specified.
  *
  * Camera rotation always takes place based on the Camera viewport. By default, rotation happens
@@ -23,7 +23,7 @@ var WrapAngle = require('../../../math/angle/Wrap');
  * Rotation influences the rendering of _all_ Game Objects visible by this Camera. However, it does not
  * rotate the Camera viewport itself, which always remains an axis-aligned rectangle.
  *
- * Only the camera is rotates. None of the objects it is displaying are impacted, i.e. their positions do
+ * Only the camera is rotated. None of the objects it is displaying are impacted, i.e. their positions do
  * not change.
  *
  * The effect will dispatch several events on the Camera itself and you can also specify an `onUpdate` callback,
@@ -151,7 +151,7 @@ var RotateTo = new Class({
         this._onUpdateScope;
 
         /**
-         * The direction of the rotation. Clockwise is positive.
+         * Whether the rotation is progressing in a clockwise (`true`) or counter-clockwise (`false`) direction.
          *
          * @name Phaser.Cameras.Scene2D.Effects.RotateTo#clockwise
          * @type {boolean}
@@ -160,7 +160,7 @@ var RotateTo = new Class({
         this.clockwise = true;
 
         /**
-         * The shortest direction to the target rotation.
+         * Whether the effect should rotate via the shortest angular path to the destination angle.
          *
          * @name Phaser.Cameras.Scene2D.Effects.RotateTo#shortestPath
          * @type {boolean}

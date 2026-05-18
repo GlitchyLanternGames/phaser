@@ -71,16 +71,16 @@ void main ()
     float outerGlowAlpha = alphaRatio * outerStrength * (1.0 - color.a);
     float outerGlowStrength = min(1.0 - innerColor.a, outerGlowAlpha);
 
-    vec4 outerGlowColor = outerGlowStrength * glowColor.rgba;
-
     if (knockout)
     {
-        float resultAlpha = outerGlowAlpha + innerGlowAlpha;
+        float resultAlpha = outerGlowStrength + innerGlowStrength;
 
         fragColorOutput = vec4(glowColor.rgb * resultAlpha, resultAlpha);
     }
     else
     {
+        vec4 outerGlowColor = outerGlowStrength * glowColor.rgba;
+
         fragColorOutput = innerColor + outerGlowColor;
     }
 }

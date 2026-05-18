@@ -1,9 +1,10 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
+var IsSizePowerOfTwo = require('../../math/pow2/IsSizePowerOfTwo');
 var Class = require('../../utils/Class');
 
 /**
@@ -68,6 +69,7 @@ var DrawingContext = new Class({
          *
          * @name Phaser.Renderer.WebGL.DrawingContext#state
          * @type {Phaser.Types.Renderer.WebGL.WebGLGlobalParameters}
+         * @since 4.0.0
          */
         this.state = {
             bindings:
@@ -152,6 +154,17 @@ var DrawingContext = new Class({
         this.texture = null;
 
         /**
+         * Whether to enable mipmaps on the framebuffer texture, if it exists.
+         * The game must still be set to use mipmaps for this to work.
+         *
+         * @name Phaser.Renderer.WebGL.DrawingContext#enableMipmap
+         * @type {boolean}
+         * @since 4.1.0
+         * @default false
+         */
+        this.enableMipmap = !!options.enableMipmap;
+
+        /**
          * The pool to return to when this context is no longer needed.
          * Used only for temporary contexts.
          *
@@ -220,7 +233,7 @@ var DrawingContext = new Class({
     /**
      * Resize the DrawingContext.
      *
-     * Delete the framebuffer and texture, and create new ones with the new size. The scissor box and viewport are reset to match the new size.
+     * If no framebuffer exists yet, a new texture and framebuffer are created at the given dimensions. If a framebuffer already exists, it is resized in place. The scissor box and viewport are reset to match the new size.
      *
      * @method Phaser.Renderer.WebGL.DrawingContext#resize
      * @since 4.0.0
@@ -247,7 +260,34 @@ var DrawingContext = new Class({
             if (!this.framebuffer)
             {
                 var renderer = this.renderer;
-                this.texture = renderer.createTextureFromSource(null, width, height, 0);
+                var gl = renderer.gl;
+                var pow = IsSizePowerOfTwo(width, height);
+                var magFilter = gl.NEAREST;
+                if (renderer.config.antialias)
+                {
+                    magFilter = gl.LINEAR;
+                }
+                var minFilter = magFilter;
+                if (pow && this.enableMipmap && renderer.config.mipmapRegeneration && renderer.mipmapFilter)
+                {
+                    minFilter = renderer.mipmapFilter;
+                }
+                var wrap = gl.CLAMP_TO_EDGE;
+                if (pow)
+                {
+                    wrap = gl.REPEAT;
+                }
+                this.texture = renderer.createTexture2D(
+                    0,
+                    minFilter,
+                    magFilter,
+                    wrap,
+                    wrap,
+                    gl.RGBA,
+                    null,
+                    width,
+                    height
+                );
                 this.framebuffer = renderer.createFramebuffer(this.texture, true, false);
             }
             else
@@ -572,6 +612,7 @@ var DrawingContext = new Class({
      *
      * @method Phaser.Renderer.WebGL.DrawingContext#clear
      * @since 4.0.0
+     * @param {number} [bits] - A bitmask of WebGL buffer bits to clear (e.g. `gl.COLOR_BUFFER_BIT`, `gl.DEPTH_BUFFER_BIT`, `gl.STENCIL_BUFFER_BIT`). Defaults to the `autoClear` value of this context.
      */
     clear: function (bits)
     {

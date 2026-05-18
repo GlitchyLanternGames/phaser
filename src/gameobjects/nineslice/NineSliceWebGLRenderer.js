@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -42,7 +42,7 @@ var NineSliceWebGLRenderer = function (renderer, src, drawingContext, parentMatr
     var calcMatrix = GetCalcMatrix(src, camera, parentMatrix, !drawingContext.useCanvas).calc;
     var color = Utils.getTintAppendFloatAlpha(src.tint, alpha);
     var glTexture = src.frame.source.glTexture;
-    var tintEffect = src.tintFill;
+    var tintEffect = src.tintMode;
 
     var quad, vtl, vbr;
 

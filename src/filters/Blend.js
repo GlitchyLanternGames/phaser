@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -30,7 +30,7 @@ var Controller = require('./Controller');
  * @constructor
  * @since 4.0.0
  * @param {Phaser.Cameras.Scene2D.Camera} camera - The camera that owns this filter.
- * @param {Phaser.Textures.Texture} [texture='__WHITE'] - The texture to apply to the view.
+ * @param {string} [texture='__WHITE'] - The texture to apply to the view.
  * @param {Phaser.BlendModes} [blendMode=Phaser.BlendModes.NORMAL] - The blend mode to apply to the view.
  * @param {number} [amount=1] - The amount of the blend effect to apply to the view. At 0, the original image is preserved. At 1, the blend texture is fully applied. The expected range is 0 to 1, but you can go outside that range for different effects.
  * @param {number[]} [color=[1, 1, 1, 1]] - The color to apply to the blend texture. Each value corresponds to a color channel in RGBA. The expected range is 0 to 1, but you can go outside that range for different effects.
@@ -48,7 +48,7 @@ var Blend = new Class({
         Controller.call(this, camera, 'FilterBlend');
 
         /**
-         * The underlying texture used for the mask.
+         * The underlying texture used for the blend.
          *
          * @name Phaser.Filters.Blend#glTexture
          * @type {Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper}
@@ -98,8 +98,8 @@ var Blend = new Class({
      *
      * @method Phaser.Filters.Blend#setTexture
      * @since 4.0.0
-     * @param {string} [texture='__WHITE'] - The unique string-based key of the texture to use for displacement, which must exist in the Texture Manager.
-     * @returns {this} This Filter Controller.
+     * @param {string} [texture='__WHITE'] - The unique string-based key of the texture to use for the blend, which must exist in the Texture Manager.
+     * @return {this} This Filter Controller.
      */
     setTexture: function (texture)
     {

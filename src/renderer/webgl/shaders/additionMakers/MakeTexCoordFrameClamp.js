@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -11,10 +11,10 @@ var DefineTexCoordFrameClamp = require('../DefineTexCoordFrameClamp-glsl');
  * This prevents bleeding across the edges of the frame.
  * However, it creates a hard edge at the frame boundary.
  *
- * @function Phaser.Renderer.WebGL.Shaders.MakeTexCoordFrameClamp
+ * @function Phaser.Renderer.WebGL.ShaderAdditionMakers.MakeTexCoordFrameClamp
  * @since 4.0.0
  * @param {boolean} [disable=false] - Whether to disable the shader addition on creation.
- * @returns {Phaser.Types.Renderer.WebGL.ShaderAdditionConfig} The shader addition configuration.
+ * @return {Phaser.Types.Renderer.WebGL.ShaderAdditionConfig} The shader addition configuration.
  */
 var MakeTexCoordFrameClamp = function (disable)
 {

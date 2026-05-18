@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -110,7 +110,8 @@ var GridWebGLRenderer = function (renderer, src, drawingContext, parentMatrix)
                         submitterNode,
                         x * cellWidth + cellPadding, y * cellHeight + cellPadding,
                         cw, ch,
-                        fillTintColor, fillTintColor, fillTintColor, fillTintColor
+                        fillTintColor, fillTintColor, fillTintColor, fillTintColor,
+                        src.lighting
                     );
                 }
             }

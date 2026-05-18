@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -32,8 +32,8 @@ var ShaderSourceVS = require('../../shaders/SpriteGPULayer-vert');
  * A new instance of the RenderNode should be created for each SpriteGPULayer object,
  * as it stores the shader program and vertex buffer data for the object.
  *
- * It is a Stand Alone Render, meaning that it does not batch.
- * It is best suited to rendering highly complex objects.
+ * It is a Stand-Alone Render Node, meaning that it does not batch with other objects.
+ * It is best suited to rendering highly complex GPU-driven sprite layers.
  *
  * @class SubmitterSpriteGPULayer
  * @extends Phaser.Renderer.WebGL.RenderNodes.RenderNode
@@ -262,7 +262,7 @@ var SubmitterSpriteGPULayer = new Class({
                     normalized: true
                 },
                 {
-                    name: 'inOriginAndTintFillAndCreationTime',
+                    name: 'inOriginAndTintModeAndCreationTime',
                     size: 4
                 },
                 {
@@ -287,7 +287,7 @@ var SubmitterSpriteGPULayer = new Class({
     /**
      * Fill out the configuration object with default values where needed.
      *
-     * @method Phaser.Renderer.WebGL.RenderNodes.SubmitterSpriteGPULayer#_completeConfig
+     * @method Phaser.Renderer.WebGL.RenderNodes.SubmitterSpriteGPULayer#_completeLayout
      * @since 4.0.0
      * @param {object} config - The configuration object to complete.
      */
@@ -370,6 +370,17 @@ var SubmitterSpriteGPULayer = new Class({
         }
     },
 
+    /**
+     * Uploads all shader uniforms required for the current render pass.
+     * This includes camera projection and view matrices, render resolution,
+     * pixel rounding, scroll offsets, elapsed time, diffuse and frame data
+     * texture resolutions, gravity, texture sampler bindings, and lighting
+     * uniforms if lighting is enabled on the layer.
+     *
+     * @method Phaser.Renderer.WebGL.RenderNodes.SubmitterSpriteGPULayer#setupUniforms
+     * @since 4.0.0
+     * @param {Phaser.Renderer.WebGL.DrawingContext} drawingContext - The current drawing context.
+     */
     setupUniforms: function (drawingContext)
     {
         var camera = drawingContext.camera;
@@ -457,6 +468,16 @@ var SubmitterSpriteGPULayer = new Class({
         );
     },
 
+    /**
+     * Updates the shader program options based on the current state of the
+     * SpriteGPULayer game object. Enables or disables lighting shader additions,
+     * sets the active light count define, configures smooth pixel art rendering,
+     * and applies any shader features reported by the game object, including
+     * self-shadowing support.
+     *
+     * @method Phaser.Renderer.WebGL.RenderNodes.SubmitterSpriteGPULayer#updateRenderOptions
+     * @since 4.0.0
+     */
     updateRenderOptions: function ()
     {
         var programManager = this.programManager;

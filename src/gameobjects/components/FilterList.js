@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -11,14 +11,22 @@ var Blocky = require('../../filters/Blocky');
 var Blur = require('../../filters/Blur');
 var Bokeh = require('../../filters/Bokeh');
 var ColorMatrix = require('../../filters/ColorMatrix');
+var CombineColorMatrix = require('../../filters/CombineColorMatrix');
 var Displacement = require('../../filters/Displacement');
 var Glow = require('../../filters/Glow');
+var GradientMap = require('../../filters/GradientMap');
+var ImageLight = require('../../filters/ImageLight');
+var Key = require('../../filters/Key');
 var Mask = require('../../filters/Mask');
-var ParallelFilters = null;
+var NormalTools = require('../../filters/NormalTools');
+var PanoramaBlur = require('../../filters/PanoramaBlur');
 var Pixelate = require('../../filters/Pixelate');
+var Quantize = require('../../filters/Quantize');
 var Sampler = require('../../filters/Sampler');
 var Shadow = require('../../filters/Shadow');
 var Threshold = require('../../filters/Threshold');
+var Vignette = require('../../filters/Vignette');
+var Wipe = require('../../filters/Wipe');
 
 /**
  * @classdesc
@@ -38,6 +46,7 @@ var Threshold = require('../../filters/Threshold');
  * * Color Matrix
  * * Displacement
  * * Glow
+ * * Key
  * * Mask
  * * Parallel Filters
  * * Pixelate
@@ -120,7 +129,7 @@ var FilterList = new Class({
      *
      * @method Phaser.GameObjects.Components.FilterList#clear
      * @since 4.0.0
-     * @returns {this} This FilterList instance.
+     * @return {this} This FilterList instance.
      */
     clear: function ()
     {
@@ -227,7 +236,7 @@ var FilterList = new Class({
      *
      * @method Phaser.GameObjects.Components.FilterList#addBlend
      * @since 4.0.0
-     * @param {Phaser.Textures.Texture} [texture='__WHITE'] - The texture to apply to the view.
+     * @param {string} [texture='__WHITE'] - The texture to apply to the view.
      * @param {Phaser.BlendModes} [blendMode=Phaser.BlendModes.NORMAL] - The blend mode to apply to the view.
      * @param {number} [amount=1] - The amount of the blend effect to apply to the view. At 0, the original image is preserved. At 1, the blend texture is fully applied. The expected range is 0 to 1, but you can go outside that range for different effects.
      * @param {number[]} [color=[1, 1, 1, 1]] - The color to apply to the blend texture. Each value corresponds to a color channel in RGBA. The expected range is 0 to 1, but you can go outside that range for different effects.
@@ -358,6 +367,26 @@ var FilterList = new Class({
     },
 
     /**
+     * Adds a Combine Color Matrix effect.
+     *
+     * This filter combines channels from two textures.
+     * There are many possibilities with this.
+     * However, a significant purpose is to manipulate alpha channels.
+     * Use `setupAlphaTransfer` to configure common options,
+     * or set the `colorMatrixSelf` and `colorMatrixTransfer` properties
+     * directly.
+     *
+     * @method Phaser.GameObjects.Components.FilterList#addCombineColorMatrix
+     * @since 4.0.0
+     * @param {string | Phaser.Textures.Texture} [texture='__WHITE'] - The texture or texture key to use for the transfer texture.
+     * @return {Phaser.Filters.CombineColorMatrix} The new CombineColorMatrix filter controller.
+     */
+    addCombineColorMatrix: function (texture)
+    {
+        return this.add(new CombineColorMatrix(this.camera, texture));
+    },
+
+    /**
      * Adds a Displacement effect.
      *
      * The displacement effect is a visual technique that alters the position of pixels in an image
@@ -421,6 +450,89 @@ var FilterList = new Class({
     },
 
     /**
+     * Adds a GradientMap effect.
+     *
+     * GradientMap recolors an image using a ColorRamp.
+     * The image is converted to a progress value at each point,
+     * and that progress is evaluated as a color along the ramp.
+     *
+     * The progress value is normally the brightness of the image.
+     * You can use the `colorFactor` and `color` properties to customize it.
+     *
+     * @method Phaser.GameObjects.Components.FilterList#addGradientMap
+     * @since 4.0.0
+     *
+     * @param {Phaser.Types.Filters.GradientMapConfig} [config] - The configuration object for the GradientMap effect.
+     *
+     * @return {Phaser.Filters.GradientMap} The new GradientMap filter controller.
+     */
+    addGradientMap: function (config)
+    {
+        return this.add(new GradientMap(this.camera, config));
+    },
+
+    /**
+     * Adds an ImageLight effect.
+     *
+     * ImageLight is a filter for image based lighting (IBL).
+     * It is used to simulate the lighting of an image
+     * using an environment map and a normal map.
+     *
+     * The environment map is an image that describes the lighting of the scene.
+     * This filter uses a single panorama image as the environment map.
+     * The top of the image is the sky, the bottom is the ground,
+     * and the X axis covers a full rotation.
+     * This kind of image is distorted towards the top and bottom,
+     * as the X axis is stretched wider and wider,
+     * so be careful if you're creating your own environment maps.
+     *
+     * Cube maps are not supported by Phaser at the time of writing.
+     *
+     * The effect is basically a reflection of the environment at infinite range.
+     * A sharp environment map will produce a sharp reflection,
+     * while a blurry environment map will produce a diffuse reflection.
+     * Use the PanoramaBlur filter to create correctly blurred environment maps.
+     * Use the NormalTools filter to manipulate the normal map if necessary,
+     * using a DynamicTexture to capture the output.
+     *
+     * @method Phaser.GameObjects.Components.FilterList#addImageLight
+     * @since 4.0.0
+     *
+     * @param {Phaser.Types.Filters.ImageLightConfig} config - The configuration object for the ImageLight effect.
+     * @return {Phaser.Filters.ImageLight} The new ImageLight filter controller.
+     */
+    addImageLight: function (config)
+    {
+        return this.add(new ImageLight(this.camera, config));
+    },
+
+    /**
+     * Adds a Key effect.
+     *
+     * The Key effect removes or isolates a specific color from an image.
+     * It can be used to remove a background color from an image,
+     * or to isolate a specific color for further processing.
+     *
+     * By default, Key will remove pixels that match the key color.
+     * You can instead keep only the matching pixels by setting `isolate`.
+     *
+     * The threshold and feather settings control how closely the key color matches.
+     * A match is measured by "distance between color vectors";
+     * that is, how close the RGB values of the pixel are to the RGB values of the key color.
+     *
+     * @method Phaser.GameObjects.Components.FilterList#addKey
+     * @since 4.0.0
+     *
+     * @param {Phaser.Types.Filters.KeyConfig} [config] - The configuration object for the Key effect.
+     *
+     * @return {Phaser.Filters.Key} The new Key filter controller.
+     */
+    addKey: function (config)
+    {
+        return this.add(new Key(this.camera, config));
+    },
+
+    /**
      * Adds a Mask effect.
      *
      * A mask uses a texture to hide parts of an input.
@@ -473,50 +585,79 @@ var FilterList = new Class({
     },
 
     /**
-     * Adds a Parallel Filters effect.
+     * Adds a NormalTools effect.
      *
-     * This filter controller splits the input into two lists of filters,
-     * runs each list separately, and then blends the results together.
+     * NormalTools is a filter for manipulating the normals of a normal map.
+     * It has several functions:
      *
-     * The Parallel Filters effect is useful for reusing an input.
-     * Ordinarily, a filter modifies the input and passes it to the next filter.
-     * This effect allows you to split the input and re-use it elsewhere.
-     * It does not gain performance benefits from parallel processing;
-     * it is a convenience for reusing the input.
+     * - Rotate or reorient the normal map.
+     * - Change how strongly the normals face the camera.
+     * - Output a grayscale texture showing how strongly the normals face the camera, or some other vector.
      *
-     * The Parallel Filters effect is not a filter itself.
-     * It is a controller that manages two FilterLists,
-     * and the final Blend filter that combines the results.
-     * The FilterLists are named 'top' and 'bottom'.
-     * The 'top' output is applied as a blend texture to the 'bottom' output.
+     * The output can be used for various purposes, such as:
      *
-     * You do not have to populate both lists. If only one is populated,
-     * it will be blended with the original input at the end.
-     * This is useful when you want to retain image data that would be lost
-     * in the filter process.
+     * - Editing a normal map for special applications.
+     * - Altering the apparent visual depth of a normal map by manipulating the facing power.
+     * - Creating a base for other effects, such as a mask for a gradient or other effect.
      *
-     * @example
-     * // Create a customizable Bloom effect.
-     * const camera = this.cameras.main;
-     * const parallelFilters = camera.filters.internal.addParallelFilters();
-     * parallelFilters.top.addThreshold(0.5, 1);
-     * parallelFilters.top.addBlur();
-     * parallelFilters.blend.blendMode = Phaser.BlendModes.ADD;
-     * parallelFilters.blend.amount = 0.5;
+     * You can even use the output as a normal map for regular lighting.
+     * Ordinarily, normal maps are loaded alongside the main texture,
+     * but you can edit this.
      *
-     * @method Phaser.GameObjects.Components.FilterList#addParallelFilters
+     * ```js
+     * // Given a dynamic texture `dyn` where the filter output is drawn,
+     * // and a texture `spiderTex` with lighting enabled,
+     * // we can inject the WebGL texture straight into the scene lighting as a normal map.
+     * const dynTex = dyn.getWebGLTexture();
+     * const dynSource = new Phaser.Textures.TextureSource(spiderTex, dynTex);
+     * spiderTex.dataSource[0] = dynSource; // This is where the normal map is located.
+     * ```
+     *
+     * @method Phaser.GameObjects.Components.FilterList#addNormalTools
      * @since 4.0.0
-     * @return {Phaser.Filters.ParallelFilters} The new Parallel Filters filter controller.
+     *
+     * @param {Phaser.Types.Filters.NormalToolsConfig} config - The configuration object for the NormalTools effect.
+     * @return {Phaser.Filters.NormalTools} The new NormalTools filter controller.
      */
-    addParallelFilters: function ()
+    addNormalTools: function (config)
     {
-        // This import avoids a circular dependency.
-        if (!ParallelFilters)
-        {
-            ParallelFilters = require('../../filters/ParallelFilters');
-        }
-        return this.add(new ParallelFilters(this.camera));
+        return this.add(new NormalTools(this.camera, config));
     },
+
+    /**
+     * Adds a PanoramaBlur effect.
+     *
+     * PanoramaBlur is a filter for blurring a panorama image.
+     * This is intended for use with filters like ImageLight that use a panorama image as the environment map.
+     * The blur treats a rectangular map as a sphere,
+     * and applies heavy distortion close to the poles to get a correct result.
+     * You should not use it for general purpose blurring.
+     *
+     * The effect can be very slow, as it uses a grid of samples.
+     * Total samples equals samplesX * samplesY. This can get very high,
+     * very quickly, so be careful when increasing these values.
+     * They don't need to be too high for good results.
+     *
+     * By default, the blur is fully diffuse, sampling an entire hemisphere per point.
+     * If you reduce the radius, the effect will be more focused.
+     * Use this to control different levels of glossiness in objects using environment maps.
+     *
+     * @method Phaser.GameObjects.Components.FilterList#addPanoramaBlur
+     * @since 4.0.0
+     *
+     * @param {Phaser.Types.Filters.PanoramaBlurConfig} config - The configuration object for the PanoramaBlur effect.
+     *
+     * @return {Phaser.Filters.PanoramaBlur} The new PanoramaBlur filter controller.
+     */
+    addPanoramaBlur: function (config)
+    {
+        return this.add(new PanoramaBlur(this.camera, config));
+    },
+
+    // For technical reasons, addParallelFilters is not coded here.
+    // ParallelFilters has a circular reference to FilterList.
+    // It registers its own `addParallelFilters` method to fix this,
+    // which is documented as a part of FilterList.
 
     /**
      * Adds a Pixelate effect.
@@ -539,6 +680,38 @@ var FilterList = new Class({
             this.camera,
             amount
         ));
+    },
+
+    /**
+     * Adds a Quantize effect.
+     *
+     * Quantization reduces the unique number of colors in an image,
+     * based on some limited number of steps per color channel.
+     * This is good for creating a retro or stylized effect.
+     *
+     * Basic quantization breaks each channel up into a number of `steps`.
+     * These steps are normally regular. You can bias them towards the top or bottom
+     * by changing that channel's `gamma` value.
+     * You can adjust the lowest step, thus all subsequent steps, with the `offset`.
+     *
+     * Quantization is done in either RGBA or HSVA space.
+     * The steps, gamma, and offset always apply in the same order,
+     * but depending on color mode, they are either applied to
+     * `[ red, green, blue, alpha ]` or `[ hue, saturation, value, alpha ]`.
+     *
+     * The output may optionally be dithered, to eliminate banding
+     * and create the illusion that there are many more colors in use.
+     *
+     * @method Phaser.GameObjects.Components.FilterList#addQuantize
+     * @since 4.0.0
+     *
+     * @param {Phaser.Types.Filters.QuantizeConfig} [config] - The configuration object for the Quantize effect.
+     *
+     * @return {this} The new Quantize filter controller.
+     */
+    addQuantize: function (config)
+    {
+        return this.add(new Quantize(this.camera, config));
     },
 
     /**
@@ -670,6 +843,68 @@ var FilterList = new Class({
             blurY,
             strength
         ));
+    },
+
+    /**
+     * Adds a Vignette effect.
+     *
+     * The vignette effect is a visual technique where the edges of the screen,
+     * or a Game Object, gradually darken or blur,
+     * creating a frame-like appearance. This effect is used to draw the player's
+     * focus towards the central action or subject, enhance immersion,
+     * and provide a cinematic or artistic quality to the game's visuals.
+     *
+     * This filter supports colored borders, and a limited set of blend modes,
+     * to increase its stylistic power.
+     *
+     * @method Phaser.GameObjects.Components.FilterList#addVignette
+     * @since 4.0.0
+     *
+     * @param {number} [x=0.5] - The horizontal offset of the vignette effect. This value is normalized to the range 0 to 1.
+     * @param {number} [y=0.5] - The vertical offset of the vignette effect. This value is normalized to the range 0 to 1.
+     * @param {number} [radius=0.5] - The radius of the vignette effect. This value is normalized to the range 0 to 1.
+     * @param {number} [strength=0.5] - The strength of the vignette effect.
+     * @param {number | string | Phaser.Types.Display.InputColorObject | Phaser.Display.Color} [color=0x000000] - The color of the vignette effect, as a hex code or Color object.
+     * @param {number} [blendMode=Phaser.BlendModes.NORMAL] - The blend mode to use with the vignette. Only NORMAL, ADD, MULTIPLY, and SCREEN are supported.
+     *
+     * @return {Phaser.Filters.Vignette} The new Vignette filter controller.
+     */
+    addVignette: function (x, y, radius, strength, color, blendMode)
+    {
+        return this.add(new Vignette(this.camera, x, y, radius, strength, color, blendMode));
+    },
+
+    /**
+     * Adds a Wipe effect.
+     *
+     * The wipe or reveal effect is a visual technique that gradually uncovers or conceals elements
+     * in the game, such as images, text, or scene transitions. This effect is often used to create
+     * a sense of progression, reveal hidden content, or provide a smooth and visually appealing transition
+     * between game states.
+     *
+     * You can set both the direction and the axis of the wipe effect. The following combinations are possible:
+     *
+     * * left to right: direction 0, axis 0
+     * * right to left: direction 1, axis 0
+     * * top to bottom: direction 0, axis 1
+     * * bottom to top: direction 1, axis 1
+     *
+     * It is up to you to set the `progress` value yourself, e.g. via a Tween, in order to transition the effect.
+     *
+     * @method Phaser.GameObjects.Components.FilterList#addWipe
+     * @since 4.0.0
+     *
+     * @param {number} [wipeWidth=0.1] - The width of the wipe effect. This value is normalized in the range 0 to 1.
+     * @param {number} [direction=0] - The direction of the wipe effect. Either 0 (left to right, or top to bottom) or 1 (right to left, or bottom to top). Set in conjunction with the axis property.
+     * @param {number} [axis=0] - The axis of the wipe effect. Either 0 (X) or 1 (Y). Set in conjunction with the direction property.
+     * @param {number} [reveal=0] - Is this a reveal (1) or a fade (0) effect? Reveal shows the input in wiped areas; fade shows the input in unwiped areas.
+     * @param {string | Phaser.Textures.Texture} [wipeTexture='__DEFAULT'] - Texture or texture key to use where the input texture is not shown. The default texture is blank. Use another texture for a wipe transition.
+     *
+     * @return {Phaser.Filters.Wipe} - The new Wipe filter instance.
+     */
+    addWipe: function (wipeWidth, direction, axis, reveal, wipeTexture)
+    {
+        return this.add(new Wipe(this.camera, wipeWidth, direction, axis, reveal, wipeTexture));
     },
 
     /**

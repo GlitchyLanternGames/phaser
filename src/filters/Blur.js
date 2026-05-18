@@ -1,6 +1,6 @@
 /**
  * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -17,6 +17,10 @@ var Controller = require('./Controller');
  * typically to reduce image noise and reduce detail. The visual effect of this blurring technique is a
  * smooth blur resembling that of viewing the image through a translucent screen, distinctly different
  * from the bokeh effect produced by an out-of-focus lens or the shadow of an object under usual illumination.
+ *
+ * This effect samples across an area. To avoid missing data at the edges,
+ * use `controller.setPaddingOverride(null)` to automatically pad game objects,
+ * or `camera.getPaddingWrapper(x)` to enlarge a camera.
  *
  * A Blur effect is added to a Camera via the FilterList component:
  *
@@ -62,7 +66,7 @@ var Blur = new Class({
          * 1 for Medium Quality
          * 2 for High Quality
          *
-         * The higher the quality, the more complex shader is used
+         * The higher the quality, the more complex the shader used,
          * and the more processing time is spent on the GPU calculating
          * the final blur. This value is used in conjunction with the
          * `steps` value, as one has a direct impact on the other.
@@ -78,7 +82,9 @@ var Blur = new Class({
         this.quality = quality;
 
         /**
-         * The horizontal offset of the blur effect.
+         * The horizontal offset of the blur effect. This controls the distance
+         * between blur sample points along the x axis. A larger value increases
+         * the spread of the blur horizontally.
          *
          * @name Phaser.Filters.Blur#x
          * @type {number}
@@ -88,7 +94,9 @@ var Blur = new Class({
         this.x = x;
 
         /**
-         * The vertical offset of the blur effect.
+         * The vertical offset of the blur effect. This controls the distance
+         * between blur sample points along the y axis. A larger value increases
+         * the spread of the blur vertically.
          *
          * @name Phaser.Filters.Blur#y
          * @type {number}
@@ -98,7 +106,10 @@ var Blur = new Class({
         this.y = y;
 
         /**
-         * The strength of the blur effect.
+         * The strength of the blur effect. This value is multiplied with the
+         * x and y offsets and the number of steps to determine the total blur
+         * radius. Increase this to make the blur more pronounced without
+         * changing the quality or step count.
          *
          * @name Phaser.Filters.Blur#strength
          * @type {number}
@@ -141,7 +152,9 @@ var Blur = new Class({
     },
 
     /**
-     * The color of the blur as a number value.
+     * The color of the blur effect, as a packed RGB hex integer (e.g. `0xff0000`
+     * for red). This tints the blur samples, allowing colored bloom-style effects.
+     * Defaults to white (`0xffffff`), which produces a neutral blur with no tint.
      *
      * @name Phaser.Filters.Blur#color
      * @type {number}
@@ -167,6 +180,16 @@ var Blur = new Class({
 
     },
 
+    /**
+     * Returns the amount of extra padding, in pixels, that this filter requires when rendering.
+     * This accounts for the blur radius extending beyond the original bounds of the
+     * filtered Game Object.
+     *
+     * @method Phaser.Filters.Blur#getPadding
+     * @since 4.0.0
+     *
+     * @return {Phaser.Geom.Rectangle} The padding Rectangle.
+     */
     getPadding: function ()
     {
         var override = this.paddingOverride;

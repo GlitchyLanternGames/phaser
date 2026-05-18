@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@phaser.io>
- * @copyright    2013-2025 Phaser Studio Inc.
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -421,10 +421,10 @@ var Graphics = new Class({
      * @since 3.12.0
      *
      * @param {number} lineWidth - The stroke width.
-     * @param {number} topLeft - The tint being applied to the top-left of the Game Object.
-     * @param {number} topRight - The tint being applied to the top-right of the Game Object.
-     * @param {number} bottomLeft - The tint being applied to the bottom-left of the Game Object.
-     * @param {number} bottomRight - The tint being applied to the bottom-right of the Game Object.
+     * @param {number} topLeft - The stroke color for the top-left of the gradient.
+     * @param {number} topRight - The stroke color for the top-right of the gradient.
+     * @param {number} bottomLeft - The stroke color for the bottom-left of the gradient.
+     * @param {number} bottomRight - The stroke color for the bottom-right of the gradient.
      * @param {number} [alpha=1] - The fill alpha.
      *
      * @return {this} This Game Object.
@@ -1277,7 +1277,7 @@ var Graphics = new Class({
      *
      * @param {Phaser.Math.Vector2[]} points - The points to fill.
      * @param {boolean} [closeShape=false] - When `true`, the shape is closed by joining the last point to the first point.
-     * @param {boolean} [closePath=false] - When `true`, the path is closed before being stroked.
+     * @param {boolean} [closePath=false] - When `true`, the path is closed before being filled.
      * @param {number} [endIndex] - The index of `points` to stop at. Defaults to `points.length`.
      *
      * @return {this} This Game Object.
@@ -1659,7 +1659,7 @@ var Graphics = new Class({
      * If `key` is a string it'll generate a new texture using it and add it into the
      * Texture Manager (assuming no key conflict happens).
      *
-     * If `key` is a Canvas it will draw the texture to that canvas context. Note that it will NOT
+     * If `key` is a Canvas it will draw the Graphics to that canvas context. Note that it will NOT
      * automatically upload it to the GPU in WebGL mode.
      *
      * Please understand that the texture is created via the Canvas API of the browser, therefore some
