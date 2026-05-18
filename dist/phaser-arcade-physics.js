@@ -16466,7 +16466,7 @@ var CONST = {
      * @type {string}
      * @since 3.0.0
      */
-    VERSION: '4.1.0',
+    VERSION: '4.1.0+glitchylantern',
 
     /**
      * Phaser Release Version as displayed in the console.log header URL.
@@ -16515,6 +16515,18 @@ var CONST = {
      * @since 3.0.0
      */
     WEBGL: 2,
+
+    /**
+     * Forces Phaser to use the WebGL2 Renderer. If the browser does not support WebGL2, there is
+     * no fallback to WebGL1 or Canvas with this setting, so you should trap it and display a suitable
+     * message to the user. This will create a WebGL2 rendering context.
+     *
+     * @name Phaser.WEBGL2
+     * @const
+     * @type {number}
+     * @since 4.0.0
+     */
+    WEBGL2: 4,
 
     /**
      * A Headless Renderer doesn't create either a Canvas or WebGL Renderer. However, it still
@@ -17266,7 +17278,11 @@ var Config = new Class({
 
         if (window)
         {
-            if (window.FORCE_WEBGL)
+            if (window.FORCE_WEBGL2)
+            {
+                this.renderType = CONST.WEBGL2;
+            }
+            else if (window.FORCE_WEBGL)
             {
                 this.renderType = CONST.WEBGL;
             }
@@ -17333,7 +17349,7 @@ var CreateRenderer = function (game)
             config.renderType = Features.webGL ? CONST.WEBGL : CONST.CANVAS;
         }
 
-        if (config.renderType === CONST.WEBGL)
+        if (config.renderType === CONST.WEBGL || config.renderType === CONST.WEBGL2)
         {
             if (!Features.webGL) { throw new Error('Cannot create WebGL context, aborting.'); }
         }
@@ -17341,7 +17357,7 @@ var CreateRenderer = function (game)
         {
             if (!Features.canvas) { throw new Error('Cannot create Canvas context, aborting.'); }
         }
-        else
+        else if (config.renderType !== CONST.AUTO)
         {
             throw new Error('Unknown value for renderer type: ' + config.renderType);
         }
@@ -17398,7 +17414,7 @@ var CreateRenderer = function (game)
         WebGLRenderer = __webpack_require__(74797);
 
         //  Let the config pick the renderer type, as both are included
-        if (config.renderType === CONST.WEBGL)
+        if (config.renderType === CONST.WEBGL || config.renderType === CONST.WEBGL2)
         {
             game.renderer = new WebGLRenderer(game);
         }
@@ -33324,8 +33340,6 @@ var Blur = new Class({
         if (steps === undefined) { steps = 4; }
 
         Controller.call(this, camera, 'FilterBlur');
-
-        // TODO: @GN suggests altering `boundedSampler` to better support full-screen effects where we don't want transparent borders.
 
         /**
          * The quality of the blur effect.
@@ -57268,7 +57282,6 @@ var Render = __webpack_require__(84503);
  * @param {Phaser.Types.GameObjects.Graphics.Options} [options] - Options that set the position and default style of this Graphics object.
  */
 var Graphics = new Class({
-
     Extends: GameObject,
 
     Mixins: [
@@ -57281,17 +57294,14 @@ var Graphics = new Class({
         Components.Transform,
         Components.Visible,
         Components.ScrollFactor,
-        Render
+        Render,
     ],
 
-    initialize:
+    initialize: function Graphics(scene, options) {
+        var x = GetValue(options, "x", 0);
+        var y = GetValue(options, "y", 0);
 
-    function Graphics (scene, options)
-    {
-        var x = GetValue(options, 'x', 0);
-        var y = GetValue(options, 'y', 0);
-
-        GameObject.call(this, scene, 'Graphics');
+        GameObject.call(this, scene, "Graphics");
 
         this.setPosition(x, y);
         this.initRenderNodes(this._defaultRenderNodesMap);
@@ -57434,10 +57444,9 @@ var Graphics = new Class({
      * @since 4.0.0
      */
     _defaultRenderNodesMap: {
-        get: function ()
-        {
+        get: function () {
             return DefaultGraphicsNodes;
-        }
+        },
     },
 
     /**
@@ -57450,21 +57459,30 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    setDefaultStyles: function (options)
-    {
-        if (GetValue(options, 'lineStyle', null))
-        {
-            this.defaultStrokeWidth = GetValue(options, 'lineStyle.width', 1);
-            this.defaultStrokeColor = GetValue(options, 'lineStyle.color', 0xffffff);
-            this.defaultStrokeAlpha = GetValue(options, 'lineStyle.alpha', 1);
+    setDefaultStyles: function (options) {
+        if (GetValue(options, "lineStyle", null)) {
+            this.defaultStrokeWidth = GetValue(options, "lineStyle.width", 1);
+            this.defaultStrokeColor = GetValue(
+                options,
+                "lineStyle.color",
+                0xffffff
+            );
+            this.defaultStrokeAlpha = GetValue(options, "lineStyle.alpha", 1);
 
-            this.lineStyle(this.defaultStrokeWidth, this.defaultStrokeColor, this.defaultStrokeAlpha);
+            this.lineStyle(
+                this.defaultStrokeWidth,
+                this.defaultStrokeColor,
+                this.defaultStrokeAlpha
+            );
         }
 
-        if (GetValue(options, 'fillStyle', null))
-        {
-            this.defaultFillColor = GetValue(options, 'fillStyle.color', 0xffffff);
-            this.defaultFillAlpha = GetValue(options, 'fillStyle.alpha', 1);
+        if (GetValue(options, "fillStyle", null)) {
+            this.defaultFillColor = GetValue(
+                options,
+                "fillStyle.color",
+                0xffffff
+            );
+            this.defaultFillAlpha = GetValue(options, "fillStyle.alpha", 1);
 
             this.fillStyle(this.defaultFillColor, this.defaultFillAlpha);
         }
@@ -57484,14 +57502,12 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    lineStyle: function (lineWidth, color, alpha)
-    {
-        if (alpha === undefined) { alpha = 1; }
+    lineStyle: function (lineWidth, color, alpha) {
+        if (alpha === undefined) {
+            alpha = 1;
+        }
 
-        this.commandBuffer.push(
-            Commands.LINE_STYLE,
-            lineWidth, color, alpha
-        );
+        this.commandBuffer.push(Commands.LINE_STYLE, lineWidth, color, alpha);
 
         this._lineWidth = lineWidth;
 
@@ -57509,14 +57525,12 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillStyle: function (color, alpha)
-    {
-        if (alpha === undefined) { alpha = 1; }
+    fillStyle: function (color, alpha) {
+        if (alpha === undefined) {
+            alpha = 1;
+        }
 
-        this.commandBuffer.push(
-            Commands.FILL_STYLE,
-            color, alpha
-        );
+        this.commandBuffer.push(Commands.FILL_STYLE, color, alpha);
 
         return this;
     },
@@ -57551,17 +57565,39 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillGradientStyle: function (topLeft, topRight, bottomLeft, bottomRight, alphaTopLeft, alphaTopRight, alphaBottomLeft, alphaBottomRight)
-    {
-        if (alphaTopLeft === undefined) { alphaTopLeft = 1; }
-        if (alphaTopRight === undefined) { alphaTopRight = alphaTopLeft; }
-        if (alphaBottomLeft === undefined) { alphaBottomLeft = alphaTopLeft; }
-        if (alphaBottomRight === undefined) { alphaBottomRight = alphaTopLeft; }
+    fillGradientStyle: function (
+        topLeft,
+        topRight,
+        bottomLeft,
+        bottomRight,
+        alphaTopLeft,
+        alphaTopRight,
+        alphaBottomLeft,
+        alphaBottomRight
+    ) {
+        if (alphaTopLeft === undefined) {
+            alphaTopLeft = 1;
+        }
+        if (alphaTopRight === undefined) {
+            alphaTopRight = alphaTopLeft;
+        }
+        if (alphaBottomLeft === undefined) {
+            alphaBottomLeft = alphaTopLeft;
+        }
+        if (alphaBottomRight === undefined) {
+            alphaBottomRight = alphaTopLeft;
+        }
 
         this.commandBuffer.push(
             Commands.GRADIENT_FILL_STYLE,
-            alphaTopLeft, alphaTopRight, alphaBottomLeft, alphaBottomRight,
-            topLeft, topRight, bottomLeft, bottomRight
+            alphaTopLeft,
+            alphaTopRight,
+            alphaBottomLeft,
+            alphaBottomRight,
+            topLeft,
+            topRight,
+            bottomLeft,
+            bottomRight
         );
 
         return this;
@@ -57593,13 +57629,26 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    lineGradientStyle: function (lineWidth, topLeft, topRight, bottomLeft, bottomRight, alpha)
-    {
-        if (alpha === undefined) { alpha = 1; }
+    lineGradientStyle: function (
+        lineWidth,
+        topLeft,
+        topRight,
+        bottomLeft,
+        bottomRight,
+        alpha
+    ) {
+        if (alpha === undefined) {
+            alpha = 1;
+        }
 
         this.commandBuffer.push(
             Commands.GRADIENT_LINE_STYLE,
-            lineWidth, alpha, topLeft, topRight, bottomLeft, bottomRight
+            lineWidth,
+            alpha,
+            topLeft,
+            topRight,
+            bottomLeft,
+            bottomRight
         );
 
         return this;
@@ -57613,11 +57662,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    beginPath: function ()
-    {
-        this.commandBuffer.push(
-            Commands.BEGIN_PATH
-        );
+    beginPath: function () {
+        this.commandBuffer.push(Commands.BEGIN_PATH);
 
         return this;
     },
@@ -57630,11 +57676,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    closePath: function ()
-    {
-        this.commandBuffer.push(
-            Commands.CLOSE_PATH
-        );
+    closePath: function () {
+        this.commandBuffer.push(Commands.CLOSE_PATH);
 
         return this;
     },
@@ -57647,11 +57690,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillPath: function ()
-    {
-        this.commandBuffer.push(
-            Commands.FILL_PATH
-        );
+    fillPath: function () {
+        this.commandBuffer.push(Commands.FILL_PATH);
 
         return this;
     },
@@ -57667,11 +57707,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fill: function ()
-    {
-        this.commandBuffer.push(
-            Commands.FILL_PATH
-        );
+    fill: function () {
+        this.commandBuffer.push(Commands.FILL_PATH);
 
         return this;
     },
@@ -57684,11 +57721,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    strokePath: function ()
-    {
-        this.commandBuffer.push(
-            Commands.STROKE_PATH
-        );
+    strokePath: function () {
+        this.commandBuffer.push(Commands.STROKE_PATH);
 
         return this;
     },
@@ -57704,11 +57738,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    stroke: function ()
-    {
-        this.commandBuffer.push(
-            Commands.STROKE_PATH
-        );
+    stroke: function () {
+        this.commandBuffer.push(Commands.STROKE_PATH);
 
         return this;
     },
@@ -57723,8 +57754,7 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillCircleShape: function (circle)
-    {
+    fillCircleShape: function (circle) {
         return this.fillCircle(circle.x, circle.y, circle.radius);
     },
 
@@ -57738,8 +57768,7 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    strokeCircleShape: function (circle)
-    {
+    strokeCircleShape: function (circle) {
         return this.strokeCircle(circle.x, circle.y, circle.radius);
     },
 
@@ -57755,8 +57784,7 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillCircle: function (x, y, radius)
-    {
+    fillCircle: function (x, y, radius) {
         this.beginPath();
         this.arc(x, y, radius, 0, MATH_CONST.TAU);
         this.fillPath();
@@ -57776,10 +57804,113 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    strokeCircle: function (x, y, radius)
-    {
+    strokeCircle: function (x, y, radius) {
         this.beginPath();
         this.arc(x, y, radius, 0, MATH_CONST.TAU);
+        this.strokePath();
+
+        return this;
+    },
+
+    /**
+     * Fill the given circle section.
+     *
+     * @method Phaser.GameObjects.Graphics#fillCircleSectionShape
+     * @since 4.0.0
+     *
+     * @param {Phaser.Geom.CircleSection} circleSection - The circle section to fill.
+     *
+     * @return {this} This Game Object.
+     */
+    fillCircleSectionShape: function (circleSection) {
+        return this.fillCircleSection(
+            circleSection.x,
+            circleSection.y,
+            circleSection.radius,
+            circleSection.startAngle,
+            circleSection.endAngle
+        );
+    },
+
+    /**
+     * Stroke the given circle section.
+     *
+     * @method Phaser.GameObjects.Graphics#strokeCircleSectionShape
+     * @since 4.0.0
+     *
+     * @param {Phaser.Geom.CircleSection} circleSection - The circle to stroke.
+     *
+     * @return {this} This Game Object.
+     */
+    strokeCircleSectionShape: function (circleSection) {
+        return this.strokeCircleSection(
+            circleSection.x,
+            circleSection.y,
+            circleSection.radius,
+            circleSection.startAngle,
+            circleSection.endAngle
+        );
+    },
+
+    /**
+     * Fill a circle section with the given position, radius and arc angle.
+     *
+     * @method Phaser.GameObjects.Graphics#fillCircleSection
+     * @since 4.0.0
+     *
+     * @param {number} x - The x coordinate of the center of the circle.
+     * @param {number} y - The y coordinate of the center of the circle.
+     * @param {number} radius - The radius of the circle.
+     * @param {number} [startAngle=0] - The start angle of the circle section, in radians.
+     * @param {number} [endAngle=TAU] - The end angle of the circle section, in radians.
+     *
+     * @return {this} This Game Object.
+     */
+    fillCircleSection: function (x, y, radius, startAngle, endAngle) {
+        if (startAngle === undefined) {
+            startAngle = 0;
+        }
+
+        if (endAngle === undefined) {
+            endAngle = MATH_CONST.TAU;
+        }
+
+        this.beginPath();
+        this.moveTo(x, y);
+        this.arc(x, y, radius, startAngle, endAngle);
+        this.lineTo(x, y);
+        this.fillPath();
+
+        return this;
+    },
+
+    /**
+     * Stroke a circle section with the given position, radius and arc angle.
+     *
+     * @method Phaser.GameObjects.Graphics#strokeCircleSection
+     * @since 4.0.0
+     *
+     * @param {number} x - The x coordinate of the center of the circle.
+     * @param {number} y - The y coordinate of the center of the circle.
+     * @param {number} radius - The radius of the circle.
+     * @param {number} [startAngle=0] - The start angle of the circle section, in radians.
+     * @param {number} [endAngle=TAU] - The end angle of the circle section, in radians.
+     *
+     * @return {this} This Game Object.
+     */
+    strokeCircleSection: function (x, y, radius, startAngle, endAngle) {
+        if (startAngle === undefined) {
+            startAngle = 0;
+        }
+
+        if (endAngle === undefined) {
+            endAngle = MATH_CONST.TAU;
+        }
+
+        this.beginPath();
+        this.moveTo(x, y);
+        this.arc(x, y, radius, startAngle, endAngle);
+        this.lineTo(x, y);
         this.strokePath();
 
         return this;
@@ -57795,8 +57926,7 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillRectShape: function (rect)
-    {
+    fillRectShape: function (rect) {
         return this.fillRect(rect.x, rect.y, rect.width, rect.height);
     },
 
@@ -57810,8 +57940,7 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    strokeRectShape: function (rect)
-    {
+    strokeRectShape: function (rect) {
         return this.strokeRect(rect.x, rect.y, rect.width, rect.height);
     },
 
@@ -57828,12 +57957,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillRect: function (x, y, width, height)
-    {
-        this.commandBuffer.push(
-            Commands.FILL_RECT,
-            x, y, width, height
-        );
+    fillRect: function (x, y, width, height) {
+        this.commandBuffer.push(Commands.FILL_RECT, x, y, width, height);
 
         return this;
     },
@@ -57851,8 +57976,7 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    strokeRect: function (x, y, width, height)
-    {
+    strokeRect: function (x, y, width, height) {
         var lineWidthHalf = this._lineWidth / 2;
         var minx = x - lineWidthHalf;
         var maxx = x + lineWidthHalf;
@@ -57894,27 +58018,27 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillRoundedRect: function (x, y, width, height, radius)
-    {
-        if (radius === undefined) { radius = 20; }
+    fillRoundedRect: function (x, y, width, height, radius) {
+        if (radius === undefined) {
+            radius = 20;
+        }
 
         var tl = radius;
         var tr = radius;
         var bl = radius;
         var br = radius;
 
-        if (typeof radius !== 'number')
-        {
-            tl = GetFastValue(radius, 'tl', 20);
-            tr = GetFastValue(radius, 'tr', 20);
-            bl = GetFastValue(radius, 'bl', 20);
-            br = GetFastValue(radius, 'br', 20);
+        if (typeof radius !== "number") {
+            tl = GetFastValue(radius, "tl", 20);
+            tr = GetFastValue(radius, "tr", 20);
+            bl = GetFastValue(radius, "bl", 20);
+            br = GetFastValue(radius, "br", 20);
         }
 
-        var convexTL = (tl >= 0);
-        var convexTR = (tr >= 0);
-        var convexBL = (bl >= 0);
-        var convexBR = (br >= 0);
+        var convexTL = tl >= 0;
+        var convexTR = tr >= 0;
+        var convexBL = bl >= 0;
+        var convexBR = br >= 0;
 
         tl = Math.abs(tl);
         tr = Math.abs(tr);
@@ -57925,45 +58049,52 @@ var Graphics = new Class({
         this.moveTo(x + tl, y);
         this.lineTo(x + width - tr, y);
 
-        if (convexTR)
-        {
+        if (convexTR) {
             this.arc(x + width - tr, y + tr, tr, -MATH_CONST.PI_OVER_2, 0);
-        }
-        else
-        {
+        } else {
             this.arc(x + width, y, tr, Math.PI, MATH_CONST.PI_OVER_2, true);
         }
 
         this.lineTo(x + width, y + height - br);
 
-        if (convexBR)
-        {
-            this.arc(x + width - br, y + height - br, br, 0, MATH_CONST.PI_OVER_2);
-        }
-        else
-        {
-            this.arc(x + width, y + height, br, -MATH_CONST.PI_OVER_2, Math.PI, true);
+        if (convexBR) {
+            this.arc(
+                x + width - br,
+                y + height - br,
+                br,
+                0,
+                MATH_CONST.PI_OVER_2
+            );
+        } else {
+            this.arc(
+                x + width,
+                y + height,
+                br,
+                -MATH_CONST.PI_OVER_2,
+                Math.PI,
+                true
+            );
         }
 
         this.lineTo(x + bl, y + height);
 
-        if (convexBL)
-        {
-            this.arc(x + bl, y + height - bl, bl, MATH_CONST.PI_OVER_2, Math.PI);
-        }
-        else
-        {
+        if (convexBL) {
+            this.arc(
+                x + bl,
+                y + height - bl,
+                bl,
+                MATH_CONST.PI_OVER_2,
+                Math.PI
+            );
+        } else {
             this.arc(x, y + height, bl, 0, -MATH_CONST.PI_OVER_2, true);
         }
 
         this.lineTo(x, y + tl);
 
-        if (convexTL)
-        {
+        if (convexTL) {
             this.arc(x + tl, y + tl, tl, -Math.PI, -MATH_CONST.PI_OVER_2);
-        }
-        else
-        {
+        } else {
             this.arc(x, y, tl, MATH_CONST.PI_OVER_2, 0, true);
         }
 
@@ -57986,9 +58117,10 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    strokeRoundedRect: function (x, y, width, height, radius)
-    {
-        if (radius === undefined) { radius = 20; }
+    strokeRoundedRect: function (x, y, width, height, radius) {
+        if (radius === undefined) {
+            radius = 20;
+        }
 
         var tl = radius;
         var tr = radius;
@@ -57997,18 +58129,17 @@ var Graphics = new Class({
 
         var maxRadius = Math.min(width, height) / 2;
 
-        if (typeof radius !== 'number')
-        {
-            tl = GetFastValue(radius, 'tl', 20);
-            tr = GetFastValue(radius, 'tr', 20);
-            bl = GetFastValue(radius, 'bl', 20);
-            br = GetFastValue(radius, 'br', 20);
+        if (typeof radius !== "number") {
+            tl = GetFastValue(radius, "tl", 20);
+            tr = GetFastValue(radius, "tr", 20);
+            bl = GetFastValue(radius, "bl", 20);
+            br = GetFastValue(radius, "br", 20);
         }
 
-        var convexTL = (tl >= 0);
-        var convexTR = (tr >= 0);
-        var convexBL = (bl >= 0);
-        var convexBR = (br >= 0);
+        var convexTL = tl >= 0;
+        var convexTR = tr >= 0;
+        var convexBL = bl >= 0;
+        var convexBR = br >= 0;
 
         tl = Math.min(Math.abs(tl), maxRadius);
         tr = Math.min(Math.abs(tr), maxRadius);
@@ -58020,48 +58151,55 @@ var Graphics = new Class({
         this.lineTo(x + width - tr, y);
         this.moveTo(x + width - tr, y);
 
-        if (convexTR)
-        {
+        if (convexTR) {
             this.arc(x + width - tr, y + tr, tr, -MATH_CONST.PI_OVER_2, 0);
-        }
-        else
-        {
+        } else {
             this.arc(x + width, y, tr, Math.PI, MATH_CONST.PI_OVER_2, true);
         }
 
         this.lineTo(x + width, y + height - br);
         this.moveTo(x + width, y + height - br);
 
-        if (convexBR)
-        {
-            this.arc(x + width - br, y + height - br, br, 0, MATH_CONST.PI_OVER_2);
-        }
-        else
-        {
-            this.arc(x + width, y + height, br, -MATH_CONST.PI_OVER_2, Math.PI, true);
+        if (convexBR) {
+            this.arc(
+                x + width - br,
+                y + height - br,
+                br,
+                0,
+                MATH_CONST.PI_OVER_2
+            );
+        } else {
+            this.arc(
+                x + width,
+                y + height,
+                br,
+                -MATH_CONST.PI_OVER_2,
+                Math.PI,
+                true
+            );
         }
 
         this.lineTo(x + bl, y + height);
         this.moveTo(x + bl, y + height);
 
-        if (convexBL)
-        {
-            this.arc(x + bl, y + height - bl, bl, MATH_CONST.PI_OVER_2, Math.PI);
-        }
-        else
-        {
+        if (convexBL) {
+            this.arc(
+                x + bl,
+                y + height - bl,
+                bl,
+                MATH_CONST.PI_OVER_2,
+                Math.PI
+            );
+        } else {
             this.arc(x, y + height, bl, 0, -MATH_CONST.PI_OVER_2, true);
         }
 
         this.lineTo(x, y + tl);
         this.moveTo(x, y + tl);
 
-        if (convexTL)
-        {
+        if (convexTL) {
             this.arc(x + tl, y + tl, tl, -Math.PI, -MATH_CONST.PI_OVER_2);
-        }
-        else
-        {
+        } else {
             this.arc(x, y, tl, MATH_CONST.PI_OVER_2, 0, true);
         }
 
@@ -58083,8 +58221,7 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillPointShape: function (point, size)
-    {
+    fillPointShape: function (point, size) {
         return this.fillPoint(point.x, point.y, size);
     },
 
@@ -58102,22 +58239,15 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillPoint: function (x, y, size)
-    {
-        if (!size || size < 1)
-        {
+    fillPoint: function (x, y, size) {
+        if (!size || size < 1) {
             size = 1;
-        }
-        else
-        {
-            x -= (size / 2);
-            y -= (size / 2);
+        } else {
+            x -= size / 2;
+            y -= size / 2;
         }
 
-        this.commandBuffer.push(
-            Commands.FILL_RECT,
-            x, y, size, size
-        );
+        this.commandBuffer.push(Commands.FILL_RECT, x, y, size, size);
 
         return this;
     },
@@ -58132,9 +58262,15 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillTriangleShape: function (triangle)
-    {
-        return this.fillTriangle(triangle.x1, triangle.y1, triangle.x2, triangle.y2, triangle.x3, triangle.y3);
+    fillTriangleShape: function (triangle) {
+        return this.fillTriangle(
+            triangle.x1,
+            triangle.y1,
+            triangle.x2,
+            triangle.y2,
+            triangle.x3,
+            triangle.y3
+        );
     },
 
     /**
@@ -58147,9 +58283,15 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    strokeTriangleShape: function (triangle)
-    {
-        return this.strokeTriangle(triangle.x1, triangle.y1, triangle.x2, triangle.y2, triangle.x3, triangle.y3);
+    strokeTriangleShape: function (triangle) {
+        return this.strokeTriangle(
+            triangle.x1,
+            triangle.y1,
+            triangle.x2,
+            triangle.y2,
+            triangle.x3,
+            triangle.y3
+        );
     },
 
     /**
@@ -58167,12 +58309,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillTriangle: function (x0, y0, x1, y1, x2, y2)
-    {
-        this.commandBuffer.push(
-            Commands.FILL_TRIANGLE,
-            x0, y0, x1, y1, x2, y2
-        );
+    fillTriangle: function (x0, y0, x1, y1, x2, y2) {
+        this.commandBuffer.push(Commands.FILL_TRIANGLE, x0, y0, x1, y1, x2, y2);
 
         return this;
     },
@@ -58192,11 +58330,15 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    strokeTriangle: function (x0, y0, x1, y1, x2, y2)
-    {
+    strokeTriangle: function (x0, y0, x1, y1, x2, y2) {
         this.commandBuffer.push(
             Commands.STROKE_TRIANGLE,
-            x0, y0, x1, y1, x2, y2
+            x0,
+            y0,
+            x1,
+            y1,
+            x2,
+            y2
         );
 
         return this;
@@ -58212,8 +58354,7 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    strokeLineShape: function (line)
-    {
+    strokeLineShape: function (line) {
         return this.lineBetween(line.x1, line.y1, line.x2, line.y2);
     },
 
@@ -58230,8 +58371,7 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    lineBetween: function (x1, y1, x2, y2)
-    {
+    lineBetween: function (x1, y1, x2, y2) {
         this.beginPath();
         this.moveTo(x1, y1);
         this.lineTo(x2, y2);
@@ -58253,12 +58393,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    lineTo: function (x, y)
-    {
-        this.commandBuffer.push(
-            Commands.LINE_TO,
-            x, y
-        );
+    lineTo: function (x, y) {
+        this.commandBuffer.push(Commands.LINE_TO, x, y);
 
         return this;
     },
@@ -58274,12 +58410,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    moveTo: function (x, y)
-    {
-        this.commandBuffer.push(
-            Commands.MOVE_TO,
-            x, y
-        );
+    moveTo: function (x, y) {
+        this.commandBuffer.push(Commands.MOVE_TO, x, y);
 
         return this;
     },
@@ -58301,28 +58433,30 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    strokePoints: function (points, closeShape, closePath, endIndex)
-    {
-        if (closeShape === undefined) { closeShape = false; }
-        if (closePath === undefined) { closePath = false; }
-        if (endIndex === undefined) { endIndex = points.length; }
+    strokePoints: function (points, closeShape, closePath, endIndex) {
+        if (closeShape === undefined) {
+            closeShape = false;
+        }
+        if (closePath === undefined) {
+            closePath = false;
+        }
+        if (endIndex === undefined) {
+            endIndex = points.length;
+        }
 
         this.beginPath();
 
         this.moveTo(points[0].x, points[0].y);
 
-        for (var i = 1; i < endIndex; i++)
-        {
+        for (var i = 1; i < endIndex; i++) {
             this.lineTo(points[i].x, points[i].y);
         }
 
-        if (closeShape)
-        {
+        if (closeShape) {
             this.lineTo(points[0].x, points[0].y);
         }
 
-        if (closePath)
-        {
+        if (closePath) {
             this.closePath();
         }
 
@@ -58348,28 +58482,30 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillPoints: function (points, closeShape, closePath, endIndex)
-    {
-        if (closeShape === undefined) { closeShape = false; }
-        if (closePath === undefined) { closePath = false; }
-        if (endIndex === undefined) { endIndex = points.length; }
+    fillPoints: function (points, closeShape, closePath, endIndex) {
+        if (closeShape === undefined) {
+            closeShape = false;
+        }
+        if (closePath === undefined) {
+            closePath = false;
+        }
+        if (endIndex === undefined) {
+            endIndex = points.length;
+        }
 
         this.beginPath();
 
         this.moveTo(points[0].x, points[0].y);
 
-        for (var i = 1; i < endIndex; i++)
-        {
+        for (var i = 1; i < endIndex; i++) {
             this.lineTo(points[i].x, points[i].y);
         }
 
-        if (closeShape)
-        {
+        if (closeShape) {
             this.lineTo(points[0].x, points[0].y);
         }
 
-        if (closePath)
-        {
+        if (closePath) {
             this.closePath();
         }
 
@@ -58389,9 +58525,10 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    strokeEllipseShape: function (ellipse, smoothness)
-    {
-        if (smoothness === undefined) { smoothness = 32; }
+    strokeEllipseShape: function (ellipse, smoothness) {
+        if (smoothness === undefined) {
+            smoothness = 32;
+        }
 
         var points = ellipse.getPoints(smoothness);
 
@@ -58412,9 +58549,10 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    strokeEllipse: function (x, y, width, height, smoothness)
-    {
-        if (smoothness === undefined) { smoothness = 32; }
+    strokeEllipse: function (x, y, width, height, smoothness) {
+        if (smoothness === undefined) {
+            smoothness = 32;
+        }
 
         var ellipse = new Ellipse(x, y, width, height);
 
@@ -58434,9 +58572,10 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillEllipseShape: function (ellipse, smoothness)
-    {
-        if (smoothness === undefined) { smoothness = 32; }
+    fillEllipseShape: function (ellipse, smoothness) {
+        if (smoothness === undefined) {
+            smoothness = 32;
+        }
 
         var points = ellipse.getPoints(smoothness);
 
@@ -58457,9 +58596,10 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    fillEllipse: function (x, y, width, height, smoothness)
-    {
-        if (smoothness === undefined) { smoothness = 32; }
+    fillEllipse: function (x, y, width, height, smoothness) {
+        if (smoothness === undefined) {
+            smoothness = 32;
+        }
 
         var ellipse = new Ellipse(x, y, width, height);
 
@@ -58496,14 +58636,31 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    arc: function (x, y, radius, startAngle, endAngle, anticlockwise, overshoot)
-    {
-        if (anticlockwise === undefined) { anticlockwise = false; }
-        if (overshoot === undefined) { overshoot = 0; }
+    arc: function (
+        x,
+        y,
+        radius,
+        startAngle,
+        endAngle,
+        anticlockwise,
+        overshoot
+    ) {
+        if (anticlockwise === undefined) {
+            anticlockwise = false;
+        }
+        if (overshoot === undefined) {
+            overshoot = 0;
+        }
 
         this.commandBuffer.push(
             Commands.ARC,
-            x, y, radius, startAngle, endAngle, anticlockwise, overshoot
+            x,
+            y,
+            radius,
+            startAngle,
+            endAngle,
+            anticlockwise,
+            overshoot
         );
 
         return this;
@@ -58532,16 +58689,36 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    slice: function (x, y, radius, startAngle, endAngle, anticlockwise, overshoot)
-    {
-        if (anticlockwise === undefined) { anticlockwise = false; }
-        if (overshoot === undefined) { overshoot = 0; }
+    slice: function (
+        x,
+        y,
+        radius,
+        startAngle,
+        endAngle,
+        anticlockwise,
+        overshoot
+    ) {
+        if (anticlockwise === undefined) {
+            anticlockwise = false;
+        }
+        if (overshoot === undefined) {
+            overshoot = 0;
+        }
 
         this.commandBuffer.push(Commands.BEGIN_PATH);
 
         this.commandBuffer.push(Commands.MOVE_TO, x, y);
 
-        this.commandBuffer.push(Commands.ARC, x, y, radius, startAngle, endAngle, anticlockwise, overshoot);
+        this.commandBuffer.push(
+            Commands.ARC,
+            x,
+            y,
+            radius,
+            startAngle,
+            endAngle,
+            anticlockwise,
+            overshoot
+        );
 
         this.commandBuffer.push(Commands.CLOSE_PATH);
 
@@ -58558,11 +58735,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    save: function ()
-    {
-        this.commandBuffer.push(
-            Commands.SAVE
-        );
+    save: function () {
+        this.commandBuffer.push(Commands.SAVE);
 
         return this;
     },
@@ -58579,11 +58753,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    restore: function ()
-    {
-        this.commandBuffer.push(
-            Commands.RESTORE
-        );
+    restore: function () {
+        this.commandBuffer.push(Commands.RESTORE);
 
         return this;
     },
@@ -58605,12 +58776,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    translateCanvas: function (x, y)
-    {
-        this.commandBuffer.push(
-            Commands.TRANSLATE,
-            x, y
-        );
+    translateCanvas: function (x, y) {
+        this.commandBuffer.push(Commands.TRANSLATE, x, y);
 
         return this;
     },
@@ -58632,12 +58799,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    scaleCanvas: function (x, y)
-    {
-        this.commandBuffer.push(
-            Commands.SCALE,
-            x, y
-        );
+    scaleCanvas: function (x, y) {
+        this.commandBuffer.push(Commands.SCALE, x, y);
 
         return this;
     },
@@ -58658,12 +58821,8 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    rotateCanvas: function (radians)
-    {
-        this.commandBuffer.push(
-            Commands.ROTATE,
-            radians
-        );
+    rotateCanvas: function (radians) {
+        this.commandBuffer.push(Commands.ROTATE, radians);
 
         return this;
     },
@@ -58676,18 +58835,19 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    clear: function ()
-    {
+    clear: function () {
         this.commandBuffer.length = 0;
 
-        if (this.defaultFillColor > -1)
-        {
+        if (this.defaultFillColor > -1) {
             this.fillStyle(this.defaultFillColor, this.defaultFillAlpha);
         }
 
-        if (this.defaultStrokeColor > -1)
-        {
-            this.lineStyle(this.defaultStrokeWidth, this.defaultStrokeColor, this.defaultStrokeAlpha);
+        if (this.defaultStrokeColor > -1) {
+            this.lineStyle(
+                this.defaultStrokeWidth,
+                this.defaultStrokeColor,
+                this.defaultStrokeAlpha
+            );
         }
 
         return this;
@@ -58715,13 +58875,16 @@ var Graphics = new Class({
      *
      * @return {this} This Game Object.
      */
-    generateTexture: function (key, width, height)
-    {
+    generateTexture: function (key, width, height) {
         var sys = this.scene.sys;
         var renderer = sys.game.renderer;
 
-        if (width === undefined) { width = sys.scale.width; }
-        if (height === undefined) { height = sys.scale.height; }
+        if (width === undefined) {
+            width = sys.scale.width;
+        }
+        if (height === undefined) {
+            height = sys.scale.height;
+        }
 
         Graphics.TargetCamera.setScene(this.scene);
         Graphics.TargetCamera.setViewport(0, 0, width, height);
@@ -58732,44 +58895,42 @@ var Graphics = new Class({
         var ctx;
         var willRead = { willReadFrequently: true };
 
-        if (typeof key === 'string')
-        {
-            if (sys.textures.exists(key))
-            {
+        if (typeof key === "string") {
+            if (sys.textures.exists(key)) {
                 //  Key is a string, it DOES exist in the Texture Manager AND is a canvas, so draw to it
 
                 texture = sys.textures.get(key);
 
                 var src = texture.getSourceImage();
 
-                if (src instanceof HTMLCanvasElement)
-                {
-                    ctx = src.getContext('2d', willRead);
+                if (src instanceof HTMLCanvasElement) {
+                    ctx = src.getContext("2d", willRead);
                 }
-            }
-            else
-            {
+            } else {
                 //  Key is a string and doesn't exist in the Texture Manager, so generate and save it
 
                 texture = sys.textures.createCanvas(key, width, height);
 
-                ctx = texture.getSourceImage().getContext('2d', willRead);
+                ctx = texture.getSourceImage().getContext("2d", willRead);
             }
-        }
-        else if (key instanceof HTMLCanvasElement)
-        {
+        } else if (key instanceof HTMLCanvasElement) {
             //  Key is a Canvas, so draw to it
 
-            ctx = key.getContext('2d', willRead);
+            ctx = key.getContext("2d", willRead);
         }
 
-        if (ctx)
-        {
+        if (ctx) {
             // var GraphicsCanvasRenderer = function (renderer, src, camera, parentMatrix, renderTargetCtx, allowClip)
-            this.renderCanvas(renderer, this, Graphics.TargetCamera, null, ctx, false);
+            this.renderCanvas(
+                renderer,
+                this,
+                Graphics.TargetCamera,
+                null,
+                ctx,
+                false
+            );
 
-            if (texture)
-            {
+            if (texture) {
                 texture.refresh();
             }
         }
@@ -58784,11 +58945,9 @@ var Graphics = new Class({
      * @protected
      * @since 3.9.0
      */
-    preDestroy: function ()
-    {
+    preDestroy: function () {
         this.commandBuffer = [];
-    }
-
+    },
 });
 
 /**
@@ -98704,6 +98863,846 @@ module.exports = Circle;
 
 /***/ },
 
+/***/ 61174
+(module) {
+
+/**
+ * Calculates the area of the circle.
+ *
+ * @function Phaser.Geom.CircleSection.Area
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The Circle to get the area of.
+ *
+ * @return {number} The area of the Circle.
+ */
+var Area = function (circleSection) {
+    return circleSection.radius > 0
+        ? (1 / Math.PI) *
+              (circleSection.endAngle - circleSection.startAngle) *
+              circleSection.radius *
+              circleSection.radius
+        : 0;
+};
+
+module.exports = Area;
+
+
+/***/ },
+
+/***/ 75836
+(module, __unused_webpack_exports, __webpack_require__) {
+
+var Class = __webpack_require__(83419);
+var Contains = __webpack_require__(94870);
+var GetPoints = __webpack_require__(29900);
+var GetCircumferencePoints = __webpack_require__(25369);
+var GEOM_CONST = __webpack_require__(23777);
+var Random = __webpack_require__(68984);
+
+/**
+ * @classdesc
+ * A CircleSection object.
+ *
+ * This is a geometry object, containing numerical values and related methods to inspect and modify them.
+ * It is not a Game Object, in that you cannot add it to the display list, and it has no texture.
+ * To render a CircleSection you should look at the capabilities of the Graphics class.
+ *
+ * @class CircleSection
+ * @memberof Phaser.Geom
+ * @constructor
+ * @since 4.0.0
+ *
+ * @param {number} [x=0] - The x position of the center of the circle.
+ * @param {number} [y=0] - The y position of the center of the circle.
+ * @param {number} [radius=0] - The radius of the circle.
+ * @param {number} [startAngle=0] - The start angle of the circle section in radians.
+ * @param {number} [endAngle=2*Math.PI] - The end angle of the circle section in radians.
+ */
+var CircleSection = new Class({
+    initialize: function CircleSection(x, y, radius, startAngle, endAngle) {
+        if (x === undefined) {
+            x = 0;
+        }
+        if (y === undefined) {
+            y = 0;
+        }
+        if (radius === undefined) {
+            radius = 0;
+        }
+        if (startAngle === undefined) {
+            startAngle = 0;
+        }
+        if (endAngle === undefined) {
+            endAngle = 2 * Math.PI;
+        }
+
+        /**
+         * The geometry constant type of this object: `GEOM_CONST.CIRCLE_SECTION`.
+         * Used for fast type comparisons.
+         *
+         * @name Phaser.Geom.CircleSection#type
+         * @type {number}
+         * @readonly
+         * @since 4.0.0
+         */
+        this.type = GEOM_CONST.CIRCLE_SECTION;
+
+        /**
+         * The x position of the center of the circle.
+         *
+         * @name Phaser.Geom.CircleSection#x
+         * @type {number}
+         * @default 0
+         * @since 4.0.0
+         */
+        this.x = x;
+
+        /**
+         * The y position of the center of the circle.
+         *
+         * @name Phaser.Geom.CircleSection#y
+         * @type {number}
+         * @default 0
+         * @since 4.0.0
+         */
+        this.y = y;
+
+        /**
+         * The internal radius of the circle.
+         *
+         * @name Phaser.Geom.CircleSection#_radius
+         * @type {number}
+         * @private
+         * @since 4.0.0
+         */
+        this._radius = radius;
+
+        /**
+         * The internal start angle (radians) of the circle section.
+         * @name Phaser.Geom.CircleSection#_startAngle
+         * @type {number}
+         * @private
+         * @since 4.0.0
+         */
+        this._startAngle = startAngle;
+
+        /**
+         * The internal end angle (radians) of the circle section.
+         * @name Phaser.Geom.CircleSection#_endAngle
+         * @type {number}
+         * @private
+         * @since 4.0.0
+         */
+        this._endAngle = endAngle;
+    },
+
+    /**
+     * Check to see if the CircleSection contains the given x / y coordinates.
+     *
+     * @method Phaser.Geom.CircleSection#contains
+     * @since 4.0.0
+     *
+     * @param {number} x - The x coordinate to check within the circle section.
+     * @param {number} y - The y coordinate to check within the circle section.
+     *
+     * @return {boolean} True if the coordinates are within the circle section, otherwise false.
+     */
+    contains: function (x, y) {
+        return Contains(this, x, y);
+    },
+
+    /**
+     * Returns an array of Point objects containing the coordinates of the points around the circumference of the CircleSection,
+     * based on the given quantity or stepRate values.
+     *
+     * @method Phaser.Geom.CircleSection#getPoints
+     * @since 4.0.0
+     *
+     * @generic {Phaser.Math.Vector2[]} O - [output,$return]
+     *
+     * @param {number} quantity - The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+     * @param {number} [stepRate] - Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
+     * @param {Phaser.Math.Vector2[]} [output] - An array to insert the Vector2s in to. If not provided a new array will be created.
+     *
+     * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle section.
+     */
+    getPoints: function (quantity, stepRate, output) {
+        return GetPoints(this, quantity, stepRate, output);
+    },
+
+    /**
+     * Returns an array of Point objects containing the coordinates of the points around the circumference of the CircleSection,
+     * based on the given quantity or stepRate values.
+     * @method Phaser.Geom.CircleSection#getCircumferencePoints
+     * @since 4.0.0
+     * @generic {Phaser.Math.Vector2[]} O - [output,$return]
+     *
+     * @param {number} quantity - The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+     * @param {number} [stepRate] - Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
+     * @param {Phaser.Math.Vector2[]} [output] - An array to insert the Vector2s in to. If not provided a new array will be created.
+     *
+     * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle section.
+     */
+    getCircumferencePoints: function (quantity, stepRate, output) {
+        return GetCircumferencePoints(this, quantity, stepRate, output);
+    },
+
+    /**
+     * Returns a uniformly distributed random point from anywhere within the CircleSection.
+     *
+     * @method Phaser.Geom.CircleSection#getRandomPoint
+     * @since 4.0.0
+     *
+     * @generic {Phaser.Math.Vector2} O - [point,$return]
+     *
+     * @param {Phaser.Math.Vector2} [vec] - A Vector2 object to set the random `x` and `y` values in.
+     *
+     * @return {Phaser.Math.Vector2} A Vector2 object with the random values set in the `x` and `y` properties.
+     */
+    getRandomPoint: function (vec) {
+        return Random(this, vec);
+    },
+
+    /**
+     * Sets the x, y and radius of this circle section.
+     *
+     * @method Phaser.Geom.CircleSection#setTo
+     * @since 4.0.0
+     *
+     * @param {number} [x=0] - The x position of the center of the circle.
+     * @param {number} [y=0] - The y position of the center of the circle.
+     * @param {number} [radius=0] - The radius of the circle.
+     * @param {number} [startAngle=0] - The start angle of the circle section in radians. (Not yet implemented)
+     * @param {number} [endAngle=Math.PI * 2] - The end angle of the circle section in radians. (Not yet implemented)
+     *
+     * @return {this} This Circle object.
+     */
+    setTo: function (x, y, radius, startAngle, endAngle) {
+        this.x = x;
+        this.y = y;
+        this._radius = radius;
+        this._startAngle = startAngle;
+        this._endAngle = endAngle;
+
+        return this;
+    },
+
+    /**
+     * Sets this CircleSection to be empty with a radius of zero.
+     * Does not change its position.
+     *
+     * @method Phaser.Geom.CircleSection#setEmpty
+     * @since 4.0.0
+     *
+     * @return {this} This CircleSection object.
+     */
+    setEmpty: function () {
+        this._radius = 0;
+        this._startAngle = 0;
+        this._endAngle = 0;
+
+        return this;
+    },
+
+    /**
+     * Sets the position of this CircleSection.
+     *
+     * @method Phaser.Geom.CircleSection#setPosition
+     * @since 4.0.0
+     *
+     * @param {number} [x=0] - The x position of the center of the circle.
+     * @param {number} [y=0] - The y position of the center of the circle.
+     *
+     * @return {this} This CircleSection object.
+     */
+    setPosition: function (x, y) {
+        if (y === undefined) {
+            y = x;
+        }
+
+        this.x = x;
+        this.y = y;
+
+        return this;
+    },
+
+    /**
+     * Checks to see if the CircleSection is empty: has a radius of zero.
+     *
+     * @method Phaser.Geom.CircleSection#isEmpty
+     * @since 4.0.0
+     *
+     * @return {boolean} True if the CircleSection is empty, otherwise false.
+     */
+    isEmpty: function () {
+        return this._radius <= 0;
+    },
+
+    /**
+     * The radius of the CircleSection.
+     *
+     * @name Phaser.Geom.CircleSection#radius
+     * @type {number}
+     * @since 4.0.0
+     */
+    radius: {
+        get: function () {
+            return this._radius;
+        },
+
+        set: function (value) {
+            this._radius = value;
+        },
+    },
+
+    /**
+     * The start angle of the CircleSection.
+     *
+     * @name Phaser.Geom.CircleSection#startAngle
+     * @type {number}
+     * @since 4.0.0
+     */
+    startAngle: {
+        get: function () {
+            return this._startAngle;
+        },
+        set: function (value) {
+            this._startAngle = value;
+        },
+    },
+
+    /**
+     * The end angle of the CircleSection.
+     *
+     * @name Phaser.Geom.CircleSection#endAngle
+     * @type {number}
+     * @since 4.0.0
+     */
+    endAngle: {
+        get: function () {
+            return this._endAngle;
+        },
+        set: function (value) {
+            this._endAngle = value;
+        },
+    },
+});
+
+module.exports = CircleSection;
+
+
+/***/ },
+
+/***/ 23618
+(module) {
+
+/**
+ * Returns the circumference of the given Circle.
+ *
+ * @function Phaser.Geom.CircleSection.Circumference
+ * @since 3.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to get the circumference of.
+ *
+ * @return {number} The circumference of the CircleSection.
+ */
+var Circumference = function (circleSection) {
+    return (
+        (circleSection.endAngle - circleSection.startAngle) *
+        circleSection.radius
+    );
+};
+
+module.exports = Circumference;
+
+
+/***/ },
+
+/***/ 39974
+(module, __unused_webpack_exports, __webpack_require__) {
+
+var Vector2 = __webpack_require__(26099);
+
+/**
+ * Returns a Vector2 object containing the coordinates of a point on the circumference of the Circle based on the given angle.
+ *
+ * @function Phaser.Geom.CircleSection.CircumferencePoint
+ * @since 4.0.0
+ *
+ * @generic {Phaser.Math.Vector2} O - [out,$return]
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to get the circumference point on.
+ * @param {number} angle - The angle from the center of the CircleSection to the circumference to return the point from. Given in radians.
+ * @param {Phaser.Math.Vector2} [out] - A Vector2 to store the results in. If not given a Point will be created.
+ *
+ * @return {Phaser.Math.Vector2} A Vector2 object where the `x` and `y` properties are the point on the circumference.
+ */
+var CircumferencePoint = function (circleSection, angle, out) {
+    if (out === undefined) {
+        out = new Vector2();
+    }
+
+    out.x = circleSection.x + circleSection.radius * Math.cos(angle);
+    out.y = circleSection.y + circleSection.radius * Math.sin(angle);
+
+    return out;
+};
+
+module.exports = CircumferencePoint;
+
+
+/***/ },
+
+/***/ 35746
+(module, __unused_webpack_exports, __webpack_require__) {
+
+var Circle = __webpack_require__(75836);
+
+/**
+ * Creates a new CircleSection instance based on the values contained in the given source.
+ *
+ * @function Phaser.Geom.CircleSection.Clone
+ * @since 4.0.0
+ *
+ * @param {(Phaser.Geom.CircleSection|object)} source - The CircleSection to be cloned. Can be an instance of a CircleSection or a circle section-like object, with x, y, radius and arc angle properties.
+ *
+ * @return {Phaser.Geom.CircleSection} A clone of the source CircleSection.
+ */
+var Clone = function (source) {
+    return new Circle(
+        source.x,
+        source.y,
+        source.radius,
+        source.startAngle,
+        source.endAngle
+    );
+};
+
+module.exports = Clone;
+
+
+/***/ },
+
+/***/ 94870
+(module) {
+
+/**
+ * Check to see if the CircleSection contains the given x / y coordinates.
+ *
+ * @function Phaser.Geom.CircleSection.Contains
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to check.
+ * @param {number} x - The x coordinate to check within the circle.
+ * @param {number} y - The y coordinate to check within the circle.
+ *
+ * @return {boolean} True if the coordinates are within the circle, otherwise false.
+ */
+var Contains = function (circleSection, x, y) {
+    // Step 1: Translate point relative to arc center
+    var dx = x - circleSection.x;
+    var dy = y - circleSection.y;
+
+    // Step 2: Check if point is within radius
+    var distSq = dx * dx + dy * dy;
+    var radiusSq = circleSection.radius * circleSection.radius;
+    if (distSq > radiusSq) {
+        return false;
+    }
+
+    // Step 3: Get angle to point in radians
+    var angleToPoint = Math.atan2(dy, dx);
+    angleToPoint = (angleToPoint + 2 * Math.PI) % (2 * Math.PI); // Normalize to [0, 2 * Math.PI)
+
+    // Step 4: Define arc start and end angles
+    var startAngle = (circleSection.startAngle + 2 * Math.PI) % (2 * Math.PI);
+    var endAngle = (circleSection.endAngle + 2 * Math.PI) % (2 * Math.PI);
+
+    // Step 5: Check if angleToPoint is within arc (clockwise)
+    if (startAngle < endAngle) {
+        // Normal range
+        return angleToPoint >= startAngle && angleToPoint <= endAngle;
+    } else {
+        // Wrapped around 360
+        return angleToPoint >= startAngle || angleToPoint <= endAngle;
+    }
+};
+
+module.exports = Contains;
+
+
+/***/ },
+
+/***/ 33242
+(module, __unused_webpack_exports, __webpack_require__) {
+
+var Contains = __webpack_require__(94870);
+
+/**
+ * Check to see if the CircleSection contains the given x and y coordinates as stored in the Vector2.
+ *
+ * @function Phaser.Geom.CircleSection.ContainsPoint
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to check.
+ * @param {Phaser.Math.Vector2} vec - The Vector2 object to check if its coordinates are within the CircleSection or not.
+ *
+ * @return {boolean} True if the Vector2 coordinates are within the circle, otherwise false.
+ */
+var ContainsPoint = function (circleSection, vec) {
+    return Contains(circleSection, vec.x, vec.y);
+};
+
+module.exports = ContainsPoint;
+
+
+/***/ },
+
+/***/ 69140
+(module, __unused_webpack_exports, __webpack_require__) {
+
+var Contains = __webpack_require__(94870);
+
+/**
+ * Check to see if the CircleSection contains all four points of the given Rectangle object.
+ *
+ * @function Phaser.Geom.CircleSection.ContainsRect
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to check.
+ * @param {(Phaser.Geom.Rectangle|object)} rect - The Rectangle object to check if it's within the CircleSection or not.
+ *
+ * @return {boolean} True if all of the Rectangle coordinates are within the circle, otherwise false.
+ */
+var ContainsRect = function (circleSection, rect) {
+    return (
+        Contains(circleSection, rect.x, rect.y) &&
+        Contains(circleSection, rect.right, rect.y) &&
+        Contains(circleSection, rect.x, rect.bottom) &&
+        Contains(circleSection, rect.right, rect.bottom)
+    );
+};
+
+module.exports = ContainsRect;
+
+
+/***/ },
+
+/***/ 41970
+(module) {
+
+/**
+ * Copies the `x`, `y` and `radius` properties from the `source` Circle
+ * into the given `dest` Circle, then returns the `dest` Circle.
+ *
+ * @function Phaser.Geom.CircleSection.CopyFrom
+ * @since 4.0.0
+ *
+ * @generic {Phaser.Geom.CircleSection} O - [dest,$return]
+ *
+ * @param {Phaser.Geom.CircleSection} source - The source CircleSection to copy the values from.
+ * @param {Phaser.Geom.CircleSection} dest - The destination CircleSection to copy the values to.
+ *
+ * @return {Phaser.Geom.CircleSection} The destination CircleSection.
+ */
+var CopyFrom = function (source, dest) {
+    return dest.setTo(
+        source.x,
+        source.y,
+        source.radius,
+        source.startAngle,
+        source.endAngle
+    );
+};
+
+module.exports = CopyFrom;
+
+
+/***/ },
+
+/***/ 90654
+(module) {
+
+/**
+ * Compares the `x`, `y` and `radius` properties of the two given Circles.
+ * Returns `true` if they all match, otherwise returns `false`.
+ *
+ * @function Phaser.Geom.CircleSection.Equals
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The first CircleSection to compare.
+ * @param {Phaser.Geom.CircleSection} toCompare - The second CircleSection to compare.
+ *
+ * @return {boolean} `true` if the two Circles sections equal each other, otherwise `false`.
+ */
+var Equals = function (circleSection, toCompare) {
+    return (
+        circleSection.x === toCompare.x &&
+        circleSection.y === toCompare.y &&
+        circleSection.radius === toCompare.radius &&
+        circleSection.startAngle === toCompare.startAngle &&
+        circleSection.endAngle === toCompare.endAngle
+    );
+};
+
+module.exports = Equals;
+
+
+/***/ },
+
+/***/ 25369
+(module, __unused_webpack_exports, __webpack_require__) {
+
+var Circumference = __webpack_require__(23618);
+var CircumferencePoint = __webpack_require__(39974);
+var FromPercent = __webpack_require__(62945);
+
+/**
+ * Returns an array of Vector2 objects containing the coordinates of the points around the circumference of the Circle,
+ * based on the given quantity or stepRate values.
+ *
+ * @function Phaser.Geom.CircleSection.GetCircumferencePoints
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to get the points from.
+ * @param {number} quantity - The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+ * @param {number} [stepRate] - Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
+ * @param {array} [output] - An array to insert the points in to. If not provided a new array will be created.
+ *
+ * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle.
+ */
+var GetCircumferencePoints = function (circleSection, quantity, stepRate, out) {
+    if (out === undefined) {
+        out = [];
+    }
+
+    //  If quantity is a falsey value (false, null, 0, undefined, etc) or less than 4 then we calculate it based on the stepRate instead.
+    if (quantity < 2 && stepRate > 0) {
+        quantity = Circumference(circleSection) / stepRate;
+    }
+
+    for (var i = 0; i < quantity; i++) {
+        var angle = FromPercent(
+            i / (quantity - 1),
+            circleSection.startAngle,
+            circleSection.endAngle
+        );
+
+        out.push(CircumferencePoint(circleSection, angle));
+    }
+
+    return out;
+};
+
+module.exports = GetCircumferencePoints;
+
+
+/***/ },
+
+/***/ 29900
+(module, __unused_webpack_exports, __webpack_require__) {
+
+var Circumference = __webpack_require__(23618);
+var CircumferencePoint = __webpack_require__(39974);
+var FromPercent = __webpack_require__(62945);
+
+/**
+ * Returns an array of Vector2 objects containing the coordinates of the points around the circumference of the Circle,
+ * based on the given quantity or stepRate values.
+ *
+ * @function Phaser.Geom.CircleSection.GetPoints
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to get the points from.
+ * @param {number} quantity - The amount of points to return. If a falsey value the quantity will be derived from the `stepRate` instead.
+ * @param {number} [stepRate] - Sets the quantity by getting the circumference of the circle and dividing it by the stepRate.
+ * @param {array} [output] - An array to insert the points in to. If not provided a new array will be created.
+ *
+ * @return {Phaser.Math.Vector2[]} An array of Vector2 objects pertaining to the points around the circumference of the circle.
+ */
+var GetPoints = function (circleSection, quantity, stepRate, out) {
+    if (out === undefined) {
+        out = [];
+    }
+
+    //  If quantity is a falsey value (false, null, 0, undefined, etc) or less than 4 then we calculate it based on the stepRate instead.
+    if (quantity < 4 && stepRate > 0) {
+        quantity = Circumference(circleSection) / stepRate;
+    }
+
+    out.push({ x: circleSection.x, y: circleSection.y });
+
+    for (var i = 0; i < quantity - 2; i++) {
+        var angle = FromPercent(
+            i / (quantity - 3),
+            circleSection.startAngle,
+            circleSection.endAngle
+        );
+
+        out.push(CircumferencePoint(circleSection, angle));
+    }
+
+    out.push({ x: circleSection.x, y: circleSection.y });
+
+    return out;
+};
+
+module.exports = GetPoints;
+
+
+/***/ },
+
+/***/ 43148
+(module) {
+
+/**
+ * Offsets the CircleSection by the values given.
+ *
+ * @function Phaser.Geom.CircleSection.Offset
+ * @since 3.0.0
+ *
+ * @generic {Phaser.Geom.CircleSection} O - [circleSection,$return]
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to be offset (translated.)
+ * @param {number} x - The amount to horizontally offset the CircleSection by.
+ * @param {number} y - The amount to vertically offset the CircleSection by.
+ *
+ * @return {Phaser.Geom.CircleSection} The CircleSection that was offset.
+ */
+var Offset = function (circleSection, x, y) {
+    circleSection.x += x;
+    circleSection.y += y;
+
+    return circleSection;
+};
+
+module.exports = Offset;
+
+
+/***/ },
+
+/***/ 34260
+(module) {
+
+/**
+ * Offsets the CircleSection by the values given in the `x` and `y` properties of the Vector2 object.
+ *
+ * @function Phaser.Geom.CircleSection.OffsetPoint
+ * @since 3.0.0
+ *
+ * @generic {Phaser.Geom.CircleSection} O - [circleSection,$return]
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to be offset (translated.)
+ * @param {Phaser.Math.Vector2} vec - The Vector2 object containing the values to offset the CircleSection by.
+ *
+ * @return {Phaser.Geom.CircleSection} The CircleSection that was offset.
+ */
+var OffsetPoint = function (circleSection, vec) {
+    circleSection.x += vec.x;
+    circleSection.y += vec.y;
+
+    return circleSection;
+};
+
+module.exports = OffsetPoint;
+
+
+/***/ },
+
+/***/ 5716
+(module) {
+
+/**
+ * Returns the perimeter of the given CircleSection.
+ *
+ * @function Phaser.Geom.CircleSection.Perimeter
+ * @since 4.0.0
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to get the perimeter of.
+ *
+ * @return {number} The perimeter of the CircleSection.
+ */
+var Perimeter = function (circleSection) {
+    return (
+        circleSection.radius *
+        (2 + circleSection.endAngle - circleSection.startAngle) // circleSection.radius * 2 + arc length
+    );
+};
+
+module.exports = Perimeter;
+
+
+/***/ },
+
+/***/ 68984
+(module, __unused_webpack_exports, __webpack_require__) {
+
+var Vector2 = __webpack_require__(26099);
+
+/**
+ * Returns a uniformly distributed random point from anywhere within the given CircleSection.
+ *
+ * @function Phaser.Geom.CircleSection.Random
+ * @since 4.0.0
+ *
+ * @generic {Phaser.Math.Vector2} O - [out,$return]
+ *
+ * @param {Phaser.Geom.CircleSection} circleSection - The CircleSection to get a random point from.
+ * @param {Phaser.Math.Vector2} [out] - A Vector2 object to set the random `x` and `y` values in.
+ *
+ * @return {Phaser.Math.Vector2} A Vector2 object with the random values set in the `x` and `y` properties.
+ */
+var Random = function (circleSection, out) {
+    if (out === undefined) {
+        out = new Vector2();
+    }
+
+    var t =
+        circleSection.startAngle +
+        (circleSection.endAngle - circleSection.startAngle) * Math.random();
+    var u = Math.random() + Math.random();
+    var r = u > 1 ? 2 - u : u;
+    var x = r * Math.cos(t);
+    var y = r * Math.sin(t);
+
+    out.x = circleSection.x + x * circleSection.radius;
+    out.y = circleSection.y + y * circleSection.radius;
+
+    return out;
+};
+
+module.exports = Random;
+
+
+/***/ },
+
+/***/ 85767
+(module, __unused_webpack_exports, __webpack_require__) {
+
+var CircleSection = __webpack_require__(75836);
+
+CircleSection.Area = __webpack_require__(61174);
+CircleSection.Circumference = __webpack_require__(23618);
+CircleSection.CircumferencePoint = __webpack_require__(39974);
+CircleSection.Clone = __webpack_require__(35746);
+CircleSection.Contains = __webpack_require__(94870);
+CircleSection.ContainsPoint = __webpack_require__(33242);
+CircleSection.ContainsRect = __webpack_require__(69140);
+CircleSection.CopyFrom = __webpack_require__(41970);
+CircleSection.Equals = __webpack_require__(90654);
+CircleSection.Perimeter = __webpack_require__(5716);
+CircleSection.GetPoints = __webpack_require__(29900);
+CircleSection.GetCircumferencePoints = __webpack_require__(25369);
+CircleSection.Offset = __webpack_require__(43148);
+CircleSection.OffsetPoint = __webpack_require__(34260);
+CircleSection.Random = __webpack_require__(68984);
+
+module.exports = CircleSection;
+
+
+/***/ },
+
 /***/ 23777
 (module) {
 
@@ -98714,7 +99713,6 @@ module.exports = Circle;
  */
 
 var GEOM_CONST = {
-
     /**
      * A Circle Geometry object type.
      *
@@ -98777,8 +99775,16 @@ var GEOM_CONST = {
      * @type {number}
      * @since 3.19.0
      */
-    TRIANGLE: 6
+    TRIANGLE: 6,
 
+    /**
+     * A Circle Section Geometry object type.
+     *
+     * @name Phaser.Geom.CIRCLE_SECTION
+     * @type {number}
+     * @since 4.0.0
+     */
+    CIRCLE_SECTION: 7,
 };
 
 module.exports = GEOM_CONST;
@@ -99801,15 +100807,14 @@ var Extend = __webpack_require__(79291);
  */
 
 var Geom = {
-
     Circle: __webpack_require__(88911),
+    CircleSection: __webpack_require__(85767),
     Ellipse: __webpack_require__(49203),
     Intersects: __webpack_require__(91865),
     Line: __webpack_require__(2529),
     Polygon: __webpack_require__(58423),
     Rectangle: __webpack_require__(93232),
-    Triangle: __webpack_require__(84435)
-
+    Triangle: __webpack_require__(84435),
 };
 
 //   Merge in the consts
@@ -167300,9 +168305,9 @@ var ShaderProgramFactory = new Class({
             }
         }
 
-        if (features)
+        var featureDefines = '';
+        if (features && features.length > 0)
         {
-            var featureDefines = '';
             var reInvalid = /[^a-zA-Z0-9]/g;
 
             for (i = 0; i < features.length; i++)
@@ -167310,19 +168315,22 @@ var ShaderProgramFactory = new Class({
                 var feature = features[i].toUpperCase().replace(reInvalid, '_');
                 featureDefines += '#define FEATURE_' + feature + '\n';
             }
-
-            vertexSource = vertexSource.replace('#pragma phaserTemplate(features)', featureDefines);
-            fragmentSource = fragmentSource.replace('#pragma phaserTemplate(features)', featureDefines);
         }
+
+        vertexSource = vertexSource.replace('#pragma phaserTemplate(features)', featureDefines);
+        fragmentSource = fragmentSource.replace('#pragma phaserTemplate(features)', featureDefines);
 
         // Name the program after the key.
         vertexSource = vertexSource.replace('#pragma phaserTemplate(shaderName)', '#define SHADER_NAME ' + name + '__VERTEX');
         fragmentSource = fragmentSource.replace('#pragma phaserTemplate(shaderName)', '#define SHADER_NAME ' + name + '__FRAGMENT');
 
         // Remove any remaining template directives.
-        var rePragma = /\s*#pragma phaserTemplate\(.*/g;
+        var rePragma = /\s*#pragma phaserTemplate\([^)]*\)[^\n]*/g;
         vertexSource = vertexSource.replace(rePragma, '');
         fragmentSource = fragmentSource.replace(rePragma, '');
+
+        vertexSource = this.renderer.convertShaderSourceToWebGL2(vertexSource, true);
+        fragmentSource = this.renderer.convertShaderSourceToWebGL2(fragmentSource, false);
 
         var program = this.renderer.createProgram(vertexSource, fragmentSource);
 
@@ -168035,11 +169043,21 @@ var WebGLRenderer = new Class({
          * The underlying WebGL context of the renderer.
          *
          * @name Phaser.Renderer.WebGL.WebGLRenderer#gl
-         * @type {WebGLRenderingContext}
+         * @type {(WebGLRenderingContext|WebGL2RenderingContext)}
          * @default null
          * @since 3.0.0
          */
         this.gl = null;
+
+        /**
+         * True if this renderer is using a WebGL2 rendering context.
+         *
+         * @name Phaser.Renderer.WebGL.WebGLRenderer#isWebGL2
+         * @type {boolean}
+         * @default false
+         * @since 3.80.0
+         */
+        this.isWebGL2 = false;
 
         /**
          * The current WebGLRenderingContext state.
@@ -168111,6 +169129,63 @@ var WebGLRenderer = new Class({
          * @since 4.0.0
          */
         this.standardDerivativesExtension = null;
+
+        /**
+         * If the browser supports the `EXT_color_buffer_float` extension (WebGL2),
+         * this property will hold a reference to it.
+         *
+         * This extension allows rendering to floating-point color buffers.
+         * Required for HDR rendering and some post-processing effects.
+         *
+         * This is populated in the `setExtensions` method.
+         *
+         * @name Phaser.Renderer.WebGL.WebGLRenderer#colorBufferFloatExtension
+         * @type {EXT_color_buffer_float}
+         * @default null
+         * @since 4.0.0
+         */
+        this.colorBufferFloatExtension = null;
+
+        /**
+         * If the browser supports the `EXT_texture_filter_anisotropic` extension,
+         * this property will hold a reference to it.
+         *
+         * This extension provides anisotropic filtering for better texture quality.
+         *
+         * This is populated in the `setExtensions` method.
+         *
+         * @name Phaser.Renderer.WebGL.WebGLRenderer#textureFilterAnisotropicExtension
+         * @type {EXT_texture_filter_anisotropic}
+         * @default null
+         * @since 4.0.0
+         */
+        this.textureFilterAnisotropicExtension = null;
+
+        /**
+         * If the browser supports the `WEBGL_compressed_texture_s3tc` extension,
+         * this property will hold a reference to it.
+         *
+         * This extension provides S3TC compressed texture support (DXT1/3/5).
+         *
+         * This is populated in the `setExtensions` method.
+         *
+         * @name Phaser.Renderer.WebGL.WebGLRenderer#compressedTextureS3TCExtension
+         * @type {WEBGL_compressed_texture_s3tc}
+         * @default null
+         * @since 4.0.0
+         */
+        this.compressedTextureS3TCExtension = null;
+
+        /**
+         * Maximum anisotropic filtering level supported by the GPU.
+         * Only available if `EXT_texture_filter_anisotropic` is supported.
+         *
+         * @name Phaser.Renderer.WebGL.WebGLRenderer#maxAnisotropy
+         * @type {number}
+         * @default 1
+         * @since 4.0.0
+         */
+        this.maxAnisotropy = 1;
 
         /**
          * If the browser supports the `OES_vertex_array_object` extension, this property will hold
@@ -168230,7 +169305,8 @@ var WebGLRenderer = new Class({
          * NEAREST_MIPMAP_LINEAR
          * LINEAR_MIPMAP_LINEAR
          *
-         * Mipmaps only work with textures that are fully power-of-two in size.
+         * In WebGL1, mipmaps only work with textures that are fully power-of-two in size.
+         * In WebGL2, mipmaps work with any texture size (NPOT textures fully supported).
          *
          * For more details see https://webglfundamentals.org/webgl/lessons/webgl-3d-textures.html
          *
@@ -168346,10 +169422,37 @@ var WebGLRenderer = new Class({
         }
         else
         {
-            gl = canvas.getContext('webgl', config.contextCreation) || canvas.getContext('experimental-webgl', config.contextCreation);
+            var renderType = game.config.renderType;
+
+            // If WEBGL2 is explicitly requested, only try WebGL2
+            if (renderType === CONST.WEBGL2)
+            {
+                if (typeof WebGL2RenderingContext !== 'undefined')
+                {
+                    gl = canvas.getContext('webgl2', config.contextCreation);
+                }
+
+                if (!gl)
+                {
+                    throw new Error('WebGL2 was requested but is not supported by this browser');
+                }
+            }
+            // If WEBGL is requested, try WebGL2 first, then fall back to WebGL1
+            else if (renderType === CONST.WEBGL)
+            {
+                if (typeof WebGL2RenderingContext !== 'undefined')
+                {
+                    gl = canvas.getContext('webgl2', config.contextCreation);
+                }
+
+                if (!gl)
+                {
+                    gl = canvas.getContext('webgl', config.contextCreation) || canvas.getContext('experimental-webgl', config.contextCreation);
+                }
+            }
         }
 
-        if (!gl || gl.isContextLost())
+        if (!gl || (typeof gl.isContextLost === 'function' && gl.isContextLost()))
         {
             this.contextLost = true;
 
@@ -168357,6 +169460,7 @@ var WebGLRenderer = new Class({
         }
 
         this.gl = gl;
+        this.isWebGL2 = (typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext);
 
         this.setExtensions();
 
@@ -168504,18 +169608,17 @@ var WebGLRenderer = new Class({
         var gl = this.gl;
         var game = this.game;
 
-        var exts = gl.getSupportedExtensions();
+        var exts = gl.getSupportedExtensions() || [];
 
         this.supportedExtensions = exts;
 
         var angleString = 'ANGLE_instanced_arrays';
-
-        this.instancedArraysExtension = (exts.indexOf(angleString) > -1) ? gl.getExtension(angleString) : null;
+        var vaoString = 'OES_vertex_array_object';
+        var stdDerivativesString = 'OES_standard_derivatives';
+        var parallelShaderCompileString = 'KHR_parallel_shader_compile';
 
         if (game.config.skipUnreadyShaders)
         {
-            var parallelShaderCompileString = 'KHR_parallel_shader_compile';
-
             this.parallelShaderCompileExtension = (exts.indexOf(parallelShaderCompileString) > -1) ? gl.getExtension(parallelShaderCompileString) : null;
 
             if (!this.parallelShaderCompileExtension)
@@ -168525,17 +169628,46 @@ var WebGLRenderer = new Class({
             }
         }
 
-        var vaoString = 'OES_vertex_array_object';
+        if (this.isWebGL2)
+        {
+            // Native WebGL2 context already provides instancing and VAOs.
+            this.instancedArraysExtension = null;
+            this.vaoExtension = null;
+            this.standardDerivativesExtension = null;
 
+            // Check for optional WebGL2 extensions
+            // These are NOT guaranteed to be available even in WebGL2!
+
+            // EXT_color_buffer_float - Required for rendering to float textures (HDR, etc.)
+            var colorBufferFloatString = 'EXT_color_buffer_float';
+            this.colorBufferFloatExtension = (exts.indexOf(colorBufferFloatString) > -1) ? gl.getExtension(colorBufferFloatString) : null;
+
+            // EXT_texture_filter_anisotropic - Better texture filtering
+            var anisotropicString = 'EXT_texture_filter_anisotropic';
+            this.textureFilterAnisotropicExtension = (exts.indexOf(anisotropicString) > -1) ? gl.getExtension(anisotropicString) : null;
+
+            if (this.textureFilterAnisotropicExtension)
+            {
+                this.maxAnisotropy = gl.getParameter(this.textureFilterAnisotropicExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+            }
+
+            // WEBGL_compressed_texture_s3tc - S3TC/DXT compressed textures
+            var s3tcString = 'WEBGL_compressed_texture_s3tc';
+            this.compressedTextureS3TCExtension = (exts.indexOf(s3tcString) > -1) ? gl.getExtension(s3tcString) : null;
+
+            return;
+        }
+
+        this.instancedArraysExtension = (exts.indexOf(angleString) > -1) ? gl.getExtension(angleString) : null;
         this.vaoExtension = (exts.indexOf(vaoString) > -1) ? gl.getExtension(vaoString) : null;
 
-        var stdDerivativesString = 'OES_standard_derivatives';
-
-        this.standardDerivativesExtension = (exts.indexOf(stdDerivativesString) > -1) ? gl.getExtension(stdDerivativesString) : null;
+        if (game.config.smoothPixelArt)
+        {
+            this.standardDerivativesExtension = (exts.indexOf(stdDerivativesString) > -1) ? gl.getExtension(stdDerivativesString) : null;
+        }
 
         // Make WebGL2 core features which were extensions available on the WebGL1 context.
-        // This allows us to use a WebGL2 context.
-        if (gl instanceof WebGLRenderingContext)
+        if (!this.isWebGL2)
         {
             // Incorporate instanced arrays.
             if (this.instancedArraysExtension)
@@ -168572,6 +169704,57 @@ var WebGLRenderer = new Class({
                 throw new Error('OES_standard_derivatives extension not supported. Cannot use smoothPixelArt.');
             }
         }
+    },
+
+    /**
+     * Checks if a specific WebGL extension is supported.
+     *
+     * @method Phaser.Renderer.WebGL.WebGLRenderer#hasExtension
+     * @since 4.0.0
+     * @param {string} extensionName - The name of the extension to check (e.g., 'EXT_color_buffer_float').
+     * @return {boolean} True if the extension is supported, false otherwise.
+     */
+    hasExtension: function (extensionName)
+    {
+        return this.supportedExtensions && this.supportedExtensions.indexOf(extensionName) > -1;
+    },
+
+    /**
+     * Checks if floating-point color buffers are supported (WebGL2 only).
+     * Required for HDR rendering and some post-processing effects.
+     *
+     * @method Phaser.Renderer.WebGL.WebGLRenderer#supportsFloatColorBuffers
+     * @since 4.0.0
+     * @return {boolean} True if EXT_color_buffer_float is supported.
+     */
+    supportsFloatColorBuffers: function ()
+    {
+        return this.isWebGL2 && this.colorBufferFloatExtension !== null;
+    },
+
+    /**
+     * Checks if anisotropic filtering is supported.
+     * Provides better texture quality at oblique angles.
+     *
+     * @method Phaser.Renderer.WebGL.WebGLRenderer#supportsAnisotropicFiltering
+     * @since 4.0.0
+     * @return {boolean} True if EXT_texture_filter_anisotropic is supported.
+     */
+    supportsAnisotropicFiltering: function ()
+    {
+        return this.textureFilterAnisotropicExtension !== null;
+    },
+
+    /**
+     * Checks if S3TC/DXT compressed textures are supported.
+     *
+     * @method Phaser.Renderer.WebGL.WebGLRenderer#supportsS3TCTextures
+     * @since 4.0.0
+     * @return {boolean} True if WEBGL_compressed_texture_s3tc is supported.
+     */
+    supportsS3TCTextures: function ()
+    {
+        return this.compressedTextureS3TCExtension !== null;
     },
 
     /**
@@ -169316,7 +170499,7 @@ var WebGLRenderer = new Class({
      * @param {number} width - The width of the texture.
      * @param {number} height - The height of the texture.
      * @param {number} scaleMode - The scale mode to be used by the texture.
-     * @param {boolean} [forceClamp=false] - Force the texture to use the CLAMP_TO_EDGE wrap mode, even if a power of two?
+     * @param {boolean} [forceClamp=false] - Force the texture to use the CLAMP_TO_EDGE wrap mode. In WebGL2, NPOT textures support REPEAT wrapping.
      * @param {boolean} [flipY=true] - Sets the `UNPACK_FLIP_Y_WEBGL` flag the WebGL Texture uses during upload.
      *
      * @return {?Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper} The WebGLTextureWrapper that was created, or `null` if it couldn't be created.
@@ -169336,7 +170519,9 @@ var WebGLRenderer = new Class({
 
         var pow = IsSizePowerOfTwo(width, height);
 
-        if (pow && !forceClamp)
+        // WebGL2 supports NPOT textures with REPEAT wrapping
+        // WebGL1 requires POT for REPEAT wrapping
+        if (!forceClamp && (this.isWebGL2 || pow))
         {
             wrap = gl.REPEAT;
         }
@@ -169344,12 +170529,14 @@ var WebGLRenderer = new Class({
         if (scaleMode === CONST.ScaleModes.LINEAR && this.config.antialias)
         {
             var isCompressed = source && source.compressed;
-            var isMip = (!isCompressed && pow) || (isCompressed && source.mipmaps.length > 1);
+
+            // WebGL2 supports mipmaps on NPOT textures
+            // WebGL1 requires POT for mipmaps
+            var isMip = (!isCompressed && (this.isWebGL2 || pow)) || (isCompressed && source.mipmaps.length > 1);
 
             // Filters above LINEAR only work with MIPmaps.
-            // These are only generated for power of two (POT) textures.
-            // Compressed textures with mipmaps are always POT,
-            // but POT compressed textures might not have mipmaps.
+            // In WebGL2, mipmaps can be generated for any texture size.
+            // In WebGL1, mipmaps only work with power of two (POT) textures.
             minFilter = (this.mipmapFilter && isMip) ? this.mipmapFilter : gl.LINEAR;
             magFilter = gl.LINEAR;
         }
@@ -169429,6 +170616,49 @@ var WebGLRenderer = new Class({
         this.glFramebufferWrappers.push(framebuffer);
 
         return framebuffer;
+    },
+
+    /**
+     * Validates shader source for WebGL2.
+     * All shaders are now pre-converted to GLSL ES 3.00 format, so this function
+     * only performs validation and returns the source unchanged.
+     *
+     * @method Phaser.Renderer.WebGL.WebGLRenderer#convertShaderSourceToWebGL2
+     * @since 3.80.0
+     *
+     * @param {string} source - The shader source (already in GLSL ES 3.00 format).
+     * @param {boolean} isVertexShader - Set to `true` when converting a vertex shader.
+     *
+     * @return {string} The validated shader source.
+     */
+    convertShaderSourceToWebGL2: function (source, isVertexShader)
+    {
+        // Validate that source is a string and not undefined/null
+        if (typeof source !== 'string')
+        {
+            console.error('convertShaderSourceToWebGL2: Invalid shader source type:', typeof source, 'Value:', source);
+            console.trace();
+            throw new Error('Shader source must be a string, got: ' + typeof source);
+        }
+
+        if (!source || source.trim() === '')
+        {
+            console.error('convertShaderSourceToWebGL2: Empty shader source');
+            console.trace();
+            throw new Error('Shader source must be a non-empty string');
+        }
+
+        // Check if source contains the literal string "undefined" or "null"
+        if (source.trim() === 'undefined' || source.trim() === 'null')
+        {
+            console.error('convertShaderSourceToWebGL2: Shader source is the literal string "' + source.trim() + '"');
+            console.trace();
+            throw new Error('Shader source is the literal string "' + source.trim() + '", this indicates a bug in shader source handling');
+        }
+
+        // All shaders are now pre-converted to WebGL2 format
+        // Just return the source as-is
+        return source;
     },
 
     /**
@@ -169954,7 +171184,8 @@ var WebGLRenderer = new Class({
 
         var pow = IsSizePowerOfTwo(width, height);
 
-        if (!noRepeat && pow)
+        // WebGL2 supports NPOT textures with REPEAT wrapping
+        if (!noRepeat && (this.isWebGL2 || pow))
         {
             wrapping = gl.REPEAT;
         }
@@ -170049,14 +171280,16 @@ var WebGLRenderer = new Class({
 
         var pow = IsSizePowerOfTwo(width, height);
 
-        if (!noRepeat && pow)
+        // WebGL2 supports NPOT textures with REPEAT wrapping
+        if (!noRepeat && (this.isWebGL2 || pow))
         {
             wrapping = gl.REPEAT;
         }
 
         if (this.config.antialias)
         {
-            minFilter = (pow && this.mipmapFilter) ? this.mipmapFilter : gl.LINEAR;
+            // WebGL2 supports mipmaps on NPOT textures
+            minFilter = ((this.isWebGL2 || pow) && this.mipmapFilter) ? this.mipmapFilter : gl.LINEAR;
             magFilter = gl.LINEAR;
         }
 
@@ -170138,7 +171371,8 @@ var WebGLRenderer = new Class({
 
         var pow = IsSizePowerOfTwo(width, height);
 
-        if (pow)
+        // WebGL2 supports NPOT textures with REPEAT wrapping
+        if (this.isWebGL2 || pow)
         {
             wrap = gl.REPEAT;
         }
@@ -173700,9 +174934,6 @@ var Camera = new Class({
         {
             var index, filter, padding, renderNode, tint;
 
-            // // Mipmap.
-            // currentContext.texture.needsMipmapRegeneration = true;
-
             // Set up render options.
             var renderOptions = {
                 smoothPixelArt: manager.renderer.game.config.smoothPixelArt
@@ -173726,9 +174957,6 @@ var Camera = new Class({
                     coverageInternal.width + padding.width,
                     coverageInternal.height + padding.height
                 );
-
-                // // Mipmap.
-                // currentContext.texture.needsMipmapRegeneration = true;
             }
             var outputContext = currentContext;
 
@@ -173807,9 +175035,6 @@ var Camera = new Class({
                     quad[6] = Math.round(quad[6]);
                     quad[7] = Math.round(quad[7]);
                 }
-
-                // // Mipmap.
-                // outputContext.texture.needsMipmapRegeneration = true;
 
                 this.batchHandlerQuadSingleNode.batch(
                     currentContext,
@@ -173890,9 +175115,6 @@ var Camera = new Class({
                     padding.y = -padding.y;
                     padding.width = -padding.width;
                     padding.height = -padding.height;
-
-                    // // Mipmap.
-                    // currentContext.texture.needsMipmapRegeneration = true;
                 }
 
                 if (!skipDrawOut)
@@ -176102,6 +177324,28 @@ var ShaderQuad = new Class({
         var gl = this.renderer.gl;
 
         var vertexSource = config.vertexSource;
+
+        // Handle cases where vertexSource might be undefined, null, or the string "undefined"/"null"
+        if (vertexSource === undefined || vertexSource === null || vertexSource === 'undefined' || vertexSource === 'null')
+        {
+            vertexSource = null;
+        }
+        else if (typeof vertexSource === 'string')
+        {
+            var trimmedVertex = vertexSource.trim();
+            // Check if the string is just "undefined" or "null" after trimming
+            if (trimmedVertex === 'undefined' || trimmedVertex === 'null' || trimmedVertex === '')
+            {
+                vertexSource = null;
+            }
+            else
+            {
+                // Remove "undefined" or "null" from the beginning of the string
+                trimmedVertex = trimmedVertex.replace(/^(?:undefined|null)\s*/, '');
+                vertexSource = trimmedVertex || null;
+            }
+        }
+
         if (!vertexSource)
         {
             var vertexKey = config.vertexKey;
@@ -176120,6 +177364,28 @@ var ShaderQuad = new Class({
         }
 
         var fragmentSource = config.fragmentSource;
+
+        // Handle cases where fragmentSource might be undefined, null, or the string "undefined"/"null"
+        if (fragmentSource === undefined || fragmentSource === null || fragmentSource === 'undefined' || fragmentSource === 'null')
+        {
+            fragmentSource = null;
+        }
+        else if (typeof fragmentSource === 'string')
+        {
+            var trimmedFragment = fragmentSource.trim();
+            // Check if the string is just "undefined" or "null" after trimming
+            if (trimmedFragment === 'undefined' || trimmedFragment === 'null' || trimmedFragment === '')
+            {
+                fragmentSource = null;
+            }
+            else
+            {
+                // Remove "undefined" or "null" from the beginning of the string
+                trimmedFragment = trimmedFragment.replace(/^(?:undefined|null)\s*/, '');
+                fragmentSource = trimmedFragment || null;
+            }
+        }
+
         if (!fragmentSource)
         {
             var fragmentKey = config.fragmentKey;
@@ -182922,7 +184188,7 @@ module.exports = [
     '    {',
     '        return vec4(0.0, 0.0, 0.0, 0.0);',
     '    }',
-    '    return texture2D(sampler, uv);',
+    '    return texture(sampler, uv);',
     '}',
 ].join('\n');
 
@@ -182933,18 +184199,20 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#define SHADER_NAME PHASER_COLORMATRIX_FS',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform float uColorMatrix[20];',
     'uniform float uAlpha;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'void main ()',
     '{',
-    '    vec4 c = texture2D(uMainSampler, outTexCoord);',
+    '    vec4 c = texture(uMainSampler, outTexCoord);',
     '    if (uAlpha == 0.0)',
     '    {',
-    '        gl_FragColor = c;',
+    '        fragColorOutput = c;',
     '        return;',
     '    }',
     '    if (c.a > 0.0)',
@@ -182958,7 +184226,7 @@ module.exports = [
     '    result.a = (uColorMatrix[15] * c.r) + (uColorMatrix[16] * c.g) + (uColorMatrix[17] * c.b) + (uColorMatrix[18] * c.a) + uColorMatrix[19];',
     '    c.rgb *= c.a;',
     '    result.rgb *= result.a;',
-    '    gl_FragColor = mix(c, result, uAlpha);',
+    '    fragColorOutput = mix(c, result, uAlpha);',
     '}',
 ].join('\n');
 
@@ -183063,11 +184331,13 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform float amount;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     '#pragma phaserTemplate(fragmentHeader)',
     'vec2 Distort(vec2 p)',
     '{',
@@ -183086,7 +184356,7 @@ module.exports = [
     '    {',
     '        texCoord = Distort(xy);',
     '    }',
-    '    gl_FragColor = boundedSampler(uMainSampler, texCoord);',
+    '    fragColorOutput = boundedSampler(uMainSampler, texCoord);',
     '}',
 ].join('\n');
 
@@ -183097,13 +184367,15 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform sampler2D uMainSampler2;',
     'uniform float amount;',
     'uniform vec4 color;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'vec4 NORMAL (vec4 base, vec4 blend)',
     '{',
     '    return blend + base * (1.0 - blend.a);',
@@ -183342,7 +184614,7 @@ module.exports = [
     '    vec4 base = boundedSampler(uMainSampler, outTexCoord);',
     '    vec4 blend = boundedSampler(uMainSampler2, outTexCoord) * color;',
     '    vec4 blended = BLEND(base, blend);',
-    '    gl_FragColor = mix(base, blended, amount);',
+    '    fragColorOutput = mix(base, blended, amount);',
     '}',
 ].join('\n');
 
@@ -183353,17 +184625,19 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform vec2 resolution;',
     'uniform vec4 uSizeAndOffset;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'void main()',
     '{',
     '    vec2 gridCell = floor((outTexCoord * resolution + uSizeAndOffset.zw) / uSizeAndOffset.xy) * uSizeAndOffset.xy - uSizeAndOffset.zw;',
     '    vec2 texCoord = gridCell / resolution;',
-    '    gl_FragColor = texture2D(uMainSampler, texCoord);',
+    '    fragColorOutput = texture(uMainSampler, texCoord);',
     '}',
 ].join('\n');
 
@@ -183374,14 +184648,16 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform vec2 resolution;',
     'uniform vec2 offset;',
     'uniform float strength;',
     'uniform vec3 color;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
@@ -183397,7 +184673,7 @@ module.exports = [
     '    col += boundedSampler(uMainSampler, uv - (off2 / resolution)) * 0.09447039785044732;',
     '    col += boundedSampler(uMainSampler, uv + (off3 / resolution)) * 0.010381362401148057;',
     '    col += boundedSampler(uMainSampler, uv - (off3 / resolution)) * 0.010381362401148057;',
-    '    gl_FragColor = col * vec4(color, 1.0);',
+    '    fragColorOutput = col * vec4(color, 1.0);',
     '}',
 ].join('\n');
 
@@ -183408,14 +184684,16 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform vec2 resolution;',
     'uniform vec2 offset;',
     'uniform float strength;',
     'uniform vec3 color;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
@@ -183425,7 +184703,7 @@ module.exports = [
     '    col += boundedSampler(uMainSampler, uv) * 0.29411764705882354;',
     '    col += boundedSampler(uMainSampler, uv + (offset / resolution)) * 0.35294117647058826;',
     '    col += boundedSampler(uMainSampler, uv - (offset / resolution)) * 0.35294117647058826;',
-    '    gl_FragColor = col * vec4(color, 1.0);',
+    '    fragColorOutput = col * vec4(color, 1.0);',
     '}',
 ].join('\n');
 
@@ -183436,14 +184714,16 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform vec2 resolution;',
     'uniform vec2 offset;',
     'uniform float strength;',
     'uniform vec3 color;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
@@ -183456,7 +184736,7 @@ module.exports = [
     '    col += boundedSampler(uMainSampler, uv - (off1 / resolution)) * 0.3162162162;',
     '    col += boundedSampler(uMainSampler, uv + (off2 / resolution)) * 0.0702702703;',
     '    col += boundedSampler(uMainSampler, uv - (off2 / resolution)) * 0.0702702703;',
-    '    gl_FragColor = col * vec4(color, 1.0);',
+    '    fragColorOutput = col * vec4(color, 1.0);',
     '}',
 ].join('\n');
 
@@ -183467,12 +184747,14 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
     '#define ITERATIONS 100.0',
     '#define ONEOVER_ITR 1.0 / ITERATIONS',
     '#define PI 3.141596',
     '#define GOLDEN_ANGLE 2.39996323',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform vec2 resolution;',
     'uniform float radius;',
@@ -183481,7 +184763,7 @@ module.exports = [
     'uniform bool isTiltShift;',
     'uniform float strength;',
     'uniform vec2 blur;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'vec2 Sample (in float theta, inout float r)',
     '{',
     '    r += 1.0 / r;',
@@ -183513,7 +184795,7 @@ module.exports = [
     '        float centerStrength = 1.0;',
     '        shift = length(uv * blur * strength) * centerStrength;',
     '    }',
-    '    gl_FragColor = vec4(Bokeh(uMainSampler, outTexCoord * vec2(1.0, 1.0), radius * shift), 0.0);',
+    '    fragColorOutput = vec4(Bokeh(uMainSampler, outTexCoord * vec2(1.0, 1.0), radius * shift), 0.0);',
     '}',
 ].join('\n');
 
@@ -183524,18 +184806,20 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform float uColorMatrix[20];',
     'uniform float uAlpha;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'void main ()',
     '{',
-    '    vec4 c = texture2D(uMainSampler, outTexCoord);',
+    '    vec4 c = texture(uMainSampler, outTexCoord);',
     '    if (uAlpha == 0.0)',
     '    {',
-    '        gl_FragColor = c;',
+    '        fragColorOutput = c;',
     '        return;',
     '    }',
     '    if (c.a > 0.0)',
@@ -183549,7 +184833,7 @@ module.exports = [
     '    result.a = (uColorMatrix[15] * c.r) + (uColorMatrix[16] * c.g) + (uColorMatrix[17] * c.b) + (uColorMatrix[18] * c.a) + uColorMatrix[19];',
     '    vec3 rgb = mix(c.rgb, result.rgb, uAlpha);',
     '    rgb *= result.a;',
-    '    gl_FragColor = vec4(rgb, result.a);',
+    '    fragColorOutput = vec4(rgb, result.a);',
     '}',
 ].join('\n');
 
@@ -183622,17 +184906,19 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform sampler2D uDisplacementSampler;',
     'uniform vec2 amount;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
-    '    vec2 disp = (-vec2(0.5, 0.5) + texture2D(uDisplacementSampler, outTexCoord).rg) * amount;',
-    '    gl_FragColor = boundedSampler(uMainSampler, outTexCoord + disp).rgba;',
+    '    vec2 disp = (-vec2(0.5, 0.5) + texture(uDisplacementSampler, outTexCoord).rg) * amount;',
+    '    fragColorOutput = boundedSampler(uMainSampler, outTexCoord + disp).rgba;',
     '}',
 ].join('\n');
 
@@ -183643,13 +184929,15 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#define DISTANCE 10.0',
     '#define QUALITY 10.0',
     '#pragma phaserTemplate(fragmentDefine)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'uniform float outerStrength;',
     'uniform float innerStrength;',
     'uniform float scale;',
@@ -183689,12 +184977,12 @@ module.exports = [
     '    if (knockout)',
     '    {',
     '        float resultAlpha = outerGlowStrength + innerGlowStrength;',
-    '        gl_FragColor = vec4(glowColor.rgb * resultAlpha, resultAlpha);',
+    '        fragColorOutput = vec4(glowColor.rgb * resultAlpha, resultAlpha);',
     '    }',
     '    else',
     '    {',
     '        vec4 outerGlowColor = outerGlowStrength * glowColor.rgba;',
-    '        gl_FragColor = innerColor + outerGlowColor;',
+    '        fragColorOutput = innerColor + outerGlowColor;',
     '    }',
     '}',
 ].join('\n');
@@ -183827,19 +185115,21 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform sampler2D uMaskSampler;',
     'uniform bool invert;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'void main ()',
     '{',
-    '    vec4 color = texture2D(uMainSampler, outTexCoord);',
-    '    vec4 mask = texture2D(uMaskSampler, outTexCoord);',
+    '    vec4 color = texture(uMainSampler, outTexCoord);',
+    '    vec4 mask = texture(uMaskSampler, outTexCoord);',
     '    float a = mask.a;',
     '    color *= invert ? (1.0 - a) : a;',
-    '    gl_FragColor = color;',
+    '    fragColorOutput = color;',
     '}'
 ].join('\n');
 
@@ -183945,12 +185235,14 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform vec2 resolution;',
     'uniform float amount;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'void main ()',
     '{',
     '    float pixelSize = floor(2.0 + amount);',
@@ -183959,12 +185251,12 @@ module.exports = [
     '    vec2 corner2 = center + pixelSize * vec2(+0.5, -0.5);',
     '    vec2 corner3 = center + pixelSize * vec2(+0.5, +0.5);',
     '    vec2 corner4 = center + pixelSize * vec2(-0.5, +0.5);',
-    '    vec4 pixel = 0.4 * texture2D(uMainSampler, center / resolution);',
-    '    pixel += 0.15 * texture2D(uMainSampler, corner1 / resolution);',
-    '    pixel += 0.15 * texture2D(uMainSampler, corner2 / resolution);',
-    '    pixel += 0.15 * texture2D(uMainSampler, corner3 / resolution);',
-    '    pixel += 0.15 * texture2D(uMainSampler, corner4 / resolution);',
-    '    gl_FragColor = pixel;',
+    '    vec4 pixel = 0.4 * texture(uMainSampler, center / resolution);',
+    '    pixel += 0.15 * texture(uMainSampler, corner1 / resolution);',
+    '    pixel += 0.15 * texture(uMainSampler, corner2 / resolution);',
+    '    pixel += 0.15 * texture(uMainSampler, corner3 / resolution);',
+    '    pixel += 0.15 * texture(uMainSampler, corner4 / resolution);',
+    '    fragColorOutput = pixel;',
     '}',
 ].join('\n');
 
@@ -184069,10 +185361,12 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'uniform vec2 lightPosition;',
     'uniform vec4 color;',
     'uniform float decay;',
@@ -184096,7 +185390,7 @@ module.exports = [
     '        shadow += boundedSampler(uMainSampler, outTexCoord + float(i) * decay / limit * pc).a * power;',
     '    }',
     '    float mask = 1.0 - texture.a;',
-    '    gl_FragColor = mix(texture, color, clamp(shadow * mask, 0.0, 1.0));',
+    '    fragColorOutput = mix(texture, color, clamp(shadow * mask, 0.0, 1.0));',
     '}',
 ].join('\n');
 
@@ -184107,19 +185401,21 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
+    'out vec4 fragColorOutput;',
     'uniform sampler2D uMainSampler;',
     'uniform vec4 edge1;',
     'uniform vec4 edge2;',
     'uniform vec4 invert;',
-    'varying vec2 outTexCoord;',
+    'in vec2 outTexCoord;',
     'void main ()',
     '{',
-    '    vec4 color = texture2D(uMainSampler, outTexCoord);',
+    '    vec4 color = texture(uMainSampler, outTexCoord);',
     '    color = clamp((color - edge1) / (edge2 - edge1), 0.0, 1.0);',
     '    color = mix(color, 1.0 - color, invert);',
-    '    gl_FragColor = color;',
+    '    fragColorOutput = color;',
     '}',
 ].join('\n');
 
@@ -184216,6 +185512,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
@@ -184225,15 +185522,16 @@ module.exports = [
     'precision mediump float;',
     '#endif',
     '#pragma phaserTemplate(fragmentDefine)',
+    'out vec4 fragColorOutput;',
     'uniform vec2 uResolution;',
-    'varying vec4 outTint;',
+    'in vec4 outTint;',
     '#pragma phaserTemplate(outVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
     '    vec4 fragColor = outTint;',
     '    #pragma phaserTemplate(fragmentProcess)',
-    '    gl_FragColor = fragColor;',
+    '    fragColorOutput = fragColor;',
     '}',
 ].join('\n');
 
@@ -184244,6 +185542,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
@@ -184255,9 +185554,9 @@ module.exports = [
     '#pragma phaserTemplate(vertexDefine)',
     'uniform mat4 uProjectionMatrix;',
     'uniform vec2 uResolution;',
-    'attribute vec2 inPosition;',
-    'attribute vec4 inTint;',
-    'varying vec4 outTint;',
+    'in vec2 inPosition;',
+    'in vec4 inTint;',
+    'out vec4 outTint;',
     '#pragma phaserTemplate(outVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',
@@ -184277,7 +185576,7 @@ module.exports = [
 module.exports = [
     'vec3 getNormalFromMap (vec2 texCoord)',
     '{',
-    '    vec3 normalMap = texture2D(uNormSampler, texCoord).rgb;',
+    '    vec3 normalMap = texture(uNormSampler, texCoord).rgb;',
     '    return normalize(outInverseRotationMatrix * vec3(normalMap * 2.0 - 1.0));',
     '}',
 ].join('\n');
@@ -184322,10 +185621,10 @@ module.exports = [
     'vec4 getTexture (vec2 texCoord)',
     '{',
     '    #if TEXTURE_COUNT == 1',
-    '    return texture2D(uMainSampler[0], texCoord);',
+    '    return texture(uMainSampler[0], texCoord);',
     '    #else',
-    '    if (outTexDatum == 0.0) return texture2D(uMainSampler[0], texCoord);',
-    '    #define ELSE_TEX_CASE(INDEX) else if (outTexDatum == float(INDEX)) return texture2D(uMainSampler[INDEX], texCoord);',
+    '    if (outTexDatum == 0.0) return texture(uMainSampler[0], texCoord);',
+    '    #define ELSE_TEX_CASE(INDEX) else if (outTexDatum == float(INDEX)) return texture(uMainSampler[INDEX], texCoord);',
     '    #pragma phaserTemplate(texIdProcess)',
     '    else return vec4(0.0, 0.0, 0.0, 0.0);',
     '    #endif',
@@ -184433,6 +185732,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
@@ -184442,17 +185742,18 @@ module.exports = [
     'precision mediump float;',
     '#endif',
     '#pragma phaserTemplate(fragmentDefine)',
+    'out vec4 fragColorOutput;',
     'uniform vec2 uResolution;',
-    'varying vec2 outTexCoord;',
-    'varying float outTexDatum;',
-    'varying float outTintEffect;',
-    'varying vec4 outTint;',
+    'in vec2 outTexCoord;',
+    'in float outTexDatum;',
+    'in float outTintEffect;',
+    'in vec4 outTint;',
     '#pragma phaserTemplate(outVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
     '    #pragma phaserTemplate(fragmentProcess)',
-    '    gl_FragColor = fragColor;',
+    '    fragColorOutput = fragColor;',
     '}',
 ].join('\n');
 
@@ -184463,6 +185764,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
@@ -184474,15 +185776,15 @@ module.exports = [
     '#pragma phaserTemplate(vertexDefine)',
     'uniform mat4 uProjectionMatrix;',
     'uniform vec2 uResolution;',
-    'attribute vec2 inPosition;',
-    'attribute vec2 inTexCoord;',
-    'attribute float inTexDatum;',
-    'attribute float inTintEffect;',
-    'attribute vec4 inTint;',
-    'varying vec2 outTexCoord;',
-    'varying float outTexDatum;',
-    'varying float outTintEffect;',
-    'varying vec4 outTint;',
+    'in vec2 inPosition;',
+    'in vec2 inTexCoord;',
+    'in float inTexDatum;',
+    'in float inTintEffect;',
+    'in vec4 inTint;',
+    'out vec2 outTexCoord;',
+    'out float outTexDatum;',
+    'out float outTintEffect;',
+    'out vec4 outTint;',
     '#pragma phaserTemplate(outVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',
@@ -185314,17 +186616,19 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
     'precision mediump float;',
     '#pragma phaserTemplate(fragmentDefine)',
+    'out vec4 fragColorOutput;',
     'uniform vec2 uResolution;',
     'uniform float uCameraZoom;',
-    'varying vec4 lightPosition;',
-    'varying vec4 lightColor;',
-    'varying float lightRadius;',
-    'varying float lightAttenuation;',
+    'in vec4 lightPosition;',
+    'in vec4 lightColor;',
+    'in float lightRadius;',
+    'in float lightAttenuation;',
     '#pragma phaserTemplate(outVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
@@ -185335,7 +186639,7 @@ module.exports = [
     '    float intensity = smoothstep(0.0, 1.0, radius * lightAttenuation);',
     '    vec4 color = vec4(intensity, intensity, intensity, 0.0) * lightColor;',
     '    #pragma phaserTemplate(fragmentProcess)',
-    '    gl_FragColor = vec4(color.rgb * lightColor.a, color.a);',
+    '    fragColorOutput = vec4(color.rgb * lightColor.a, color.a);',
     '}',
 ].join('\n');
 
@@ -185346,21 +186650,22 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
     'precision mediump float;',
     '#pragma phaserTemplate(vertexDefine)',
     'uniform mat4 uProjectionMatrix;',
-    'attribute vec2 inPosition;',
-    'attribute vec2 inLightPosition;',
-    'attribute vec4 inLightColor;',
-    'attribute float inLightRadius;',
-    'attribute float inLightAttenuation;',
-    'varying vec4 lightPosition;',
-    'varying vec4 lightColor;',
-    'varying float lightRadius;',
-    'varying float lightAttenuation;',
+    'in vec2 inPosition;',
+    'in vec2 inLightPosition;',
+    'in vec4 inLightColor;',
+    'in float inLightRadius;',
+    'in float inLightAttenuation;',
+    'out vec4 lightPosition;',
+    'out vec4 lightColor;',
+    'out float lightRadius;',
+    'out float lightAttenuation;',
     '#pragma phaserTemplate(outVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',
@@ -185584,6 +186889,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
@@ -185593,14 +186899,15 @@ module.exports = [
     'precision mediump float;',
     '#endif',
     '#pragma phaserTemplate(fragmentDefine)',
-    'varying vec2 outTexCoord;',
+    'out vec4 fragColorOutput;',
+    'in vec2 outTexCoord;',
     '#pragma phaserTemplate(outVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
     '    vec4 fragColor = vec4(outTexCoord.xyx, 1.0);',
     '    #pragma phaserTemplate(fragmentProcess)',
-    '    gl_FragColor = fragColor;',
+    '    fragColorOutput = fragColor;',
     '}',
 ].join('\n');
 
@@ -185611,6 +186918,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
@@ -185621,9 +186929,9 @@ module.exports = [
     '#endif',
     '#pragma phaserTemplate(vertexDefine)',
     'uniform mat4 uProjectionMatrix;',
-    'attribute vec2 inPosition;',
-    'attribute vec2 inTexCoord;',
-    'varying vec2 outTexCoord;',
+    'in vec2 inPosition;',
+    'in vec2 inTexCoord;',
+    'out vec2 outTexCoord;',
     '#pragma phaserTemplate(outVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',
@@ -185641,12 +186949,13 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     'precision mediump float;',
-    'attribute vec2 inPosition;',
-    'attribute vec2 inTexCoord;',
-    'varying vec2 outFragCoord;',
-    'varying vec2 outTexCoord;',
+    'in vec2 inPosition;',
+    'in vec2 inTexCoord;',
+    'out vec2 outFragCoord;',
+    'out vec2 outTexCoord;',
     'void main ()',
     '{',
     '    outFragCoord = inPosition.xy * 0.5 + 0.5;',
@@ -185662,6 +186971,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
@@ -185671,16 +186981,17 @@ module.exports = [
     'precision mediump float;',
     '#endif',
     '#pragma phaserTemplate(fragmentDefine)',
+    'out vec4 fragColorOutput;',
     'uniform vec2 uResolution;',
-    'varying vec2 outTexCoord;',
-    'varying float outTintEffect;',
-    'varying vec4 outTint;',
+    'in vec2 outTexCoord;',
+    'in float outTintEffect;',
+    'in vec4 outTint;',
     '#pragma phaserTemplate(outVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
     'void main ()',
     '{',
     '    #pragma phaserTemplate(fragmentProcess)',
-    '    gl_FragColor = fragColor;',
+    '    fragColorOutput = fragColor;',
     '}',
 ].join('\n');
 
@@ -185691,6 +187002,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
@@ -185711,24 +187023,24 @@ module.exports = [
     'uniform vec2 uFrameDataResolution;',
     'uniform sampler2D uFrameDataTexture;',
     'uniform float uGravity;',
-    'attribute float inVertex;',
-    'attribute vec4 inPositionX;',
-    'attribute vec4 inPositionY;',
-    'attribute vec4 inRotation;',
-    'attribute vec4 inScaleX;',
-    'attribute vec4 inScaleY;',
-    'attribute vec4 inAlpha;',
-    'attribute vec4 inFrame;',
-    'attribute vec4 inTintBlend;',
-    'attribute vec4 inTintTL;',
-    'attribute vec4 inTintTR;',
-    'attribute vec4 inTintBL;',
-    'attribute vec4 inTintBR;',
-    'attribute vec4 inOriginAndTintModeAndCreationTime;',
-    'attribute vec2 inScrollFactor;',
-    'varying vec2 outTexCoord;',
-    'varying float outTintEffect;',
-    'varying vec4 outTint;',
+    'in float inVertex;',
+    'in vec4 inPositionX;',
+    'in vec4 inPositionY;',
+    'in vec4 inRotation;',
+    'in vec4 inScaleX;',
+    'in vec4 inScaleY;',
+    'in vec4 inAlpha;',
+    'in vec4 inFrame;',
+    'in vec4 inTintBlend;',
+    'in vec4 inTintTL;',
+    'in vec4 inTintTR;',
+    'in vec4 inTintBL;',
+    'in vec4 inTintBR;',
+    'in vec4 inOriginAndTintModeAndCreationTime;',
+    'in vec2 inScrollFactor;',
+    'out vec2 outTexCoord;',
+    'out float outTintEffect;',
+    'out vec4 outTint;',
     '#pragma phaserTemplate(outVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'const float PI = 3.14159265359;',
@@ -186139,19 +187451,19 @@ module.exports = [
     '    float width = uFrameDataResolution.x;',
     '    float x = mod(index1, width);',
     '    float y = floor(index1 / width);',
-    '    vec4 texelUV = texture2D(',
+    '    vec4 texelUV = texture(',
     '        uFrameDataTexture,',
     '        vec2(x + 0.5, y + 0.5) / uFrameDataResolution',
     '    );',
     '    x = mod(index2, width);',
     '    y = floor(index2 / width);',
-    '    vec4 texelWH = texture2D(',
+    '    vec4 texelWH = texture(',
     '        uFrameDataTexture,',
     '        vec2(x + 0.5, y + 0.5) / uFrameDataResolution',
     '    );',
     '    x = mod(index3, width);',
     '    y = floor(index3 / width);',
-    '    vec4 texelOrigin = texture2D(',
+    '    vec4 texelOrigin = texture(',
     '        uFrameDataTexture,',
     '        vec2(x + 0.5, y + 0.5) / uFrameDataResolution',
     '    );',
@@ -186255,7 +187567,7 @@ module.exports = [
 (module) {
 
 module.exports = [
-    '#version 100',
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
@@ -186264,6 +187576,7 @@ module.exports = [
     '#else',
     'precision mediump float;',
     '#endif',
+    'out vec4 fragColorOutput;',
     '/* Redefine MAX_ANIM_FRAMES to support animations with different frame numbers. */',
     '#define MAX_ANIM_FRAMES 0',
     '#pragma phaserTemplate(fragmentDefine)',
@@ -186280,8 +187593,8 @@ module.exports = [
     'uniform sampler2D uAnimSampler;',
     'uniform vec2 uAnimResolution;',
     '#endif',
-    'varying vec2 outTexCoord;',
-    'varying vec2 outTileStride;',
+    'in vec2 outTexCoord;',
+    'in vec2 outTileStride;',
     '#pragma phaserTemplate(outVariables)',
     'vec2 getTexRes ()',
     '{',
@@ -186306,7 +187619,7 @@ module.exports = [
     '    vec2 tile = floor(texelCoord);',
     '    vec2 uv = fract(texelCoord);',
     '    uv.y = 1.0 - uv.y;',
-    '    vec4 texel = texture2D(uLayerSampler, (tile + 0.5) / uLayerResolution) * 255.0;',
+    '    vec4 texel = texture(uLayerSampler, (tile + 0.5) / uLayerResolution) * 255.0;',
     '    float flags = texel.a;',
     '    /* Check for empty tile flag in bit 28. */',
     '    if (flags == 16.0)',
@@ -186358,9 +187671,9 @@ module.exports = [
     '{',
     '    float animTextureWidth = uAnimResolution.x;',
     '    vec2 index2D = vec2(mod(index, animTextureWidth), floor(index / animTextureWidth));',
-    '    vec4 animDurationTexel = texture2D(uAnimSampler, (index2D + 0.5) / uAnimResolution);',
+    '    vec4 animDurationTexel = texture(uAnimSampler, (index2D + 0.5) / uAnimResolution);',
     '    index2D = vec2(mod(index + 1.0, animTextureWidth), floor((index + 1.0) / animTextureWidth));',
-    '    vec4 animIndexTexel = texture2D(uAnimSampler, (index2D + 0.5) / uAnimResolution);',
+    '    vec4 animIndexTexel = texture(uAnimSampler, (index2D + 0.5) / uAnimResolution);',
     '    float animDuration = floatTexel(animDurationTexel);',
     '    float animIndex = floatTexel(animIndexTexel);',
     '    float animTime = mod(uTime, animDuration);',
@@ -186368,7 +187681,7 @@ module.exports = [
     '    for (int i = 0; i < MAX_ANIM_FRAMES; i++)',
     '    {',
     '        index2D = vec2(mod(animIndex, animTextureWidth), floor(animIndex / animTextureWidth));',
-    '        animDurationTexel = texture2D(uAnimSampler, (index2D + 0.5) / uAnimResolution);',
+    '        animDurationTexel = texture(uAnimSampler, (index2D + 0.5) / uAnimResolution);',
     '        float frameDuration = floatTexel(animDurationTexel);',
     '        animTimeAccum += frameDuration;',
     '        if (animTime <= animTimeAccum)',
@@ -186379,7 +187692,7 @@ module.exports = [
     '    }',
     '    animIndex += 1.0;',
     '    index2D = vec2(mod(animIndex, animTextureWidth), floor(animIndex / animTextureWidth));',
-    '    animIndexTexel = texture2D(uAnimSampler, (index2D + 0.5) / uAnimResolution);',
+    '    animIndexTexel = texture(uAnimSampler, (index2D + 0.5) / uAnimResolution);',
     '    float animFrameIndex = floatTexel(animIndexTexel);',
     '    return animFrameIndex;',
     '}',
@@ -186408,7 +187721,7 @@ module.exports = [
     'Samples getColorSamples (vec2 texCoord)',
     '{',
     '    Samples samples;',
-    '    samples.color = texture2D(',
+    '    samples.color = texture(',
     '        uMainSampler,',
     '        vec2(texCoord.x, 1.0 - texCoord.y)',
     '    );',
@@ -186488,7 +187801,7 @@ module.exports = [
     '    #pragma phaserTemplate(declareSamples)',
     '    #pragma phaserTemplate(fragmentProcess)',
     '    fragColor *= uAlpha;',
-    '    gl_FragColor = fragColor;',
+    '    fragColorOutput = fragColor;',
     '}',
 ].join('\n');
 
@@ -186499,6 +187812,7 @@ module.exports = [
 (module) {
 
 module.exports = [
+    '#version 300 es',
     '#pragma phaserTemplate(shaderName)',
     '#pragma phaserTemplate(extensions)',
     '#pragma phaserTemplate(features)',
@@ -186511,10 +187825,10 @@ module.exports = [
     'uniform mat4 uProjectionMatrix;',
     'uniform vec2 uResolution;',
     'uniform vec4 uTileWidthHeightMarginSpacing;',
-    'attribute vec2 inPosition;',
-    'attribute vec2 inTexCoord;',
-    'varying vec2 outTexCoord;',
-    'varying vec2 outTileStride;',
+    'in vec2 inPosition;',
+    'in vec2 inTexCoord;',
+    'out vec2 outTexCoord;',
+    'out vec2 outTileStride;',
     '#pragma phaserTemplate(outVariables)',
     '#pragma phaserTemplate(vertexHeader)',
     'void main ()',
@@ -187281,8 +188595,8 @@ module.exports = {
 (module, __unused_webpack_exports, __webpack_require__) {
 
 /**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2013-2023 Photon Storm Ltd.
+ * @author       Richard Davey <rich@phaser.io>
+ * @copyright    2013-2026 Phaser Studio Inc.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -187689,7 +189003,7 @@ var errors = {
  * @property {GLenum} attachmentPoint - The attachment point for the attachment. This is a GLenum such as `gl.COLOR_ATTACHMENT0`, `gl.DEPTH_ATTACHMENT`, `gl.STENCIL_ATTACHMENT`, or `gl.DEPTH_STENCIL_ATTACHMENT`.
  * @property {Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper} [texture] - The texture for the attachment. Either a texture or a renderbuffer is required.
  * @property {WebGLRenderbuffer} [renderbuffer] - The renderbuffer for the attachment. Either a texture or a renderbuffer is required.
- * @property {GLenum} [internalFormat] - The internal format for the renderbuffer. This is a GLenum such as `gl.DEPTH_STENCIL`.
+ * @property {GLenum} [internalFormat] - The internal format for the renderbuffer. WebGL2 uses DEPTH24_STENCIL8 for combined depth-stencil, DEPTH_COMPONENT24 for depth-only. WebGL1 uses DEPTH_STENCIL and DEPTH_COMPONENT16.
  */
 
 /**
@@ -187705,15 +189019,20 @@ var errors = {
  * This also manages the attachments to the framebuffer,
  * including renderbuffer life cycle.
  *
+ * WebGL2 Optimizations:
+ * - Uses DEPTH24_STENCIL8 for combined depth-stencil (more efficient than separate buffers)
+ * - Uses DEPTH_COMPONENT24 for depth-only (higher precision than WebGL1's 16-bit)
+ * - Supports multiple color attachments (MRT - Multiple Render Targets)
+ *
  * @class WebGLFramebufferWrapper
  * @memberof Phaser.Renderer.WebGL.Wrappers
  * @constructor
  * @since 3.80.0
  *
  * @param {Phaser.Renderer.WebGL.WebGLRenderer} renderer - The renderer this WebGLFramebuffer belongs to.
- * @param {?Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper[]} colorAttachments - The color textures where the color pixels are written. If empty, the canvas will be used as the color attachment. Only the first color attachment is used in default WebGL1.
+ * @param {?Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper[]} colorAttachments - The color textures where the color pixels are written. If empty, the canvas will be used as the color attachment. WebGL2 supports multiple color attachments (MRT).
  * @param {boolean} [addStencilBuffer=false] - Whether to add a stencil buffer to the framebuffer. If the canvas is used as the color attachment, this will be ignored.
- * @param {boolean} [addDepthBuffer=false] - Whether to add a depth buffer to the framebuffer. If depth and stencil are both provided, they will be combined into a single depth-stencil buffer. If the canvas is used as the color attachment, this will be ignored.
+ * @param {boolean} [addDepthBuffer=false] - Whether to add a depth buffer to the framebuffer. If depth and stencil are both provided, they will be combined into a single DEPTH24_STENCIL8 buffer in WebGL2. If the canvas is used as the color attachment, this will be ignored.
  */
 var WebGLFramebufferWrapper = new Class({
 
@@ -187817,16 +189136,21 @@ var WebGLFramebufferWrapper = new Class({
             // so that the framebuffer is complete when they're attached.
             if (addDepthBuffer && addStencilBuffer)
             {
+                // WebGL2 uses DEPTH24_STENCIL8 for combined depth-stencil
+                // WebGL1 uses DEPTH_STENCIL
                 this.attachments.push({
                     attachmentPoint: gl.DEPTH_STENCIL_ATTACHMENT,
-                    internalFormat: gl.DEPTH_STENCIL
+                    internalFormat: renderer.isWebGL2 ? gl.DEPTH24_STENCIL8 : gl.DEPTH_STENCIL
                 });
             }
             else if (addDepthBuffer)
             {
+                // WebGL2 supports higher precision depth formats
+                // DEPTH_COMPONENT24 (24-bit) or DEPTH_COMPONENT32F (32-bit float)
+                // WebGL1 uses DEPTH_COMPONENT16 (16-bit)
                 this.attachments.push({
                     attachmentPoint: gl.DEPTH_ATTACHMENT,
-                    internalFormat: gl.DEPTH_COMPONENT16
+                    internalFormat: renderer.isWebGL2 ? gl.DEPTH_COMPONENT24 : gl.DEPTH_COMPONENT16
                 });
             }
             else if (addStencilBuffer)
@@ -189085,6 +190409,18 @@ var WebGLProgramWrapper = new Class({
 
     function WebGLProgramWrapper (renderer, vertexSource, fragmentSource)
     {
+        // Validate shader sources
+        if (typeof vertexSource !== 'string' || !vertexSource)
+        {
+            console.error('Invalid vertex shader source:', vertexSource);
+            throw new Error('Vertex shader source must be a non-empty string');
+        }
+        if (typeof fragmentSource !== 'string' || !fragmentSource)
+        {
+            console.error('Invalid fragment shader source:', fragmentSource);
+            throw new Error('Fragment shader source must be a non-empty string');
+        }
+
         /**
          * The WebGLRenderer instance that owns this wrapper.
          *
@@ -190634,6 +191970,277 @@ module.exports = WebGLTextureWrapper;
 
 /***/ },
 
+/***/ 52284
+(module, __unused_webpack_exports, __webpack_require__) {
+
+/**
+ * @author       Alex Smuk <alex.smuk@proton.me>
+ * @copyright    2013-2025 Phaser Studio Inc.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
+ */
+
+var Class = __webpack_require__(83419);
+
+/**
+ * @classdesc
+ * Wrapper for a WebGL2 Uniform Buffer Object (UBO).
+ *
+ * UBOs allow you to group multiple uniforms into a single buffer, which can be
+ * updated more efficiently than individual uniforms. This is especially useful
+ * when you have many uniforms that are updated together (e.g., camera matrices,
+ * lighting data, material properties).
+ *
+ * Benefits of UBOs:
+ * - Faster uniform updates (single buffer update vs. multiple uniform calls)
+ * - Shared uniform data across multiple shaders
+ * - Better driver optimization
+ * - Reduced CPU overhead
+ *
+ * Note: UBOs are only available in WebGL2. This wrapper will throw an error
+ * if used with a WebGL1 context.
+ *
+ * @class WebGLUniformBufferWrapper
+ * @memberof Phaser.Renderer.WebGL.Wrappers
+ * @constructor
+ * @since 4.0.0
+ * @param {Phaser.Renderer.WebGL.WebGLRenderer} renderer - The WebGLRenderer instance that owns this wrapper.
+ * @param {number} bindingPoint - The binding point index for this UBO (0-based).
+ * @param {ArrayBuffer|ArrayBufferView} [data] - Optional initial data for the buffer.
+ * @param {number} [usage=gl.DYNAMIC_DRAW] - The usage pattern for the buffer.
+ */
+var WebGLUniformBufferWrapper = new Class({
+    initialize: function WebGLUniformBufferWrapper (renderer, bindingPoint, data, usage)
+    {
+        if (!renderer.isWebGL2)
+        {
+            throw new Error('Uniform Buffer Objects are only available in WebGL2');
+        }
+
+        /**
+         * The WebGLRenderer instance that owns this wrapper.
+         *
+         * @name Phaser.Renderer.WebGL.Wrappers.WebGLUniformBufferWrapper#renderer
+         * @type {Phaser.Renderer.WebGL.WebGLRenderer}
+         * @since 4.0.0
+         */
+        this.renderer = renderer;
+
+        /**
+         * The WebGL context.
+         *
+         * @name Phaser.Renderer.WebGL.Wrappers.WebGLUniformBufferWrapper#gl
+         * @type {WebGL2RenderingContext}
+         * @since 4.0.0
+         */
+        this.gl = renderer.gl;
+
+        /**
+         * The WebGLBuffer being wrapped by this class.
+         *
+         * This property could change at any time.
+         * Therefore, you should never store a reference to this value.
+         * It should only be passed directly to the WebGL API.
+         *
+         * @name Phaser.Renderer.WebGL.Wrappers.WebGLUniformBufferWrapper#buffer
+         * @type {?WebGLBuffer}
+         * @default null
+         * @since 4.0.0
+         */
+        this.buffer = null;
+
+        /**
+         * The binding point index for this UBO.
+         * This should be unique across all UBOs in use.
+         *
+         * @name Phaser.Renderer.WebGL.Wrappers.WebGLUniformBufferWrapper#bindingPoint
+         * @type {number}
+         * @since 4.0.0
+         */
+        this.bindingPoint = bindingPoint;
+
+        /**
+         * The usage pattern for this buffer.
+         * Defaults to gl.DYNAMIC_DRAW for frequently updated data.
+         *
+         * @name Phaser.Renderer.WebGL.Wrappers.WebGLUniformBufferWrapper#usage
+         * @type {number}
+         * @since 4.0.0
+         */
+        this.usage = usage || this.gl.DYNAMIC_DRAW;
+
+        /**
+         * The size of the buffer in bytes.
+         *
+         * @name Phaser.Renderer.WebGL.Wrappers.WebGLUniformBufferWrapper#byteLength
+         * @type {number}
+         * @default 0
+         * @since 4.0.0
+         */
+        this.byteLength = 0;
+
+        this.createResource();
+
+        if (data)
+        {
+            this.setData(data);
+        }
+    },
+
+    /**
+     * Creates a new WebGLBuffer for uniform data.
+     *
+     * @method Phaser.Renderer.WebGL.Wrappers.WebGLUniformBufferWrapper#createResource
+     * @since 4.0.0
+     */
+    createResource: function ()
+    {
+        var gl = this.gl;
+
+        if (gl.isContextLost())
+        {
+            // GL state can't be updated right now.
+            // `createResource` will run when the context is restored.
+            return;
+        }
+
+        var buffer = gl.createBuffer();
+
+        if (buffer)
+        {
+            this.buffer = buffer;
+        }
+    },
+
+    /**
+     * Binds this UBO to its binding point.
+     *
+     * @method Phaser.Renderer.WebGL.Wrappers.WebGLUniformBufferWrapper#bind
+     * @since 4.0.0
+     */
+    bind: function ()
+    {
+        var gl = this.gl;
+
+        gl.bindBuffer(gl.UNIFORM_BUFFER, this.buffer);
+        gl.bindBufferBase(gl.UNIFORM_BUFFER, this.bindingPoint, this.buffer);
+    },
+
+    /**
+     * Unbinds this UBO.
+     *
+     * @method Phaser.Renderer.WebGL.Wrappers.WebGLUniformBufferWrapper#unbind
+     * @since 4.0.0
+     */
+    unbind: function ()
+    {
+        var gl = this.gl;
+
+        gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+    },
+
+    /**
+     * Sets the data for this UBO.
+     *
+     * @method Phaser.Renderer.WebGL.Wrappers.WebGLUniformBufferWrapper#setData
+     * @since 4.0.0
+     * @param {ArrayBuffer|ArrayBufferView} data - The data to upload to the buffer.
+     * @param {number} [offset=0] - The offset in bytes where the data should be written.
+     */
+    setData: function (data, offset)
+    {
+        if (offset === undefined) { offset = 0; }
+
+        var gl = this.gl;
+
+        this.bind();
+
+        if (offset === 0 && (!this.byteLength || data.byteLength === this.byteLength))
+        {
+            // Full buffer update
+            gl.bufferData(gl.UNIFORM_BUFFER, data, this.usage);
+            this.byteLength = data.byteLength;
+        }
+        else
+        {
+            // Partial buffer update
+            if (data.byteLength + offset > this.byteLength)
+            {
+                console.warn('UBO data exceeds buffer size. Reallocating buffer.');
+                gl.bufferData(gl.UNIFORM_BUFFER, data.byteLength + offset, this.usage);
+                this.byteLength = data.byteLength + offset;
+            }
+
+            gl.bufferSubData(gl.UNIFORM_BUFFER, offset, data);
+        }
+    },
+
+    /**
+     * Updates a portion of the buffer data.
+     *
+     * @method Phaser.Renderer.WebGL.Wrappers.WebGLUniformBufferWrapper#updateData
+     * @since 4.0.0
+     * @param {ArrayBuffer|ArrayBufferView} data - The data to upload.
+     * @param {number} offset - The offset in bytes where the data should be written.
+     */
+    updateData: function (data, offset)
+    {
+        var gl = this.gl;
+
+        this.bind();
+        gl.bufferSubData(gl.UNIFORM_BUFFER, offset, data);
+    },
+
+    /**
+     * Binds this UBO to a specific uniform block in a shader program.
+     *
+     * @method Phaser.Renderer.WebGL.Wrappers.WebGLUniformBufferWrapper#bindToProgram
+     * @since 4.0.0
+     * @param {WebGLProgram} program - The shader program.
+     * @param {string} blockName - The name of the uniform block in the shader.
+     */
+    bindToProgram: function (program, blockName)
+    {
+        var gl = this.gl;
+
+        var blockIndex = gl.getUniformBlockIndex(program, blockName);
+
+        if (blockIndex !== gl.INVALID_INDEX)
+        {
+            gl.uniformBlockBinding(program, blockIndex, this.bindingPoint);
+        }
+        else
+        {
+            console.warn('Uniform block "' + blockName + '" not found in shader program');
+        }
+    },
+
+    /**
+     * Destroys this UBO and frees its resources.
+     *
+     * @method Phaser.Renderer.WebGL.Wrappers.WebGLUniformBufferWrapper#destroy
+     * @since 4.0.0
+     */
+    destroy: function ()
+    {
+        var gl = this.gl;
+
+        if (this.buffer)
+        {
+            gl.deleteBuffer(this.buffer);
+            this.buffer = null;
+        }
+
+        this.renderer = null;
+        this.gl = null;
+    }
+});
+
+module.exports = WebGLUniformBufferWrapper;
+
+
+
+/***/ },
+
 /***/ 85788
 (module, __unused_webpack_exports, __webpack_require__) {
 
@@ -191041,7 +192648,8 @@ var Wrappers = {
     WebGLTextureUnitsWrapper: __webpack_require__(13760),
     WebGLFramebufferWrapper: __webpack_require__(84387),
     WebGLVAOWrapper: __webpack_require__(85788),
-    WebGLVertexBufferLayoutWrapper: __webpack_require__(40952)
+    WebGLVertexBufferLayoutWrapper: __webpack_require__(40952),
+    WebGLUniformBufferWrapper: __webpack_require__(52284)
 };
 
 module.exports = Wrappers;
