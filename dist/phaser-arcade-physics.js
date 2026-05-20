@@ -17346,7 +17346,18 @@ var CreateRenderer = function (game)
     {
         if (config.renderType === CONST.AUTO)
         {
-            config.renderType = Features.webGL ? CONST.WEBGL : CONST.CANVAS;
+            if (Features.webGL2)
+            {
+                config.renderType = CONST.WEBGL2;
+            }
+            else if (Features.webGL)
+            {
+                config.renderType = CONST.WEBGL;
+            }
+            else
+            {
+                config.renderType = CONST.CANVAS;
+            }
         }
 
         if (config.renderType === CONST.WEBGL || config.renderType === CONST.WEBGL2)
@@ -24645,6 +24656,7 @@ var CanvasPool = __webpack_require__(27919);
  * @property {boolean} support32bit - Indicates whether the device supports 32-bit pixel manipulation of canvas image data using ArrayBuffer and typed array views (Uint8ClampedArray / Int32Array). Requires little-endian byte ordering.
  * @property {boolean} vibration - Indicates whether the Vibration API is available, enabling haptic feedback on supported mobile devices.
  * @property {boolean} webGL - Indicates whether WebGL is available in this browser. Required for the WebGL renderer to function.
+ * @property {boolean} webGL2 - Indicates whether a WebGL2 rendering context can be created. This fork's shaders require GLSL ES 3.00, so a `true` value here means the renderer can run end-to-end.
  * @property {boolean} worker - Indicates whether Web Workers are available, enabling background JavaScript execution on a separate thread.
  */
 var Features = {
@@ -24661,6 +24673,7 @@ var Features = {
     support32bit: false,
     vibration: false,
     webGL: false,
+    webGL2: false,
     worker: false
 
 };
@@ -24753,6 +24766,31 @@ function init ()
     };
 
     Features.webGL = testWebGL();
+
+    var testWebGL2 = function ()
+    {
+        if (typeof WebGL2RenderingContext === 'undefined')
+        {
+            return false;
+        }
+
+        try
+        {
+            var canvas = CanvasPool.createWebGL(this);
+
+            var ctx = canvas.getContext('webgl2');
+
+            CanvasPool.remove(canvas);
+
+            return !!ctx;
+        }
+        catch (e)
+        {
+            return false;
+        }
+    };
+
+    Features.webGL2 = testWebGL2();
 
     Features.worker = !!window['Worker'];
 

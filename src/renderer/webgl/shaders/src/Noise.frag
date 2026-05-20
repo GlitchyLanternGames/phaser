@@ -1,4 +1,4 @@
-// NOISE_WORLEY_2D
+// NOISE
 #version 300 es
 
 #pragma phaserTemplate(shaderName)

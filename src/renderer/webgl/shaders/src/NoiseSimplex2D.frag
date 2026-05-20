@@ -1,4 +1,4 @@
-// NOISE_SIMPLEX_3D
+// NOISE_SIMPLEX_2D
 #version 300 es
 
 #pragma phaserTemplate(shaderName)

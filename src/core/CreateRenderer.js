@@ -41,7 +41,18 @@ var CreateRenderer = function (game)
     {
         if (config.renderType === CONST.AUTO)
         {
-            config.renderType = Features.webGL ? CONST.WEBGL : CONST.CANVAS;
+            if (Features.webGL2)
+            {
+                config.renderType = CONST.WEBGL2;
+            }
+            else if (Features.webGL)
+            {
+                config.renderType = CONST.WEBGL;
+            }
+            else
+            {
+                config.renderType = CONST.CANVAS;
+            }
         }
 
         if (config.renderType === CONST.WEBGL || config.renderType === CONST.WEBGL2)

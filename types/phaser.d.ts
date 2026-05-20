@@ -8585,6 +8585,10 @@ declare namespace Phaser {
              */
             webGL: boolean;
             /**
+             * Indicates whether a WebGL2 rendering context can be created. This fork's shaders require GLSL ES 3.00, so a `true` value here means the renderer can run end-to-end.
+             */
+            webGL2: boolean;
+            /**
              * Indicates whether Web Workers are available, enabling background JavaScript execution on a separate thread.
              */
             worker: boolean;
@@ -121127,7 +121131,7 @@ declare namespace Phaser {
                 function MakeGetTexture(maxTextures?: number, disable?: boolean): Phaser.Types.Renderer.WebGL.ShaderAdditionConfig;
 
                 /**
-                 * Returns a ShaderAdditionConfig that declares `inFrame` as a vertex attribute and passes it to the fragment shader via the `outFrame` varying.
+                 * Returns a ShaderAdditionConfig that declares `inFrame` as a vertex input and passes it to the fragment shader as the `outFrame` interpolated variable.
                  * @param disable Whether to disable the shader addition on creation. Default false.
                  * @returns The shader addition configuration.
                  */
@@ -121135,8 +121139,9 @@ declare namespace Phaser {
 
                 /**
                  * Returns a ShaderAdditionConfig for creating an `outInverseRotationMatrix`
-                 * varying in the vertex shader. This matrix is used during lighting calculations
-                 * to correctly transform normal vectors into world space, ensuring that
+                 * interpolated variable in the vertex shader (consumed as `in` in the
+                 * fragment shader). This matrix is used during lighting calculations to
+                 * correctly transform normal vectors into world space, ensuring that
                  * light direction is applied relative to the game object's orientation.
                  * 
                  * The `rotation` variable must be available in the vertex renderer.
