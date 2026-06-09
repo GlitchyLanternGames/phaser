@@ -174589,12 +174589,16 @@ var BatchHandlerStrip = new Class({
             var prevOffset = 1 + this.floatsPerInstance / this.verticesPerInstance;
 
             // Copy the previous vertex to the start of the next strip.
+            // Lanes 0-4 (x, y, u, v, textureDatum) are F32; lanes 5-6
+            // (inTintEffect, inTint) are u32-packed UNSIGNED_BYTE x4 and
+            // must round-trip through viewU32 to preserve their bit pattern
+            // against possible NaN canonicalization on float load/store.
             vertexViewF32[vertexOffset32++] = vertexViewF32[vertexOffset32 - prevOffset];
             vertexViewF32[vertexOffset32++] = vertexViewF32[vertexOffset32 - prevOffset];
             vertexViewF32[vertexOffset32++] = vertexViewF32[vertexOffset32 - prevOffset];
             vertexViewF32[vertexOffset32++] = vertexViewF32[vertexOffset32 - prevOffset];
             vertexViewF32[vertexOffset32++] = vertexViewF32[vertexOffset32 - prevOffset];
-            vertexViewF32[vertexOffset32++] = vertexViewF32[vertexOffset32 - prevOffset];
+            vertexViewU32[vertexOffset32++] = vertexViewU32[vertexOffset32 - prevOffset];
             vertexViewU32[vertexOffset32++] = vertexViewU32[vertexOffset32 - prevOffset];
 
             repeatFirstVertex = true;
