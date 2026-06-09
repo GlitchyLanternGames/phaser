@@ -19,7 +19,7 @@ out vec4 fragColorOutput;
 uniform vec2 uResolution;
 
 in vec2 outTexCoord;
-in float outTintEffect;
+in vec4 outTintEffect;
 in vec4 outTint;
 
 #pragma phaserTemplate(fragmentInVariables)

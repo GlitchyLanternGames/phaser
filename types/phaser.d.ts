@@ -15,6 +15,13 @@ declare type EachContainerCallback<I> = (item: any, ...args: any[])=>void;
 declare type LightForEach = (light: Phaser.GameObjects.Light)=>void;
 
 /**
+ * Sets the vertical texture flip state of this Game Object.
+ * @param value Whether to flip the texture coordinates vertically. Default false.
+ * @returns This Game Object instance.
+ */
+declare function setFlipV(value?: boolean): this;
+
+/**
  * A custom function that will be responsible for wrapping the text.
  */
 declare type TextStyleWordWrapCallback = (text: string, textObject: Phaser.GameObjects.Text)=>string | string[];
@@ -6707,8 +6714,12 @@ declare namespace Phaser {
              * Setting this _beyond_ the rate of RequestAnimationFrame will make no difference at all.
              * 
              * Use it purely to _restrict_ updates in low-intensity situations only.
+             * 
+             * You can change the FPS limit at any time by calling
+             * `TimeStep.setFPSLimit(limit)`.
+             * This will update the `fpsLimit`, `hasFpsLimit` and `_limitRate` properties.
              */
-            fpsLimit: number;
+            readonly fpsLimit: number;
 
             /**
              * Is the FPS rate limited?
@@ -6717,7 +6728,7 @@ declare namespace Phaser {
              * 
              * Consider this property as read-only.
              */
-            hasFpsLimit: boolean;
+            readonly hasFpsLimit: boolean;
 
             /**
              * An exponential moving average of the frames per second.
@@ -6959,6 +6970,20 @@ declare namespace Phaser {
              * @returns The duration in ms.
              */
             getDurationMS(): number;
+
+            /**
+             * Sets the FPS limit (`fpsLimit` property) and related properties.
+             * 
+             * Use this method to set the FPS limit at runtime, rather than setting the
+             * `fpsLimit` property directly, to ensure the related properties are
+             * updated correctly. If the TimeStep is running, it will be stopped and
+             * restarted with the new FPS limit.
+             * 
+             * If you just want a constant limit, use the Game Config `fps: { limit: 30 }` value instead.
+             * @param limit The FPS limit to set. Set to 0 to remove the FPS limit.
+             * @returns The TimeStep object.
+             */
+            setFPSLimit(limit: number): this;
 
             /**
              * Stops the TimeStep running.undefined
@@ -14063,6 +14088,38 @@ declare namespace Phaser {
             tintBottomRight: number;
 
             /**
+             * The secondary tint value being applied to the top-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopLeft: number;
+
+            /**
+             * The secondary tint value being applied to the top-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopRight: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomLeft: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomRight: number;
+
+            /**
              * The tint mode to use when applying the tint to the texture.
              * 
              * Available modes are:
@@ -14072,6 +14129,7 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * - Phaser.TintModes.MULTIPLY_TWO
              * 
              * Note that in Phaser 3, tint mode and color were set at the same time.
              * In Phaser 4 they are separate settings.
@@ -14115,6 +14173,18 @@ declare namespace Phaser {
             setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
             /**
+             * Sets the secondary tint color on this Game Object.
+             * This is used in two-color tint modes.
+             * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+             * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+             * @param topRight The secondary tint being applied to the top-right of the Game Object.
+             * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+             * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+             * @returns This Game Object instance.
+             */
+            setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+            /**
              * Sets the tint mode to use when applying the tint to the texture.
              * 
              * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -14143,9 +14213,9 @@ declare namespace Phaser {
              * Does this Game Object have a tint applied?
              * 
              * Returns `true` if any of the four corner tint values differ from 0xffffff,
-             * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-             * Returns `false` when all four tint values are 0xffffff and the tint mode
-             * is `MULTIPLY`, which is the default untinted state.
+             * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+             * or if any of the four secondary corner tint values differ from 0x000000.
+             * Returns `false` in the default untinted state.
              */
             readonly isTinted: boolean;
 
@@ -15827,6 +15897,38 @@ declare namespace Phaser {
             tintBottomRight: number;
 
             /**
+             * The secondary tint value being applied to the top-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopLeft: number;
+
+            /**
+             * The secondary tint value being applied to the top-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopRight: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomLeft: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomRight: number;
+
+            /**
              * The tint mode to use when applying the tint to the texture.
              * 
              * Available modes are:
@@ -15836,6 +15938,7 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * - Phaser.TintModes.MULTIPLY_TWO
              * 
              * Note that in Phaser 3, tint mode and color were set at the same time.
              * In Phaser 4 they are separate settings.
@@ -15879,6 +15982,18 @@ declare namespace Phaser {
             setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
             /**
+             * Sets the secondary tint color on this Game Object.
+             * This is used in two-color tint modes.
+             * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+             * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+             * @param topRight The secondary tint being applied to the top-right of the Game Object.
+             * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+             * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+             * @returns This Game Object instance.
+             */
+            setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+            /**
              * Sets the tint mode to use when applying the tint to the texture.
              * 
              * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -15907,9 +16022,9 @@ declare namespace Phaser {
              * Does this Game Object have a tint applied?
              * 
              * Returns `true` if any of the four corner tint values differ from 0xffffff,
-             * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-             * Returns `false` when all four tint values are 0xffffff and the tint mode
-             * is `MULTIPLY`, which is the default untinted state.
+             * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+             * or if any of the four secondary corner tint values differ from 0x000000.
+             * Returns `false` in the default untinted state.
              */
             readonly isTinted: boolean;
 
@@ -20021,6 +20136,34 @@ declare namespace Phaser {
                  */
                 tintBottomRight: number;
                 /**
+                 * The secondary tint value being applied to the top-left vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2TopLeft: number;
+                /**
+                 * The secondary tint value being applied to the top-right vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2TopRight: number;
+                /**
+                 * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2BottomLeft: number;
+                /**
+                 * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2BottomRight: number;
+                /**
                  * The tint mode to use when applying the tint to the texture.
                  * 
                  * Available modes are:
@@ -20030,6 +20173,7 @@ declare namespace Phaser {
                  * - Phaser.TintModes.SCREEN
                  * - Phaser.TintModes.OVERLAY
                  * - Phaser.TintModes.HARD_LIGHT
+                 * - Phaser.TintModes.MULTIPLY_TWO
                  * 
                  * Note that in Phaser 3, tint mode and color were set at the same time.
                  * In Phaser 4 they are separate settings.
@@ -20070,6 +20214,17 @@ declare namespace Phaser {
                  */
                 setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
                 /**
+                 * Sets the secondary tint color on this Game Object.
+                 * This is used in two-color tint modes.
+                 * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+                 * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+                 * @param topRight The secondary tint being applied to the top-right of the Game Object.
+                 * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+                 * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+                 * @returns This Game Object instance.
+                 */
+                setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+                /**
                  * Sets the tint mode to use when applying the tint to the texture.
                  * 
                  * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -20095,9 +20250,9 @@ declare namespace Phaser {
                  * Does this Game Object have a tint applied?
                  * 
                  * Returns `true` if any of the four corner tint values differ from 0xffffff,
-                 * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-                 * Returns `false` when all four tint values are 0xffffff and the tint mode
-                 * is `MULTIPLY`, which is the default untinted state.
+                 * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+                 * or if any of the four secondary corner tint values differ from 0x000000.
+                 * Returns `false` in the default untinted state.
                  */
                 readonly isTinted: boolean;
             }
@@ -24252,6 +24407,38 @@ declare namespace Phaser {
             tintBottomRight: number;
 
             /**
+             * The secondary tint value being applied to the top-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopLeft: number;
+
+            /**
+             * The secondary tint value being applied to the top-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopRight: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomLeft: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomRight: number;
+
+            /**
              * The tint mode to use when applying the tint to the texture.
              * 
              * Available modes are:
@@ -24261,6 +24448,7 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * - Phaser.TintModes.MULTIPLY_TWO
              * 
              * Note that in Phaser 3, tint mode and color were set at the same time.
              * In Phaser 4 they are separate settings.
@@ -24304,6 +24492,18 @@ declare namespace Phaser {
             setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
             /**
+             * Sets the secondary tint color on this Game Object.
+             * This is used in two-color tint modes.
+             * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+             * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+             * @param topRight The secondary tint being applied to the top-right of the Game Object.
+             * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+             * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+             * @returns This Game Object instance.
+             */
+            setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+            /**
              * Sets the tint mode to use when applying the tint to the texture.
              * 
              * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -24332,9 +24532,9 @@ declare namespace Phaser {
              * Does this Game Object have a tint applied?
              * 
              * Returns `true` if any of the four corner tint values differ from 0xffffff,
-             * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-             * Returns `false` when all four tint values are 0xffffff and the tint mode
-             * is `MULTIPLY`, which is the default untinted state.
+             * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+             * or if any of the four secondary corner tint values differ from 0x000000.
+             * Returns `false` in the default untinted state.
              */
             readonly isTinted: boolean;
 
@@ -25495,6 +25695,16 @@ declare namespace Phaser {
             layer(config: Phaser.Types.GameObjects.Sprite.SpriteConfig, addToScene?: boolean): Phaser.GameObjects.Layer;
 
             /**
+             * Creates a new Mesh2D Game Object and returns it.
+             * 
+             * Note: This method will only be available if the Mesh2D Game Object has been built into Phaser.
+             * @param config The configuration object this Game Object will use to create itself.
+             * @param addToScene Add this Game Object to the Scene after creating it? If set this argument overrides the `add` property in the config object.
+             * @returns The Game Object that was created.
+             */
+            mesh2d(config: Phaser.Types.GameObjects.GameObjectConfig, addToScene?: boolean): Phaser.GameObjects.Mesh2D;
+
+            /**
              * Creates a new Nine Slice Game Object and returns it.
              * 
              * Note: This method will only be available if the Nine Slice Game Object and WebGL support have been built into Phaser.
@@ -26092,6 +26302,20 @@ declare namespace Phaser {
              * @returns The Game Object that was created.
              */
             layer(children?: Phaser.GameObjects.GameObject | Phaser.GameObjects.GameObject[]): Phaser.GameObjects.Layer;
+
+            /**
+             * Creates a new Mesh2D Game Object and adds it to the Scene.
+             * 
+             * Note: This method will only be available if the Mesh2D Game Object has been built into Phaser.
+             * @param x The horizontal position of this Game Object in the world.
+             * @param y The vertical position of this Game Object in the world.
+             * @param texture The key, or instance of the Texture this Game Object will use to render with, as stored in the Texture Manager.
+             * @param vertices The vertices of the mesh.
+             * @param indices The indices of the mesh.
+             * @param flipV Whether to flip the texture vertically. Default false.
+             * @returns The Game Object that was created.
+             */
+            mesh2d(x: number, y: number, texture: string | Phaser.Textures.Texture, vertices: number[], indices: number[], flipV?: boolean): Phaser.GameObjects.Mesh2D;
 
             /**
              * A Nine Slice Game Object allows you to display a texture-based object that
@@ -31246,6 +31470,38 @@ declare namespace Phaser {
             tintBottomRight: number;
 
             /**
+             * The secondary tint value being applied to the top-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopLeft: number;
+
+            /**
+             * The secondary tint value being applied to the top-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopRight: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomLeft: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomRight: number;
+
+            /**
              * The tint mode to use when applying the tint to the texture.
              * 
              * Available modes are:
@@ -31255,6 +31511,7 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * - Phaser.TintModes.MULTIPLY_TWO
              * 
              * Note that in Phaser 3, tint mode and color were set at the same time.
              * In Phaser 4 they are separate settings.
@@ -31298,6 +31555,18 @@ declare namespace Phaser {
             setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
             /**
+             * Sets the secondary tint color on this Game Object.
+             * This is used in two-color tint modes.
+             * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+             * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+             * @param topRight The secondary tint being applied to the top-right of the Game Object.
+             * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+             * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+             * @returns This Game Object instance.
+             */
+            setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+            /**
              * Sets the tint mode to use when applying the tint to the texture.
              * 
              * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -31326,9 +31595,9 @@ declare namespace Phaser {
              * Does this Game Object have a tint applied?
              * 
              * Returns `true` if any of the four corner tint values differ from 0xffffff,
-             * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-             * Returns `false` when all four tint values are 0xffffff and the tint mode
-             * is `MULTIPLY`, which is the default untinted state.
+             * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+             * or if any of the four secondary corner tint values differ from 0x000000.
+             * Returns `false` in the default untinted state.
              */
             readonly isTinted: boolean;
 
@@ -33063,6 +33332,1246 @@ declare namespace Phaser {
              * Cleans up all references.
              */
             destroy(): void;
+
+        }
+
+        /**
+         * A Mesh2D Game Object.
+         * 
+         * A Mesh2D Game Object is used for the display of 2D meshes.
+         * It is a WebGL only Game Object.
+         * It contains a number of textured triangles.
+         * Each triangle is defined by a set of three vertices,
+         * with a position and texture coordinate; and a reference to a texture.
+         * 
+         * Because the triangles define their own texture coordinates,
+         * Mesh2D does not directly use frame data from the texture.
+         * However, it can copy a frame as a pair of triangles for convenience.
+         * 
+         * The Mesh2D game object batches together with quads from game objects
+         * like Image, Sprite, and Text.
+         * It uses render nodes which attempt to combine triangles into quads,
+         * or inserts degenerate triangles to treat single triangles as quads.
+         * You must take care to arrange triangles to take advantage of this system.
+         * 
+         * Mesh2D supports lighting. You should be careful not to distort
+         * the mesh too far, or normal maps will look weird.
+         * In particular, rotating texture coordinates will rotate the apparent light
+         * direction.
+         * 
+         * This is intended to be used as a base for dealing with 2D meshes.
+         */
+        class Mesh2D extends Phaser.GameObjects.GameObject implements Phaser.GameObjects.Components.AlphaSingle, Phaser.GameObjects.Components.BlendMode, Phaser.GameObjects.Components.ComputedSize, Phaser.GameObjects.Components.Depth, Phaser.GameObjects.Components.Flip, Phaser.GameObjects.Components.GetBounds, Phaser.GameObjects.Components.Lighting, Phaser.GameObjects.Components.Origin, Phaser.GameObjects.Components.RenderNodes, Phaser.GameObjects.Components.ScrollFactor, Phaser.GameObjects.Components.TextureCrop, Phaser.GameObjects.Components.Transform, Phaser.GameObjects.Components.Visible {
+            /**
+             * 
+             * @param scene The Scene to which this Game Object belongs. A Game Object can only belong to one Scene at a time.
+             * @param x The horizontal position of this Game Object in the world.
+             * @param y The vertical position of this Game Object in the world.
+             * @param texture The key, or instance of the Texture this Game Object will use to render with, as stored in the Texture Manager.
+             * @param vertices The vertices of the mesh. Each vertex is a sequence within the array: x, y, u, v. The array has a step of 4.
+             * @param indices The indices of the mesh. Each index is a sequence: a, b, c, page. The abc values index to vertices in the vertices array. The page value is the index of the texture source in the texture atlas to use for this triangle. Typically 0. The array has a step of 4.
+             * @param flipV Whether to flip the texture coordinates vertically. This affects texture coordinates, not the vertices. Set this property if your geometry provides texture coordinates that are opposite to GL texture expectations (which are bottom-up). Default false.
+             */
+            constructor(scene: Phaser.Scene, x: number, y: number, texture: string | Phaser.Textures.Texture, vertices: number[], indices: number[], flipV?: boolean);
+
+            /**
+             * The vertices of the mesh.
+             * Each vertex is a sequence within the array:
+             * x, y, u, v.
+             * The array has a step of 4.
+             * 
+             * - x (offset 0): The x position of the vertex.
+             * - y (offset 1): The y position of the vertex.
+             * - u (offset 2): The u texture coordinate of the vertex.
+             * - v (offset 3): The v texture coordinate of the vertex.
+             */
+            vertices: number[];
+
+            /**
+             * The indices of the mesh.
+             * Each index is a sequence: a, b, c, page.
+             * These index to vertices in the vertices array.
+             * The array has a step of 4.
+             * 
+             * - a (offset 0): The index of the first vertex.
+             * - b (offset 1): The index of the second vertex.
+             * - c (offset 2): The index of the third vertex.
+             * - page (offset 3): The page of the triangle: which texture source
+             *   in the texture atlas is used for this triangle. Typically 0.
+             */
+            indices: number[];
+
+            /**
+             * Whether to flip the texture coordinates vertically.
+             * 
+             * This affects texture coordinates, not the vertices.
+             * Set this property if your geometry provides texture coordinates
+             * that are opposite to GL texture expectations (which are bottom-up).
+             */
+            flipV: boolean;
+
+            /**
+             * The Camera used for filters.
+             * You can use this to alter the perspective of filters.
+             * It is not necessary to use this camera for ordinary rendering.
+             * 
+             * This is only available if you use the `enableFilters` method.
+             */
+            filterCamera: Phaser.Cameras.Scene2D.Camera;
+
+            /**
+             * The filter lists for this Game Object.
+             * This is an object with `internal` and `external` properties.
+             * Each list is a {@link Phaser.GameObjects.Components.FilterList} object.
+             * 
+             * This is only available if you use the `enableFilters` method.
+             */
+            readonly filters: Phaser.Types.GameObjects.FiltersInternalExternal | null;
+
+            /**
+             * Whether any filters should be rendered on this Game Object.
+             * This is `true` by default, even if there are no filters yet.
+             * Disable this to skip filter rendering.
+             * 
+             * Use `willRenderFilters()` to see if there are any active filters.
+             */
+            renderFilters: boolean;
+
+            /**
+             * The maximum size of the base filter texture.
+             * Filters may use a larger texture after the base texture is rendered.
+             * The maximum texture size is at least 4096 in WebGL, based on the hardware.
+             * You may set this lower to save memory or prevent resizing.
+             */
+            maxFilterSize: Phaser.Math.Vector2;
+
+            /**
+             * Whether `filterCamera` should update every frame
+             * to focus on the Game Object.
+             * Disable this if you want to manually control the camera.
+             */
+            filtersAutoFocus: boolean;
+
+            /**
+             * Whether the filters should focus on the context,
+             * rather than attempt to focus on the Game Object.
+             * This is enabled automatically when enabling filters on objects
+             * which don't have well-defined bounds.
+             * 
+             * This effectively sets the internal filters to render the same way
+             * as the external filters.
+             * 
+             * This is only used if `filtersAutoFocus` is enabled.
+             * 
+             * The "context" is the framebuffer to which the Game Object is rendered.
+             * This is usually the main framebuffer, but might be another framebuffer.
+             * It can even be several different framebuffers if the Game Object is
+             * rendered multiple times.
+             */
+            filtersFocusContext: boolean;
+
+            /**
+             * Whether the Filters component should always draw to a framebuffer,
+             * even if there are no active filters.
+             */
+            filtersForceComposite: boolean;
+
+            /**
+             * Whether this Game Object will render filters.
+             * This is true if it has active filters,
+             * and if the `renderFilters` property is also true.undefined
+             * @returns Whether the Game Object will render filters.
+             */
+            willRenderFilters(): boolean;
+
+            /**
+             * Enable this Game Object to have filters.
+             * 
+             * You need to call this method if you want to use the `filterCamera`
+             * and `filters` properties. It sets up the necessary data structures.
+             * You may disable filter rendering with the `renderFilters` property.
+             * 
+             * This is a WebGL only feature. It will return early if not available.undefined
+             * @returns undefined
+             */
+            enableFilters(): this;
+
+            /**
+             * Render this object using filters.
+             * 
+             * This function's scope is not guaranteed, so it doesn't refer to `this`.
+             * @param renderer The WebGL Renderer instance to render with.
+             * @param gameObject The Game Object being rendered.
+             * @param drawingContext The current drawing context.
+             * @param parentMatrix The parent matrix of the Game Object, if it has one.
+             * @param renderStep The index of this function in the Game Object's list of render processes. Used to support multiple rendering functions. Default 0.
+             * @returns undefined
+             */
+            renderWebGLFilters(renderer: Phaser.Renderer.WebGL.WebGLRenderer, gameObject: Phaser.GameObjects.GameObject, drawingContext: Phaser.Renderer.WebGL.DrawingContext, parentMatrix?: Phaser.GameObjects.Components.TransformMatrix, renderStep?: number): Phaser.Types.GameObjects.RenderWebGLStep;
+
+            /**
+             * Focus the filter camera.
+             * This sets the size and position of the filter camera to match the GameObject.
+             * This is called automatically on render if `filtersAutoFocus` is enabled.
+             * 
+             * This will focus on the GameObject's raw dimensions if available.
+             * If the GameObject has no dimensions, this will focus on the context:
+             * the camera belonging to the DrawingContext used to render the GameObject.
+             * Context focus occurs during rendering,
+             * as the context is not known until then.undefined
+             * @returns undefined
+             */
+            focusFilters(): this;
+
+            /**
+             * Focus the filter camera on a specific camera.
+             * This is used internally when `filtersFocusContext` is enabled.
+             * @param camera The camera to focus on.
+             * @returns undefined
+             */
+            focusFiltersOnCamera(camera: Phaser.Cameras.Scene2D.Camera): this;
+
+            /**
+             * Manually override the focus of the filter camera.
+             * This allows you to set the size and position of the filter camera manually.
+             * It deactivates `filtersAutoFocus` when called.
+             * 
+             * The camera will set scroll to place the game object at the
+             * given position within a rectangle of the given width and height.
+             * For example, calling `focusFiltersOverride(400, 200, 800, 600)`
+             * will focus the camera to place the object's center
+             * 100 pixels above the center of the camera (which is at 400x300).
+             * @param x The x-coordinate of the focus point, relative to the filter size. Default is the center.
+             * @param y The y-coordinate of the focus point, relative to the filter size. Default is the center.
+             * @param width The width of the focus area. Default is the filter width.
+             * @param height The height of the focus area. Default is the filter height.
+             * @returns undefined
+             */
+            focusFiltersOverride(x?: number, y?: number, width?: number, height?: number): this;
+
+            /**
+             * Set the base size of the filter camera.
+             * This is the size of the texture that internal filters will be drawn to.
+             * External filters are drawn to the size of the context (usually the game canvas).
+             * 
+             * This is typically the size of the GameObject.
+             * It is set automatically when the Game Object is rendered
+             * and `filtersAutoFocus` is enabled.
+             * Turn off auto focus to set it manually.
+             * 
+             * Technically, larger framebuffers may be used to provide padding.
+             * This is the size of the final framebuffer used for "internal" rendering.
+             * @param width Base width of the filter texture.
+             * @param height Base height of the filter texture.
+             * @returns undefined
+             */
+            setFilterSize(width: number, height: number): this;
+
+            /**
+             * Sets whether the filter camera should automatically re-focus on the Game Object every frame.
+             * Sets the `filtersAutoFocus` property.
+             * @param value Whether filters should be updated every frame.
+             * @returns undefined
+             */
+            setFiltersAutoFocus(value: boolean): this;
+
+            /**
+             * Set whether the filters should focus on the context.
+             * Sets the `filtersFocusContext` property.
+             * @param value Whether the filters should focus on the context.
+             * @returns undefined
+             */
+            setFiltersFocusContext(value: boolean): this;
+
+            /**
+             * Set whether the filters should always draw to a framebuffer.
+             * Sets the `filtersForceComposite` property.
+             * @param value Whether the object should always draw to a framebuffer, even if there are no active filters.
+             * @returns undefined
+             */
+            setFiltersForceComposite(value: boolean): this;
+
+            /**
+             * Set whether the filters should be rendered.
+             * Sets the `renderFilters` property.
+             * @param value Whether the filters should be rendered.
+             * @returns undefined
+             */
+            setRenderFilters(value: boolean): this;
+
+            /**
+             * Run a step in the render process.
+             * This is called automatically by the Render module.
+             * 
+             * In most cases, it just runs the `renderWebGL` function.
+             * 
+             * When `_renderSteps` has more than one entry,
+             * such as when Filters are enabled for this object,
+             * it allows those processes to defer `renderWebGL`
+             * and otherwise manage the flow of rendering.
+             * @param renderer The WebGL Renderer instance to render with.
+             * @param gameObject The Game Object being rendered.
+             * @param drawingContext The current drawing context.
+             * @param parentMatrix The parent matrix of the Game Object, if it has one.
+             * @param renderStep Which step of the rendering process should be run? Default 0.
+             * @param displayList The display list which is currently being rendered. If not provided, it will be created with the Game Object.
+             * @param displayListIndex The index of the Game Object within the display list. Default 0.
+             */
+            renderWebGLStep(renderer: Phaser.Renderer.WebGL.WebGLRenderer, gameObject: Phaser.GameObjects.GameObject, drawingContext: Phaser.Renderer.WebGL.DrawingContext, parentMatrix?: Phaser.GameObjects.Components.TransformMatrix, renderStep?: number, displayList?: Phaser.GameObjects.GameObject[], displayListIndex?: number): void;
+
+            /**
+             * Adds a render step function to this Game Object's WebGL render pipeline.
+             * 
+             * The first render step in `_renderSteps` is run first.
+             * It should call the next render step in the list.
+             * This allows render steps to control the rendering flow.
+             * @param fn The render step function to add.
+             * @param index The index in the render list to add the step to. Omit to add to the end.
+             * @returns This Game Object instance.
+             */
+            addRenderStep(fn: Phaser.Types.GameObjects.RenderWebGLStep, index?: number): this;
+
+            /**
+             * Clears the alpha value associated with this Game Object.
+             * 
+             * Immediately sets the alpha back to 1 (fully opaque).undefined
+             * @returns This Game Object instance.
+             */
+            clearAlpha(): this;
+
+            /**
+             * Set the Alpha level of this Game Object. The alpha controls the opacity of the Game Object as it renders.
+             * Alpha values are provided as a float between 0, fully transparent, and 1, fully opaque.
+             * @param value The alpha value applied across the whole Game Object. Default 1.
+             * @returns This Game Object instance.
+             */
+            setAlpha(value?: number): this;
+
+            /**
+             * The alpha value of the Game Object.
+             * 
+             * This is a global value, impacting the entire Game Object, not just a region of it.
+             * The value is clamped to the range [0, 1]. Setting alpha to 0 also clears the render
+             * flag, preventing the Game Object from being drawn until the alpha is raised above 0 again.
+             */
+            alpha: number;
+
+            /**
+             * Sets the Blend Mode being used by this Game Object.
+             * 
+             * This can be a const, such as `Phaser.BlendModes.SCREEN`, or an integer, such as 4 (for Overlay)
+             * 
+             * Under WebGL only the following Blend Modes are available:
+             * 
+             * * NORMAL
+             * * ADD
+             * * MULTIPLY
+             * * SCREEN
+             * * ERASE
+             * 
+             * Canvas has more available depending on browser support.
+             * 
+             * You can also create your own custom Blend Modes in WebGL.
+             * 
+             * Blend modes have different effects under Canvas and WebGL, and from browser to browser, depending
+             * on support. Blend Modes also cause a WebGL batch flush should it encounter a new blend mode. For these
+             * reasons try to be careful about the construction of your Scene and the frequency with which blend modes
+             * are used.
+             */
+            blendMode: Phaser.BlendModes | string | number;
+
+            /**
+             * Sets the Blend Mode being used by this Game Object.
+             * 
+             * This can be a const, such as `Phaser.BlendModes.SCREEN`, or an integer, such as 4 (for Overlay)
+             * 
+             * Under WebGL only the following Blend Modes are available:
+             * 
+             * * NORMAL
+             * * ADD
+             * * MULTIPLY
+             * * SCREEN
+             * * ERASE (only works when rendering to a framebuffer, like a Render Texture)
+             * 
+             * Canvas has more available depending on browser support.
+             * 
+             * You can also create your own custom Blend Modes in WebGL.
+             * 
+             * Blend modes have different effects under Canvas and WebGL, and from browser to browser, depending
+             * on support. Blend Modes also cause a WebGL batch flush should it encounter a new blend mode. For these
+             * reasons try to be careful about the construction of your Scene and the frequency with which blend modes
+             * are used.
+             * @param value The BlendMode value. Either a string, a CONST or a number.
+             * @returns This Game Object instance.
+             */
+            setBlendMode(value: string | Phaser.BlendModes | number): this;
+
+            /**
+             * The native (un-scaled) width of this Game Object.
+             * 
+             * Changing this value will not change the size that the Game Object is rendered in-game.
+             * For that you need to either set the scale of the Game Object (`setScale`) or use
+             * the `displayWidth` property.
+             */
+            width: number;
+
+            /**
+             * The native (un-scaled) height of this Game Object.
+             * 
+             * Changing this value will not change the size that the Game Object is rendered in-game.
+             * For that you need to either set the scale of the Game Object (`setScale`) or use
+             * the `displayHeight` property.
+             */
+            height: number;
+
+            /**
+             * The displayed width of this Game Object.
+             * 
+             * This value takes into account the scale factor.
+             * 
+             * Setting this value will adjust the Game Object's scale property.
+             */
+            displayWidth: number;
+
+            /**
+             * The displayed height of this Game Object.
+             * 
+             * This value takes into account the scale factor.
+             * 
+             * Setting this value will adjust the Game Object's scale property.
+             */
+            displayHeight: number;
+
+            /**
+             * Sets the internal size of this Game Object, as used for frame or physics body creation.
+             * 
+             * This will not change the size that the Game Object is rendered in-game.
+             * For that you need to either set the scale of the Game Object (`setScale`) or call the
+             * `setDisplaySize` method, which is the same thing as changing the scale but allows you
+             * to do so by giving pixel values.
+             * 
+             * If you have enabled this Game Object for input, changing the size will _not_ change the
+             * size of the hit area. To do this you should adjust the `input.hitArea` object directly.
+             * @param width The width of this Game Object.
+             * @param height The height of this Game Object.
+             * @returns This Game Object instance.
+             */
+            setSize(width: number, height: number): this;
+
+            /**
+             * Sets the display size of this Game Object.
+             * 
+             * Calling this will adjust the `scaleX` and `scaleY` properties so that the Game Object
+             * is rendered at the specified pixel dimensions. It is the equivalent of setting the scale
+             * manually, but expressed in pixels rather than as a multiplier.
+             * @param width The width of this Game Object.
+             * @param height The height of this Game Object.
+             * @returns This Game Object instance.
+             */
+            setDisplaySize(width: number, height: number): this;
+
+            /**
+             * The depth of this Game Object within the Scene. Ensure this value is only ever set to a number data-type.
+             * 
+             * The depth is also known as the 'z-index' in some environments, and allows you to change the rendering order
+             * of Game Objects, without actually moving their position in the display list.
+             * 
+             * The default depth is zero. A Game Object with a higher depth
+             * value will always render in front of one with a lower value.
+             * 
+             * Setting the depth will queue a depth sort event within the Scene.
+             */
+            depth: number;
+
+            /**
+             * Sets the depth of this Game Object. If the `value` argument is not provided, the depth defaults to `0`.
+             * 
+             * The depth is also known as the 'z-index' in some environments, and allows you to change the rendering order
+             * of Game Objects, without actually moving their position in the display list.
+             * 
+             * A Game Object with a higher depth value will always render in front of one with a lower value.
+             * 
+             * Setting the depth will queue a depth sort event within the Scene.
+             * @param value The depth of this Game Object. Ensure this value is only ever a number data-type.
+             * @returns This Game Object instance.
+             */
+            setDepth(value: number): this;
+
+            /**
+             * Sets this Game Object to be at the top of the display list, or the top of its parent container.
+             * 
+             * Being at the top means it will render on top of everything else.
+             * 
+             * This method does not change this Game Objects `depth` value, it simply alters its list position.undefined
+             * @returns This Game Object instance.
+             */
+            setToTop(): this;
+
+            /**
+             * Sets this Game Object to the back of the display list, or the back of its parent container.
+             * 
+             * Being at the back means it will render below everything else.
+             * 
+             * This method does not change this Game Objects `depth` value, it simply alters its list position.undefined
+             * @returns This Game Object instance.
+             */
+            setToBack(): this;
+
+            /**
+             * Move this Game Object so that it appears above the given Game Object.
+             * 
+             * This means it will render immediately after the other object in the display list.
+             * 
+             * Both objects must belong to the same display list, or parent container.
+             * 
+             * This method does not change this Game Objects `depth` value, it simply alters its list position.
+             * @param gameObject The Game Object that this Game Object will be moved to be above.
+             * @returns This Game Object instance.
+             */
+            setAbove(gameObject: Phaser.GameObjects.GameObject): this;
+
+            /**
+             * Move this Game Object so that it appears below the given Game Object.
+             * 
+             * This means it will render immediately under the other object in the display list.
+             * 
+             * Both objects must belong to the same display list, or parent container.
+             * 
+             * This method does not change this Game Objects `depth` value, it simply alters its list position.
+             * @param gameObject The Game Object that this Game Object will be moved to be below.
+             * @returns This Game Object instance.
+             */
+            setBelow(gameObject: Phaser.GameObjects.GameObject): this;
+
+            /**
+             * The horizontally flipped state of the Game Object.
+             * 
+             * A Game Object that is flipped horizontally will render inverted on the horizontal axis.
+             * Flipping always takes place from the middle of the texture and does not impact the scale value.
+             * If this Game Object has a physics body, it will not change the body. This is a rendering toggle only.
+             */
+            flipX: boolean;
+
+            /**
+             * The vertically flipped state of the Game Object.
+             * 
+             * A Game Object that is flipped vertically will render inverted on the vertical axis (i.e. upside down).
+             * Flipping always takes place from the middle of the texture and does not impact the scale value.
+             * If this Game Object has a physics body, it will not change the body. This is a rendering toggle only.
+             */
+            flipY: boolean;
+
+            /**
+             * Toggles the horizontal flipped state of this Game Object.
+             * 
+             * A Game Object that is flipped horizontally will render inverted on the horizontal axis.
+             * Flipping always takes place from the middle of the texture and does not impact the scale value.
+             * If this Game Object has a physics body, it will not change the body. This is a rendering toggle only.undefined
+             * @returns This Game Object instance.
+             */
+            toggleFlipX(): this;
+
+            /**
+             * Toggles the vertical flipped state of this Game Object.
+             * 
+             * A Game Object that is flipped vertically will render inverted on the vertical axis.
+             * Flipping always takes place from the middle of the texture and does not impact the scale value.
+             * If this Game Object has a physics body, it will not change the body. This is a rendering toggle only.undefined
+             * @returns This Game Object instance.
+             */
+            toggleFlipY(): this;
+
+            /**
+             * Sets the horizontal flipped state of this Game Object.
+             * 
+             * A Game Object that is flipped horizontally will render inverted on the horizontal axis.
+             * Flipping always takes place from the middle of the texture and does not impact the scale value.
+             * If this Game Object has a physics body, it will not change the body. This is a rendering toggle only.
+             * @param value The flipped state. `false` for no flip, or `true` to be flipped.
+             * @returns This Game Object instance.
+             */
+            setFlipX(value: boolean): this;
+
+            /**
+             * Sets the vertical flipped state of this Game Object.
+             * 
+             * A Game Object that is flipped vertically will render inverted on the vertical axis.
+             * Flipping always takes place from the middle of the texture and does not impact the scale value.
+             * If this Game Object has a physics body, it will not change the body. This is a rendering toggle only.
+             * @param value The flipped state. `false` for no flip, or `true` to be flipped.
+             * @returns This Game Object instance.
+             */
+            setFlipY(value: boolean): this;
+
+            /**
+             * Sets the horizontal and vertical flipped state of this Game Object.
+             * 
+             * A Game Object that is flipped will render inverted on the flipped axis.
+             * Flipping always takes place from the middle of the texture and does not impact the scale value.
+             * If this Game Object has a physics body, it will not change the body. This is a rendering toggle only.
+             * @param x The horizontal flipped state. `false` for no flip, or `true` to be flipped.
+             * @param y The vertical flipped state. `false` for no flip, or `true` to be flipped.
+             * @returns This Game Object instance.
+             */
+            setFlip(x: boolean, y: boolean): this;
+
+            /**
+             * Resets the horizontal and vertical flipped state of this Game Object back to their default un-flipped state.undefined
+             * @returns This Game Object instance.
+             */
+            resetFlip(): this;
+
+            /**
+             * Gets the center coordinate of this Game Object, regardless of origin.
+             * 
+             * The returned point is calculated in local space and does not factor in any parent Containers,
+             * unless the `includeParent` argument is set to `true`.
+             * @param output An object to store the values in. If not provided a new Vector2 will be created.
+             * @param includeParent If this Game Object has a parent Container, include it (and all other ancestors) in the resulting vector? Default false.
+             * @returns The values stored in the output object.
+             */
+            getCenter<O extends Phaser.Types.Math.Vector2Like>(output?: O, includeParent?: boolean): O;
+
+            /**
+             * Gets the top-left corner coordinate of this Game Object, regardless of origin.
+             * 
+             * The returned point is calculated in local space and does not factor in any parent Containers,
+             * unless the `includeParent` argument is set to `true`.
+             * @param output An object to store the values in. If not provided a new Vector2 will be created.
+             * @param includeParent If this Game Object has a parent Container, include it (and all other ancestors) in the resulting vector? Default false.
+             * @returns The values stored in the output object.
+             */
+            getTopLeft<O extends Phaser.Types.Math.Vector2Like>(output?: O, includeParent?: boolean): O;
+
+            /**
+             * Gets the top-center coordinate of this Game Object, regardless of origin.
+             * 
+             * The returned point is calculated in local space and does not factor in any parent Containers,
+             * unless the `includeParent` argument is set to `true`.
+             * @param output An object to store the values in. If not provided a new Vector2 will be created.
+             * @param includeParent If this Game Object has a parent Container, include it (and all other ancestors) in the resulting vector? Default false.
+             * @returns The values stored in the output object.
+             */
+            getTopCenter<O extends Phaser.Types.Math.Vector2Like>(output?: O, includeParent?: boolean): O;
+
+            /**
+             * Gets the top-right corner coordinate of this Game Object, regardless of origin.
+             * 
+             * The returned point is calculated in local space and does not factor in any parent Containers,
+             * unless the `includeParent` argument is set to `true`.
+             * @param output An object to store the values in. If not provided a new Vector2 will be created.
+             * @param includeParent If this Game Object has a parent Container, include it (and all other ancestors) in the resulting vector? Default false.
+             * @returns The values stored in the output object.
+             */
+            getTopRight<O extends Phaser.Types.Math.Vector2Like>(output?: O, includeParent?: boolean): O;
+
+            /**
+             * Gets the left-center coordinate of this Game Object, regardless of origin.
+             * 
+             * The returned point is calculated in local space and does not factor in any parent Containers,
+             * unless the `includeParent` argument is set to `true`.
+             * @param output An object to store the values in. If not provided a new Vector2 will be created.
+             * @param includeParent If this Game Object has a parent Container, include it (and all other ancestors) in the resulting vector? Default false.
+             * @returns The values stored in the output object.
+             */
+            getLeftCenter<O extends Phaser.Types.Math.Vector2Like>(output?: O, includeParent?: boolean): O;
+
+            /**
+             * Gets the right-center coordinate of this Game Object, regardless of origin.
+             * 
+             * The returned point is calculated in local space and does not factor in any parent Containers,
+             * unless the `includeParent` argument is set to `true`.
+             * @param output An object to store the values in. If not provided a new Vector2 will be created.
+             * @param includeParent If this Game Object has a parent Container, include it (and all other ancestors) in the resulting vector? Default false.
+             * @returns The values stored in the output object.
+             */
+            getRightCenter<O extends Phaser.Types.Math.Vector2Like>(output?: O, includeParent?: boolean): O;
+
+            /**
+             * Gets the bottom-left corner coordinate of this Game Object, regardless of origin.
+             * 
+             * The returned point is calculated in local space and does not factor in any parent Containers,
+             * unless the `includeParent` argument is set to `true`.
+             * @param output An object to store the values in. If not provided a new Vector2 will be created.
+             * @param includeParent If this Game Object has a parent Container, include it (and all other ancestors) in the resulting vector? Default false.
+             * @returns The values stored in the output object.
+             */
+            getBottomLeft<O extends Phaser.Types.Math.Vector2Like>(output?: O, includeParent?: boolean): O;
+
+            /**
+             * Gets the bottom-center coordinate of this Game Object, regardless of origin.
+             * 
+             * The returned point is calculated in local space and does not factor in any parent Containers,
+             * unless the `includeParent` argument is set to `true`.
+             * @param output An object to store the values in. If not provided a new Vector2 will be created.
+             * @param includeParent If this Game Object has a parent Container, include it (and all other ancestors) in the resulting vector? Default false.
+             * @returns The values stored in the output object.
+             */
+            getBottomCenter<O extends Phaser.Types.Math.Vector2Like>(output?: O, includeParent?: boolean): O;
+
+            /**
+             * Gets the bottom-right corner coordinate of this Game Object, regardless of origin.
+             * 
+             * The returned point is calculated in local space and does not factor in any parent Containers,
+             * unless the `includeParent` argument is set to `true`.
+             * @param output An object to store the values in. If not provided a new Vector2 will be created.
+             * @param includeParent If this Game Object has a parent Container, include it (and all other ancestors) in the resulting vector? Default false.
+             * @returns The values stored in the output object.
+             */
+            getBottomRight<O extends Phaser.Types.Math.Vector2Like>(output?: O, includeParent?: boolean): O;
+
+            /**
+             * Gets the axis-aligned bounding rectangle of this Game Object, regardless of origin.
+             * 
+             * The bounding rectangle is computed by retrieving all four corner positions of the
+             * Game Object (top-left, top-right, bottom-left, bottom-right), applying any rotation
+             * and parent Container transforms, and then calculating the smallest axis-aligned
+             * rectangle that fully encloses all four points.
+             * 
+             * The values are stored and returned in a Rectangle, or Rectangle-like, object.
+             * @param output An object to store the values in. If not provided a new Rectangle will be created.
+             * @returns The values stored in the output object.
+             */
+            getBounds<O extends Phaser.Geom.Rectangle>(output?: O): O;
+
+            /**
+             * Controls whether this Game Object participates in the WebGL lighting system.
+             * When `true`, the object will respond to dynamic lights added via the Lights plugin,
+             * using normal maps to calculate per-pixel diffuse lighting.
+             * 
+             * This flag is used to select the appropriate WebGL shader at render time.
+             */
+            readonly lighting: boolean;
+
+            /**
+             * Configuration object controlling self-shadowing for this Game Object.
+             * Self-shadowing causes surfaces to cast contact shadows on themselves based on
+             * the normal map, giving the appearance of depth. It is only active when
+             * `lighting` is also enabled.
+             * 
+             * If `enabled` is `null`, the value from the game config option `render.selfShadow`
+             * is used instead.
+             * 
+             * This object is used to select and configure the appropriate WebGL shader at render time.
+             */
+            selfShadow: Object;
+
+            /**
+             * Enables or disables WebGL-based per-pixel lighting for this Game Object.
+             * When enabled, the object will respond to dynamic lights added to the scene
+             * via the Lights plugin, using a normal map for lighting calculations.
+             * Disabling lighting restores the standard unlit rendering path.
+             * @param enable `true` to use lighting, or `false` to disable it.
+             * @returns This GameObject instance.
+             */
+            setLighting(enable: boolean): this;
+
+            /**
+             * Configures the self-shadowing properties of this Game Object.
+             * Self-shadowing uses the normal map to cast contact shadows on the surface itself,
+             * giving the impression of depth and raised detail. It is only active when
+             * `lighting` is also enabled on this Game Object.
+             * 
+             * Parameters that are `undefined` are left unchanged, allowing partial updates.
+             * @param enabled `true` to use self-shadowing, `false` to disable it, `null` to use the game default from `config.render.selfShadow`, or `undefined` to keep the setting.
+             * @param penumbra The penumbra value for the shadow. Lower is sharper but more jagged. Default is 0.5.
+             * @param diffuseFlatThreshold The texture brightness threshold at which the diffuse lighting will be considered flat. Range is 0-1. Default is 1/3.
+             * @returns This GameObject instance.
+             */
+            setSelfShadow(enabled?: boolean | undefined, penumbra?: number, diffuseFlatThreshold?: number): this;
+
+            /**
+             * The horizontal origin of this Game Object.
+             * The origin maps the relationship between the size and position of the Game Object.
+             * The default value is 0.5, meaning all Game Objects are positioned based on their center.
+             * Setting the value to 0 means the position now relates to the left of the Game Object.
+             * Set this value with `setOrigin()`.
+             */
+            originX: number;
+
+            /**
+             * The vertical origin of this Game Object.
+             * The origin maps the relationship between the size and position of the Game Object.
+             * The default value is 0.5, meaning all Game Objects are positioned based on their center.
+             * Setting the value to 0 means the position now relates to the top of the Game Object.
+             * Set this value with `setOrigin()`.
+             */
+            originY: number;
+
+            /**
+             * The horizontal display origin of this Game Object, expressed in pixels.
+             * Unlike `originX`, which is a normalized value between 0 and 1, the display origin is the
+             * calculated pixel offset derived from the Game Object's width multiplied by its `originX` value.
+             * Setting this property updates `originX` accordingly.
+             */
+            displayOriginX: number;
+
+            /**
+             * The vertical display origin of this Game Object, expressed in pixels.
+             * Unlike `originY`, which is a normalized value between 0 and 1, the display origin is the
+             * calculated pixel offset derived from the Game Object's height multiplied by its `originY` value.
+             * Setting this property updates `originY` accordingly.
+             */
+            displayOriginY: number;
+
+            /**
+             * Sets the origin of this Game Object.
+             * 
+             * The values are given in the range 0 to 1.
+             * @param x The horizontal origin value. Default 0.5.
+             * @param y The vertical origin value. If not defined it will be set to the value of `x`. Default x.
+             * @returns This Game Object instance.
+             */
+            setOrigin(x?: number, y?: number): this;
+
+            /**
+             * Sets the origin of this Game Object based on the Pivot values in its Frame.
+             * If the Frame has a custom pivot point defined, the origin is set to match it.
+             * If the Frame does not have a custom pivot, this method falls back to `setOrigin()`,
+             * resetting the origin to the default value of 0.5 for both axes.undefined
+             * @returns This Game Object instance.
+             */
+            setOriginFromFrame(): this;
+
+            /**
+             * Sets the display origin of this Game Object.
+             * The difference between this and setting the origin is that you can use pixel values for setting the display origin.
+             * @param x The horizontal display origin value. Default 0.
+             * @param y The vertical display origin value. If not defined it will be set to the value of `x`. Default x.
+             * @returns This Game Object instance.
+             */
+            setDisplayOrigin(x?: number, y?: number): this;
+
+            /**
+             * Updates the Display Origin cached values internally stored on this Game Object.
+             * You don't usually call this directly, but it is exposed for edge-cases where you may.undefined
+             * @returns This Game Object instance.
+             */
+            updateDisplayOrigin(): this;
+
+            /**
+             * Customized WebGL render nodes of this Game Object.
+             * RenderNodes are responsible for managing the rendering process of this Game Object.
+             * A default set of RenderNodes is coded into the engine,
+             * but the renderer will check this object first to see if a custom node has been set.
+             */
+            customRenderNodes: object;
+
+            /**
+             * The default RenderNodes for this Game Object.
+             * RenderNodes are responsible for managing the rendering process of this Game Object.
+             * These are the nodes that are used if no custom ones are set.
+             * 
+             * RenderNodes are identified by a unique key for their role.
+             * 
+             * Common role keys include:
+             * 
+             * - 'Submitter': responsible for running other node roles for each element.
+             * - 'Transformer': responsible for providing vertex coordinates for an element.
+             * - 'Texturer': responsible for handling textures for an element.
+             */
+            defaultRenderNodes: object;
+
+            /**
+             * An object to store render node specific data in, to be read by the render nodes this Game Object uses.
+             * 
+             * Render nodes store their data under their own name, not their role.
+             */
+            renderNodeData: object;
+
+            /**
+             * Initializes the render nodes for this Game Object.
+             * 
+             * This method is called when the Game Object is added to the Scene.
+             * It is responsible for setting up the default render nodes
+             * this Game Object will use.
+             * @param defaultNodes The default render nodes to set for this Game Object.
+             */
+            initRenderNodes(defaultNodes: Map<string, string>): void;
+
+            /**
+             * Sets the RenderNode for a given role.
+             * 
+             * Also sets the relevant render node data object, if specified.
+             * 
+             * If the node cannot be set, no changes are made.
+             * @param key The key of the role to set the render node for.
+             * @param renderNode The render node to set on this Game Object. Either a string, or a RenderNode instance. If `null`, the render node is removed, along with its data.
+             * @param renderNodeData An object to store render node specific data in, to be read by the render nodes this Game Object uses.
+             * @param copyData Should the data be copied from the `renderNodeData` object? Default false.
+             * @returns This Game Object instance.
+             */
+            setRenderNodeRole(key: string, renderNode: string | Phaser.Renderer.WebGL.RenderNodes.RenderNode | null, renderNodeData?: object, copyData?: boolean): this;
+
+            /**
+             * Sets or removes a property in the data object for a specific render node within `renderNodeData`.
+             * 
+             * If `key` is not set, it is created. If it is set, it is updated.
+             * 
+             * If `value` is undefined and `key` exists, the key is removed.
+             * @param renderNode The render node to set the data for. If a string, it should be the name of the render node.
+             * @param key The key of the property to set.
+             * @param value The value to set the property to.
+             * @returns This Game Object instance.
+             */
+            setRenderNodeData(renderNode: string | Phaser.Renderer.WebGL.RenderNodes.RenderNode, key: string, value: any): this;
+
+            /**
+             * The horizontal scroll factor of this Game Object.
+             * 
+             * The scroll factor controls the influence of the movement of a Camera upon this Game Object.
+             * 
+             * When a camera scrolls it will change the location at which this Game Object is rendered on-screen.
+             * It does not change the Game Objects actual position values.
+             * 
+             * A value of 1 means it will move exactly in sync with a camera.
+             * A value of 0 means it will not move at all, even if the camera moves.
+             * Other values control the degree to which the camera movement is mapped to this Game Object.
+             * 
+             * Please be aware that scroll factor values other than 1 are not taken into consideration when
+             * calculating physics collisions. Bodies always collide based on their world position, but changing
+             * the scroll factor is a visual adjustment to where the textures are rendered, which can offset
+             * them from physics bodies if not accounted for in your code.
+             */
+            scrollFactorX: number;
+
+            /**
+             * The vertical scroll factor of this Game Object.
+             * 
+             * The scroll factor controls the influence of the movement of a Camera upon this Game Object.
+             * 
+             * When a camera scrolls it will change the location at which this Game Object is rendered on-screen.
+             * It does not change the Game Objects actual position values.
+             * 
+             * A value of 1 means it will move exactly in sync with a camera.
+             * A value of 0 means it will not move at all, even if the camera moves.
+             * Other values control the degree to which the camera movement is mapped to this Game Object.
+             * 
+             * Please be aware that scroll factor values other than 1 are not taken into consideration when
+             * calculating physics collisions. Bodies always collide based on their world position, but changing
+             * the scroll factor is a visual adjustment to where the textures are rendered, which can offset
+             * them from physics bodies if not accounted for in your code.
+             */
+            scrollFactorY: number;
+
+            /**
+             * Sets the horizontal and vertical scroll factor of this Game Object. If only the `x` value is
+             * provided, it is applied to both axes. This is a convenience method for setting `scrollFactorX`
+             * and `scrollFactorY` in a single call.
+             * 
+             * The scroll factor controls the influence of the movement of a Camera upon this Game Object.
+             * 
+             * When a camera scrolls it will change the location at which this Game Object is rendered on-screen.
+             * It does not change the Game Objects actual position values.
+             * 
+             * A value of 1 means it will move exactly in sync with a camera.
+             * A value of 0 means it will not move at all, even if the camera moves.
+             * Other values control the degree to which the camera movement is mapped to this Game Object.
+             * 
+             * Please be aware that scroll factor values other than 1 are not taken into consideration when
+             * calculating physics collisions. Bodies always collide based on their world position, but changing
+             * the scroll factor is a visual adjustment to where the textures are rendered, which can offset
+             * them from physics bodies if not accounted for in your code.
+             * @param x The horizontal scroll factor of this Game Object.
+             * @param y The vertical scroll factor of this Game Object. If not set it will use the `x` value. Default x.
+             * @returns This Game Object instance.
+             */
+            setScrollFactor(x: number, y?: number): this;
+
+            /**
+             * The Texture this Game Object is using to render with.
+             */
+            texture: Phaser.Textures.Texture | Phaser.Textures.CanvasTexture;
+
+            /**
+             * The Texture Frame this Game Object is using to render with.
+             */
+            frame: Phaser.Textures.Frame;
+
+            /**
+             * A boolean flag indicating if this Game Object is being cropped or not.
+             * You can toggle this at any time after `setCrop` has been called, to turn cropping on or off.
+             * Equally, calling `setCrop` with no arguments will reset the crop and disable it.
+             */
+            isCropped: boolean;
+
+            /**
+             * Applies a crop to a texture based Game Object, such as a Sprite or Image.
+             * 
+             * The crop is a rectangle that limits the area of the texture frame that is visible during rendering.
+             * 
+             * Cropping a Game Object does not change its size, dimensions, physics body or hit area, it just
+             * changes what is shown when rendered.
+             * 
+             * The crop size as well as coordinates can not exceed the size of the texture frame.
+             * 
+             * The crop coordinates are relative to the texture frame, not the Game Object, meaning 0 x 0 is the top-left.
+             * 
+             * Therefore, if you had a Game Object that had an 800x600 sized texture, and you wanted to show only the left
+             * half of it, you could call `setCrop(0, 0, 400, 600)`.
+             * 
+             * It is also scaled to match the Game Object scale automatically. Therefore a crop rectangle of 100x50 would crop
+             * an area of 200x100 when applied to a Game Object that had a scale factor of 2.
+             * 
+             * You can either pass in numeric values directly, or you can provide a single Rectangle object as the first argument.
+             * 
+             * Call this method with no arguments at all to reset the crop, or toggle the property `isCropped` to `false`.
+             * 
+             * You should do this if the crop rectangle becomes the same size as the frame itself, as it will allow
+             * the renderer to skip several internal calculations.
+             * @param x The x coordinate to start the crop from. Cannot be negative or exceed the Frame width. Or a Phaser.Geom.Rectangle object, in which case the rest of the arguments are ignored.
+             * @param y The y coordinate to start the crop from. Cannot be negative or exceed the Frame height.
+             * @param width The width of the crop rectangle in pixels. Cannot exceed the Frame width.
+             * @param height The height of the crop rectangle in pixels. Cannot exceed the Frame height.
+             * @returns This Game Object instance.
+             */
+            setCrop(x?: number | Phaser.Geom.Rectangle, y?: number, width?: number, height?: number): this;
+
+            /**
+             * Sets the texture and frame this Game Object will use to render with.
+             * 
+             * Textures are referenced by their string-based keys, as stored in the Texture Manager.
+             * @param key The key of the texture to be used, as stored in the Texture Manager.
+             * @param frame The name or index of the frame within the Texture.
+             * @returns This Game Object instance.
+             */
+            setTexture(key: string, frame?: string | number): this;
+
+            /**
+             * Sets the frame this Game Object will use to render with.
+             * 
+             * If you pass a string or index then the Frame has to belong to the current Texture being used
+             * by this Game Object.
+             * 
+             * If you pass a Frame instance, then the Texture being used by this Game Object will also be updated.
+             * 
+             * Calling `setFrame` will modify the `width` and `height` properties of your Game Object.
+             * 
+             * It will also change the `origin` if the Frame has a custom pivot point, as exported from packages like Texture Packer.
+             * @param frame The name or index of the frame within the Texture, or a Frame instance.
+             * @param updateSize Should this call adjust the size of the Game Object? Default true.
+             * @param updateOrigin Should this call adjust the origin of the Game Object? Default true.
+             * @returns This Game Object instance.
+             */
+            setFrame(frame: string | number | Phaser.Textures.Frame, updateSize?: boolean, updateOrigin?: boolean): this;
+
+            /**
+             * A property indicating that a Game Object has this component.
+             */
+            readonly hasTransformComponent: boolean;
+
+            /**
+             * The x position of this Game Object.
+             */
+            x: number;
+
+            /**
+             * The y position of this Game Object.
+             */
+            y: number;
+
+            /**
+             * The z position of this Game Object.
+             * 
+             * Note: The z position does not control the rendering order of 2D Game Objects. Use
+             * {@link Phaser.GameObjects.Components.Depth#depth} instead.
+             */
+            z: number;
+
+            /**
+             * The w position of this Game Object.
+             */
+            w: number;
+
+            /**
+             * This is a special setter that allows you to set both the horizontal and vertical scale of this Game Object
+             * to the same value, at the same time. When reading this value the result returned is `(scaleX + scaleY) / 2`.
+             * 
+             * Use of this property implies you wish the horizontal and vertical scales to be equal to each other. If this
+             * isn't the case, use the `scaleX` or `scaleY` properties instead.
+             */
+            scale: number;
+
+            /**
+             * The horizontal scale of this Game Object.
+             */
+            scaleX: number;
+
+            /**
+             * The vertical scale of this Game Object.
+             */
+            scaleY: number;
+
+            /**
+             * The angle of this Game Object as expressed in degrees.
+             * 
+             * Phaser uses a right-hand clockwise rotation system, where 0 is right, 90 is down, 180/-180 is left
+             * and -90 is up.
+             * 
+             * If you prefer to work in radians, see the `rotation` property instead.
+             */
+            angle: number;
+
+            /**
+             * The angle of this Game Object in radians.
+             * 
+             * Phaser uses a right-hand clockwise rotation system, where 0 is right, PI/2 is down, +-PI is left
+             * and -PI/2 is up.
+             * 
+             * If you prefer to work in degrees, see the `angle` property instead.
+             */
+            rotation: number;
+
+            /**
+             * Sets the position of this Game Object.
+             * @param x The x position of this Game Object. Default 0.
+             * @param y The y position of this Game Object. If not set it will use the `x` value. Default x.
+             * @param z The z position of this Game Object. Default 0.
+             * @param w The w position of this Game Object. Default 0.
+             * @returns This Game Object instance.
+             */
+            setPosition(x?: number, y?: number, z?: number, w?: number): this;
+
+            /**
+             * Copies an object's coordinates to this Game Object's position.
+             * @param source An object with numeric 'x', 'y', 'z', or 'w' properties. Undefined values are not copied.
+             * @returns This Game Object instance.
+             */
+            copyPosition(source: Phaser.Types.Math.Vector2Like | Phaser.Types.Math.Vector3Like | Phaser.Types.Math.Vector4Like): this;
+
+            /**
+             * Sets the position of this Game Object to be a random position within the confines of
+             * the given area.
+             * 
+             * If no area is specified a random position between 0 x 0 and the game width x height is used instead.
+             * 
+             * The position does not factor in the size of this Game Object, meaning that only the origin is
+             * guaranteed to be within the area.
+             * @param x The x position of the top-left of the random area. Default 0.
+             * @param y The y position of the top-left of the random area. Default 0.
+             * @param width The width of the random area.
+             * @param height The height of the random area.
+             * @returns This Game Object instance.
+             */
+            setRandomPosition(x?: number, y?: number, width?: number, height?: number): this;
+
+            /**
+             * Sets the rotation of this Game Object.
+             * @param radians The rotation of this Game Object, in radians. Default 0.
+             * @returns This Game Object instance.
+             */
+            setRotation(radians?: number): this;
+
+            /**
+             * Sets the angle of this Game Object.
+             * @param degrees The rotation of this Game Object, in degrees. Default 0.
+             * @returns This Game Object instance.
+             */
+            setAngle(degrees?: number): this;
+
+            /**
+             * Sets the scale of this Game Object.
+             * @param x The horizontal scale of this Game Object. Default 1.
+             * @param y The vertical scale of this Game Object. If not set it will use the `x` value. Default x.
+             * @returns This Game Object instance.
+             */
+            setScale(x?: number, y?: number): this;
+
+            /**
+             * Sets the x position of this Game Object.
+             * @param value The x position of this Game Object. Default 0.
+             * @returns This Game Object instance.
+             */
+            setX(value?: number): this;
+
+            /**
+             * Sets the y position of this Game Object.
+             * @param value The y position of this Game Object. Default 0.
+             * @returns This Game Object instance.
+             */
+            setY(value?: number): this;
+
+            /**
+             * Sets the z position of this Game Object.
+             * 
+             * Note: The z position does not control the rendering order of 2D Game Objects. Use
+             * {@link Phaser.GameObjects.Components.Depth#setDepth} instead.
+             * @param value The z position of this Game Object. Default 0.
+             * @returns This Game Object instance.
+             */
+            setZ(value?: number): this;
+
+            /**
+             * Sets the w position of this Game Object.
+             * @param value The w position of this Game Object. Default 0.
+             * @returns This Game Object instance.
+             */
+            setW(value?: number): this;
+
+            /**
+             * Gets the local transform matrix for this Game Object.
+             * @param tempMatrix The matrix to populate with the values from this Game Object.
+             * @returns The populated Transform Matrix.
+             */
+            getLocalTransformMatrix(tempMatrix?: Phaser.GameObjects.Components.TransformMatrix): Phaser.GameObjects.Components.TransformMatrix;
+
+            /**
+             * Gets the world transform matrix for this Game Object, factoring in any parent Containers.
+             * @param tempMatrix The matrix to populate with the values from this Game Object.
+             * @param parentMatrix A temporary matrix to hold parent values during the calculations.
+             * @returns The populated Transform Matrix.
+             */
+            getWorldTransformMatrix(tempMatrix?: Phaser.GameObjects.Components.TransformMatrix, parentMatrix?: Phaser.GameObjects.Components.TransformMatrix): Phaser.GameObjects.Components.TransformMatrix;
+
+            /**
+             * Takes the given `x` and `y` coordinates and converts them into local space for this
+             * Game Object, taking into account parent and local transforms, and the Display Origin.
+             * 
+             * The returned Vector2 contains the translated point in its properties.
+             * 
+             * A Camera needs to be provided in order to handle modified scroll factors. If no
+             * camera is specified, it will use the `main` camera from the Scene to which this
+             * Game Object belongs.
+             * @param x The x position to translate.
+             * @param y The y position to translate.
+             * @param point A Vector2, or point-like object, to store the results in.
+             * @param camera The Camera which is being tested against. If not given will use the Scene default camera.
+             * @returns The translated point.
+             */
+            getLocalPoint(x: number, y: number, point?: Phaser.Math.Vector2, camera?: Phaser.Cameras.Scene2D.Camera): Phaser.Math.Vector2;
+
+            /**
+             * Gets the world position of this Game Object, factoring in any parent Containers.
+             * @param point A Vector2, or point-like object, to store the result in.
+             * @param tempMatrix A temporary matrix to hold the Game Object's values.
+             * @param parentMatrix A temporary matrix to hold parent values.
+             * @returns The world position of this Game Object.
+             */
+            getWorldPoint(point?: Phaser.Math.Vector2, tempMatrix?: Phaser.GameObjects.Components.TransformMatrix, parentMatrix?: Phaser.GameObjects.Components.TransformMatrix): Phaser.Math.Vector2;
+
+            /**
+             * Gets the sum total rotation of all of this Game Object's parent Containers.
+             * 
+             * The returned value is in radians and will be zero if this Game Object has no parent container.undefined
+             * @returns The sum total rotation, in radians, of all parent containers of this Game Object.
+             */
+            getParentRotation(): number;
+
+            /**
+             * The visible state of the Game Object.
+             * 
+             * An invisible Game Object will skip rendering, but will still process update logic.
+             */
+            visible: boolean;
+
+            /**
+             * Sets the visibility of this Game Object.
+             * 
+             * An invisible Game Object will skip rendering, but will still process update logic.
+             * @param value The visible state of the Game Object.
+             * @returns This Game Object instance.
+             */
+            setVisible(value: boolean): this;
 
         }
 
@@ -45681,6 +47190,38 @@ declare namespace Phaser {
             tintBottomRight: number;
 
             /**
+             * The secondary tint value being applied to the top-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopLeft: number;
+
+            /**
+             * The secondary tint value being applied to the top-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopRight: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomLeft: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomRight: number;
+
+            /**
              * The tint mode to use when applying the tint to the texture.
              * 
              * Available modes are:
@@ -45690,6 +47231,7 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * - Phaser.TintModes.MULTIPLY_TWO
              * 
              * Note that in Phaser 3, tint mode and color were set at the same time.
              * In Phaser 4 they are separate settings.
@@ -45733,6 +47275,18 @@ declare namespace Phaser {
             setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
             /**
+             * Sets the secondary tint color on this Game Object.
+             * This is used in two-color tint modes.
+             * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+             * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+             * @param topRight The secondary tint being applied to the top-right of the Game Object.
+             * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+             * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+             * @returns This Game Object instance.
+             */
+            setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+            /**
              * Sets the tint mode to use when applying the tint to the texture.
              * 
              * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -45761,9 +47315,9 @@ declare namespace Phaser {
              * Does this Game Object have a tint applied?
              * 
              * Returns `true` if any of the four corner tint values differ from 0xffffff,
-             * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-             * Returns `false` when all four tint values are 0xffffff and the tint mode
-             * is `MULTIPLY`, which is the default untinted state.
+             * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+             * or if any of the four secondary corner tint values differ from 0x000000.
+             * Returns `false` in the default untinted state.
              */
             readonly isTinted: boolean;
 
@@ -48519,6 +50073,38 @@ declare namespace Phaser {
             tintBottomRight: number;
 
             /**
+             * The secondary tint value being applied to the top-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopLeft: number;
+
+            /**
+             * The secondary tint value being applied to the top-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopRight: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomLeft: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomRight: number;
+
+            /**
              * The tint mode to use when applying the tint to the texture.
              * 
              * Available modes are:
@@ -48528,6 +50114,7 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * - Phaser.TintModes.MULTIPLY_TWO
              * 
              * Note that in Phaser 3, tint mode and color were set at the same time.
              * In Phaser 4 they are separate settings.
@@ -48571,6 +50158,18 @@ declare namespace Phaser {
             setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
             /**
+             * Sets the secondary tint color on this Game Object.
+             * This is used in two-color tint modes.
+             * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+             * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+             * @param topRight The secondary tint being applied to the top-right of the Game Object.
+             * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+             * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+             * @returns This Game Object instance.
+             */
+            setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+            /**
              * Sets the tint mode to use when applying the tint to the texture.
              * 
              * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -48599,9 +50198,9 @@ declare namespace Phaser {
              * Does this Game Object have a tint applied?
              * 
              * Returns `true` if any of the four corner tint values differ from 0xffffff,
-             * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-             * Returns `false` when all four tint values are 0xffffff and the tint mode
-             * is `MULTIPLY`, which is the default untinted state.
+             * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+             * or if any of the four secondary corner tint values differ from 0x000000.
+             * Returns `false` in the default untinted state.
              */
             readonly isTinted: boolean;
 
@@ -48929,6 +50528,8 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * 
+             * Rope does not currently support secondary tint colors or modes.
              */
             tintMode: Phaser.TintModes;
 
@@ -49043,6 +50644,8 @@ declare namespace Phaser {
              * - Phaser.TintModes.HARD_LIGHT
              * 
              * See the `setColors` method for details of how to color each of the vertices.
+             * 
+             * Rope does not currently support secondary tint colors or modes.
              * @param value The tint mode to use. Default Phaser.TintModes.MULTIPLY.
              * @returns This Game Object instance.
              */
@@ -65090,6 +66693,38 @@ declare namespace Phaser {
             tintBottomRight: number;
 
             /**
+             * The secondary tint value being applied to the top-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopLeft: number;
+
+            /**
+             * The secondary tint value being applied to the top-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopRight: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomLeft: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomRight: number;
+
+            /**
              * The tint mode to use when applying the tint to the texture.
              * 
              * Available modes are:
@@ -65099,6 +66734,7 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * - Phaser.TintModes.MULTIPLY_TWO
              * 
              * Note that in Phaser 3, tint mode and color were set at the same time.
              * In Phaser 4 they are separate settings.
@@ -65142,6 +66778,18 @@ declare namespace Phaser {
             setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
             /**
+             * Sets the secondary tint color on this Game Object.
+             * This is used in two-color tint modes.
+             * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+             * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+             * @param topRight The secondary tint being applied to the top-right of the Game Object.
+             * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+             * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+             * @returns This Game Object instance.
+             */
+            setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+            /**
              * Sets the tint mode to use when applying the tint to the texture.
              * 
              * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -65170,9 +66818,9 @@ declare namespace Phaser {
              * Does this Game Object have a tint applied?
              * 
              * Returns `true` if any of the four corner tint values differ from 0xffffff,
-             * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-             * Returns `false` when all four tint values are 0xffffff and the tint mode
-             * is `MULTIPLY`, which is the default untinted state.
+             * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+             * or if any of the four secondary corner tint values differ from 0x000000.
+             * Returns `false` in the default untinted state.
              */
             readonly isTinted: boolean;
 
@@ -65481,7 +67129,7 @@ declare namespace Phaser {
          * - If you are using a single image, or none of the frames in the texture
          *   need to tile, it doesn't matter.
          */
-        class SpriteGPULayer extends Phaser.GameObjects.GameObject implements Phaser.GameObjects.Components.Alpha, Phaser.GameObjects.Components.BlendMode, Phaser.GameObjects.Components.Depth, Phaser.GameObjects.Components.ElapseTimer, Phaser.GameObjects.Components.Lighting, Phaser.GameObjects.Components.Mask, Phaser.GameObjects.Components.RenderNodes, Phaser.GameObjects.Components.TextureCrop, Phaser.GameObjects.Components.Visible {
+        class SpriteGPULayer extends Phaser.GameObjects.GameObject implements Phaser.GameObjects.Components.Alpha, Phaser.GameObjects.Components.BlendMode, Phaser.GameObjects.Components.Depth, Phaser.GameObjects.Components.ElapseTimer, Phaser.GameObjects.Components.Lighting, Phaser.GameObjects.Components.RenderNodes, Phaser.GameObjects.Components.TextureCrop, Phaser.GameObjects.Components.Visible {
             /**
              * 
              * @param scene The Scene to which this SpriteGPULayer belongs.
@@ -66436,58 +68084,6 @@ declare namespace Phaser {
              * @returns This GameObject instance.
              */
             setSelfShadow(enabled?: boolean | undefined, penumbra?: number, diffuseFlatThreshold?: number): this;
-
-            /**
-             * The Mask this Game Object is using during render, or `null` if no mask has been set.
-             */
-            mask: Phaser.Display.Masks.GeometryMask;
-
-            /**
-             * Sets the mask that this Game Object will use to render with.
-             * 
-             * The mask must have been previously created and must be a GeometryMask.
-             * This only works in the Canvas Renderer.
-             * In WebGL, use a Mask filter instead (see {@link Phaser.GameObjects.Components.FilterList#addMask}).
-             * 
-             * If a mask is already set on this Game Object it will be immediately replaced.
-             * 
-             * Masks are positioned in global space and are not relative to the Game Object to which they
-             * are applied. The reason for this is that multiple Game Objects can all share the same mask.
-             * 
-             * Masks have no impact on physics or input detection. They are purely a rendering component
-             * that allows you to limit what is visible during the render pass.
-             * @param mask The mask this Game Object will use when rendering.
-             * @returns This Game Object instance.
-             */
-            setMask(mask: Phaser.Display.Masks.GeometryMask): this;
-
-            /**
-             * Clears the mask that this Game Object was using.
-             * 
-             * This only works in the Canvas Renderer.
-             * In WebGL, use a Mask filter instead (see {@link Phaser.GameObjects.Components.FilterList#addMask}).
-             * @param destroyMask Destroy the mask before clearing it? Default false.
-             * @returns This Game Object instance.
-             */
-            clearMask(destroyMask?: boolean): this;
-
-            /**
-             * Creates and returns a Geometry Mask. This mask can be used by any Game Object,
-             * including this one.
-             * 
-             * To create the mask you need to pass in a reference to a Graphics Game Object.
-             * 
-             * If you do not provide a graphics object, and this Game Object is an instance
-             * of a Graphics object, then it will use itself to create the mask.
-             * 
-             * This means you can call this method to create a Geometry Mask from any Graphics Game Object.
-             * 
-             * This only works in the Canvas Renderer.
-             * In WebGL, use a Mask filter instead (see {@link Phaser.GameObjects.Components.FilterList#addMask}).
-             * @param graphics A Graphics Game Object, or any kind of Shape Game Object. The geometry within it will be used as the mask.
-             * @returns This Geometry Mask that was created.
-             */
-            createGeometryMask<G extends Phaser.GameObjects.Graphics, S extends Phaser.GameObjects.Shape>(graphics?: Phaser.GameObjects.Graphics | Phaser.GameObjects.Shape): Phaser.Display.Masks.GeometryMask;
 
             /**
              * Customized WebGL render nodes of this Game Object.
@@ -67747,6 +69343,38 @@ declare namespace Phaser {
             tintBottomRight: number;
 
             /**
+             * The secondary tint value being applied to the top-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopLeft: number;
+
+            /**
+             * The secondary tint value being applied to the top-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopRight: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomLeft: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomRight: number;
+
+            /**
              * The tint mode to use when applying the tint to the texture.
              * 
              * Available modes are:
@@ -67756,6 +69384,7 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * - Phaser.TintModes.MULTIPLY_TWO
              * 
              * Note that in Phaser 3, tint mode and color were set at the same time.
              * In Phaser 4 they are separate settings.
@@ -67799,6 +69428,18 @@ declare namespace Phaser {
             setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
             /**
+             * Sets the secondary tint color on this Game Object.
+             * This is used in two-color tint modes.
+             * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+             * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+             * @param topRight The secondary tint being applied to the top-right of the Game Object.
+             * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+             * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+             * @returns This Game Object instance.
+             */
+            setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+            /**
              * Sets the tint mode to use when applying the tint to the texture.
              * 
              * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -67827,9 +69468,9 @@ declare namespace Phaser {
              * Does this Game Object have a tint applied?
              * 
              * Returns `true` if any of the four corner tint values differ from 0xffffff,
-             * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-             * Returns `false` when all four tint values are 0xffffff and the tint mode
-             * is `MULTIPLY`, which is the default untinted state.
+             * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+             * or if any of the four secondary corner tint values differ from 0x000000.
+             * Returns `false` in the default untinted state.
              */
             readonly isTinted: boolean;
 
@@ -69505,6 +71146,38 @@ declare namespace Phaser {
             tintBottomRight: number;
 
             /**
+             * The secondary tint value being applied to the top-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopLeft: number;
+
+            /**
+             * The secondary tint value being applied to the top-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopRight: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomLeft: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomRight: number;
+
+            /**
              * The tint mode to use when applying the tint to the texture.
              * 
              * Available modes are:
@@ -69514,6 +71187,7 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * - Phaser.TintModes.MULTIPLY_TWO
              * 
              * Note that in Phaser 3, tint mode and color were set at the same time.
              * In Phaser 4 they are separate settings.
@@ -69557,6 +71231,18 @@ declare namespace Phaser {
             setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
             /**
+             * Sets the secondary tint color on this Game Object.
+             * This is used in two-color tint modes.
+             * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+             * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+             * @param topRight The secondary tint being applied to the top-right of the Game Object.
+             * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+             * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+             * @returns This Game Object instance.
+             */
+            setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+            /**
              * Sets the tint mode to use when applying the tint to the texture.
              * 
              * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -69585,9 +71271,9 @@ declare namespace Phaser {
              * Does this Game Object have a tint applied?
              * 
              * Returns `true` if any of the four corner tint values differ from 0xffffff,
-             * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-             * Returns `false` when all four tint values are 0xffffff and the tint mode
-             * is `MULTIPLY`, which is the default untinted state.
+             * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+             * or if any of the four secondary corner tint values differ from 0x000000.
+             * Returns `false` in the default untinted state.
              */
             readonly isTinted: boolean;
 
@@ -71403,6 +73089,38 @@ declare namespace Phaser {
             tintBottomRight: number;
 
             /**
+             * The secondary tint value being applied to the top-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopLeft: number;
+
+            /**
+             * The secondary tint value being applied to the top-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopRight: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomLeft: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomRight: number;
+
+            /**
              * The tint mode to use when applying the tint to the texture.
              * 
              * Available modes are:
@@ -71412,6 +73130,7 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * - Phaser.TintModes.MULTIPLY_TWO
              * 
              * Note that in Phaser 3, tint mode and color were set at the same time.
              * In Phaser 4 they are separate settings.
@@ -71455,6 +73174,18 @@ declare namespace Phaser {
             setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
             /**
+             * Sets the secondary tint color on this Game Object.
+             * This is used in two-color tint modes.
+             * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+             * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+             * @param topRight The secondary tint being applied to the top-right of the Game Object.
+             * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+             * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+             * @returns This Game Object instance.
+             */
+            setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+            /**
              * Sets the tint mode to use when applying the tint to the texture.
              * 
              * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -71483,9 +73214,9 @@ declare namespace Phaser {
              * Does this Game Object have a tint applied?
              * 
              * Returns `true` if any of the four corner tint values differ from 0xffffff,
-             * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-             * Returns `false` when all four tint values are 0xffffff and the tint mode
-             * is `MULTIPLY`, which is the default untinted state.
+             * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+             * or if any of the four secondary corner tint values differ from 0x000000.
+             * Returns `false` in the default untinted state.
              */
             readonly isTinted: boolean;
 
@@ -73630,6 +75361,38 @@ declare namespace Phaser {
             tintBottomRight: number;
 
             /**
+             * The secondary tint value being applied to the top-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopLeft: number;
+
+            /**
+             * The secondary tint value being applied to the top-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2TopRight: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomLeft: number;
+
+            /**
+             * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+             * Used in two-color tint modes.
+             * This value is interpolated from the corner to the center of the Game Object.
+             * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+             */
+            tint2BottomRight: number;
+
+            /**
              * The tint mode to use when applying the tint to the texture.
              * 
              * Available modes are:
@@ -73639,6 +75402,7 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * - Phaser.TintModes.MULTIPLY_TWO
              * 
              * Note that in Phaser 3, tint mode and color were set at the same time.
              * In Phaser 4 they are separate settings.
@@ -73682,6 +75446,18 @@ declare namespace Phaser {
             setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
             /**
+             * Sets the secondary tint color on this Game Object.
+             * This is used in two-color tint modes.
+             * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+             * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+             * @param topRight The secondary tint being applied to the top-right of the Game Object.
+             * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+             * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+             * @returns This Game Object instance.
+             */
+            setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+            /**
              * Sets the tint mode to use when applying the tint to the texture.
              * 
              * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -73710,9 +75486,9 @@ declare namespace Phaser {
              * Does this Game Object have a tint applied?
              * 
              * Returns `true` if any of the four corner tint values differ from 0xffffff,
-             * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-             * Returns `false` when all four tint values are 0xffffff and the tint mode
-             * is `MULTIPLY`, which is the default untinted state.
+             * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+             * or if any of the four secondary corner tint values differ from 0x000000.
+             * Returns `false` in the default untinted state.
              */
             readonly isTinted: boolean;
 
@@ -94869,7 +96645,7 @@ declare namespace Phaser {
                      */
                     originY: number;
                     /**
-                     * The tint mode of the member.
+                     * The tint mode of the member. Tint modes which require secondary colors will treat the secondary colors as black.
                      */
                     tintMode: Phaser.TintModes;
                     /**
@@ -102475,6 +104251,38 @@ declare namespace Phaser {
                 tintBottomRight: number;
 
                 /**
+                 * The secondary tint value being applied to the top-left vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2TopLeft: number;
+
+                /**
+                 * The secondary tint value being applied to the top-right vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2TopRight: number;
+
+                /**
+                 * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2BottomLeft: number;
+
+                /**
+                 * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2BottomRight: number;
+
+                /**
                  * The tint mode to use when applying the tint to the texture.
                  * 
                  * Available modes are:
@@ -102484,6 +104292,7 @@ declare namespace Phaser {
                  * - Phaser.TintModes.SCREEN
                  * - Phaser.TintModes.OVERLAY
                  * - Phaser.TintModes.HARD_LIGHT
+                 * - Phaser.TintModes.MULTIPLY_TWO
                  * 
                  * Note that in Phaser 3, tint mode and color were set at the same time.
                  * In Phaser 4 they are separate settings.
@@ -102527,6 +104336,18 @@ declare namespace Phaser {
                 setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
                 /**
+                 * Sets the secondary tint color on this Game Object.
+                 * This is used in two-color tint modes.
+                 * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+                 * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+                 * @param topRight The secondary tint being applied to the top-right of the Game Object.
+                 * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+                 * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+                 * @returns This Game Object instance.
+                 */
+                setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+                /**
                  * Sets the tint mode to use when applying the tint to the texture.
                  * 
                  * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -102555,9 +104376,9 @@ declare namespace Phaser {
                  * Does this Game Object have a tint applied?
                  * 
                  * Returns `true` if any of the four corner tint values differ from 0xffffff,
-                 * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-                 * Returns `false` when all four tint values are 0xffffff and the tint mode
-                 * is `MULTIPLY`, which is the default untinted state.
+                 * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+                 * or if any of the four secondary corner tint values differ from 0x000000.
+                 * Returns `false` in the default untinted state.
                  */
                 readonly isTinted: boolean;
 
@@ -104682,6 +106503,38 @@ declare namespace Phaser {
                 tintBottomRight: number;
 
                 /**
+                 * The secondary tint value being applied to the top-left vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2TopLeft: number;
+
+                /**
+                 * The secondary tint value being applied to the top-right vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2TopRight: number;
+
+                /**
+                 * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2BottomLeft: number;
+
+                /**
+                 * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2BottomRight: number;
+
+                /**
                  * The tint mode to use when applying the tint to the texture.
                  * 
                  * Available modes are:
@@ -104691,6 +106544,7 @@ declare namespace Phaser {
                  * - Phaser.TintModes.SCREEN
                  * - Phaser.TintModes.OVERLAY
                  * - Phaser.TintModes.HARD_LIGHT
+                 * - Phaser.TintModes.MULTIPLY_TWO
                  * 
                  * Note that in Phaser 3, tint mode and color were set at the same time.
                  * In Phaser 4 they are separate settings.
@@ -104734,6 +106588,18 @@ declare namespace Phaser {
                 setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
                 /**
+                 * Sets the secondary tint color on this Game Object.
+                 * This is used in two-color tint modes.
+                 * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+                 * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+                 * @param topRight The secondary tint being applied to the top-right of the Game Object.
+                 * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+                 * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+                 * @returns This Game Object instance.
+                 */
+                setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+                /**
                  * Sets the tint mode to use when applying the tint to the texture.
                  * 
                  * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -104762,9 +106628,9 @@ declare namespace Phaser {
                  * Does this Game Object have a tint applied?
                  * 
                  * Returns `true` if any of the four corner tint values differ from 0xffffff,
-                 * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-                 * Returns `false` when all four tint values are 0xffffff and the tint mode
-                 * is `MULTIPLY`, which is the default untinted state.
+                 * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+                 * or if any of the four secondary corner tint values differ from 0x000000.
+                 * Returns `false` in the default untinted state.
                  */
                 readonly isTinted: boolean;
 
@@ -111731,6 +113597,38 @@ declare namespace Phaser {
                 tintBottomRight: number;
 
                 /**
+                 * The secondary tint value being applied to the top-left vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2TopLeft: number;
+
+                /**
+                 * The secondary tint value being applied to the top-right vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2TopRight: number;
+
+                /**
+                 * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2BottomLeft: number;
+
+                /**
+                 * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2BottomRight: number;
+
+                /**
                  * The tint mode to use when applying the tint to the texture.
                  * 
                  * Available modes are:
@@ -111740,6 +113638,7 @@ declare namespace Phaser {
                  * - Phaser.TintModes.SCREEN
                  * - Phaser.TintModes.OVERLAY
                  * - Phaser.TintModes.HARD_LIGHT
+                 * - Phaser.TintModes.MULTIPLY_TWO
                  * 
                  * Note that in Phaser 3, tint mode and color were set at the same time.
                  * In Phaser 4 they are separate settings.
@@ -111783,6 +113682,18 @@ declare namespace Phaser {
                 setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
                 /**
+                 * Sets the secondary tint color on this Game Object.
+                 * This is used in two-color tint modes.
+                 * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+                 * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+                 * @param topRight The secondary tint being applied to the top-right of the Game Object.
+                 * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+                 * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+                 * @returns This Game Object instance.
+                 */
+                setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+                /**
                  * Sets the tint mode to use when applying the tint to the texture.
                  * 
                  * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -111811,9 +113722,9 @@ declare namespace Phaser {
                  * Does this Game Object have a tint applied?
                  * 
                  * Returns `true` if any of the four corner tint values differ from 0xffffff,
-                 * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-                 * Returns `false` when all four tint values are 0xffffff and the tint mode
-                 * is `MULTIPLY`, which is the default untinted state.
+                 * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+                 * or if any of the four secondary corner tint values differ from 0x000000.
+                 * Returns `false` in the default untinted state.
                  */
                 readonly isTinted: boolean;
 
@@ -114099,6 +116010,38 @@ declare namespace Phaser {
                 tintBottomRight: number;
 
                 /**
+                 * The secondary tint value being applied to the top-left vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2TopLeft: number;
+
+                /**
+                 * The secondary tint value being applied to the top-right vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2TopRight: number;
+
+                /**
+                 * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2BottomLeft: number;
+
+                /**
+                 * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+                 * Used in two-color tint modes.
+                 * This value is interpolated from the corner to the center of the Game Object.
+                 * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+                 */
+                tint2BottomRight: number;
+
+                /**
                  * The tint mode to use when applying the tint to the texture.
                  * 
                  * Available modes are:
@@ -114108,6 +116051,7 @@ declare namespace Phaser {
                  * - Phaser.TintModes.SCREEN
                  * - Phaser.TintModes.OVERLAY
                  * - Phaser.TintModes.HARD_LIGHT
+                 * - Phaser.TintModes.MULTIPLY_TWO
                  * 
                  * Note that in Phaser 3, tint mode and color were set at the same time.
                  * In Phaser 4 they are separate settings.
@@ -114151,6 +116095,18 @@ declare namespace Phaser {
                 setTint(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
 
                 /**
+                 * Sets the secondary tint color on this Game Object.
+                 * This is used in two-color tint modes.
+                 * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+                 * @param topLeft The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object. Default 0xffffff.
+                 * @param topRight The secondary tint being applied to the top-right of the Game Object.
+                 * @param bottomLeft The secondary tint being applied to the bottom-left of the Game Object.
+                 * @param bottomRight The secondary tint being applied to the bottom-right of the Game Object.
+                 * @returns This Game Object instance.
+                 */
+                setTint2(topLeft?: number, topRight?: number, bottomLeft?: number, bottomRight?: number): this;
+
+                /**
                  * Sets the tint mode to use when applying the tint to the texture.
                  * 
                  * Note that, in Phaser 3, tint mode and color were set at the same time.
@@ -114179,9 +116135,9 @@ declare namespace Phaser {
                  * Does this Game Object have a tint applied?
                  * 
                  * Returns `true` if any of the four corner tint values differ from 0xffffff,
-                 * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-                 * Returns `false` when all four tint values are 0xffffff and the tint mode
-                 * is `MULTIPLY`, which is the default untinted state.
+                 * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+                 * or if any of the four secondary corner tint values differ from 0x000000.
+                 * Returns `false` in the default untinted state.
                  */
                 readonly isTinted: boolean;
 
@@ -118106,9 +120062,13 @@ declare namespace Phaser {
                      * @param tintTR The top-right tint color.
                      * @param tintBR The bottom-right tint color.
                      * @param renderOptions Optional render features.
+                     * @param tint2TL The secondary tint color for the top-left corner.
+                     * @param tint2BL The secondary tint color for the bottom-left corner.
+                     * @param tint2TR The secondary tint color for the top-right corner.
+                     * @param tint2BR The secondary tint color for the bottom-right corner.
                      * @param args Additional arguments for subclasses.
                      */
-                    batch(currentContext: Phaser.Renderer.WebGL.DrawingContext, glTexture: Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, texX: number, texY: number, texWidth: number, texHeight: number, tintMode: number, tintTL: number, tintBL: number, tintTR: number, tintBR: number, renderOptions: Phaser.Types.Renderer.WebGL.RenderNodes.BatchHandlerQuadRenderOptions, ...args: any[]): void;
+                    batch(currentContext: Phaser.Renderer.WebGL.DrawingContext, glTexture: Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, texX: number, texY: number, texWidth: number, texHeight: number, tintMode: number, tintTL: number, tintBL: number, tintTR: number, tintBR: number, renderOptions: Phaser.Types.Renderer.WebGL.RenderNodes.BatchHandlerQuadRenderOptions, tint2TL?: number, tint2BL?: number, tint2TR?: number, tint2BR?: number, ...args: any[]): void;
 
                     /**
                      * Process textures for batching.
@@ -118292,8 +120252,12 @@ declare namespace Phaser {
                      * @param v2 The v coordinate of the distorted top-right corner.
                      * @param u3 The u coordinate of the distorted bottom-right corner.
                      * @param v3 The v coordinate of the distorted bottom-right corner.
+                     * @param tint2TL The secondary tint color for the top-left corner.
+                     * @param tint2BL The secondary tint color for the bottom-left corner.
+                     * @param tint2TR The secondary tint color for the top-right corner.
+                     * @param tint2BR The secondary tint color for the bottom-right corner.
                      */
-                    batch(drawingContext: Phaser.Renderer.WebGL.DrawingContext, glTexture: Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, texX: number, texY: number, texWidth: number, texHeight: number, tintMode: Phaser.TintModes, tintTL: number, tintBL: number, tintTR: number, tintBR: number, renderOptions: Phaser.Types.Renderer.WebGL.RenderNodes.BatchHandlerQuadRenderOptions, u0: number, v0: number, u1: number, v1: number, u2: number, v2: number, u3: number, v3: number): void;
+                    batch(drawingContext: Phaser.Renderer.WebGL.DrawingContext, glTexture: Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, texX: number, texY: number, texWidth: number, texHeight: number, tintMode: Phaser.TintModes, tintTL: number, tintBL: number, tintTR: number, tintBR: number, renderOptions: Phaser.Types.Renderer.WebGL.RenderNodes.BatchHandlerQuadRenderOptions, u0: number, v0: number, u1: number, v1: number, u2: number, v2: number, u3: number, v3: number, tint2TL?: number, tint2BL?: number, tint2TR?: number, tint2BR?: number): void;
 
                 }
 
@@ -120268,6 +122232,79 @@ declare namespace Phaser {
                 }
 
                 /**
+                 * The SubmitterMeshToQuad RenderNode submits data for rendering a Mesh GameObject.
+                 * It uses a BatchHandler to render the mesh as part of a batch.
+                 * It is designed to maximize batch compatibility with regular quads,
+                 * by combining adjacent triangles into quads where possible.
+                 * 
+                 * Performance-wise, this depends on the sequence of triangles in the mesh.
+                 * Two sequential triangles sharing an edge will be combined into a quad,
+                 * which renders as just 4 vertices instead of 6.
+                 * But a triangle that can't combine will be rendered as a quad too,
+                 * taking 4 vertices instead of 3.
+                 * Try to arrange triangles so they can combine.
+                 * 
+                 * This node receives the drawing context, game object, and parent matrix.
+                 * It also receives the transformer node from the node that invoked it.
+                 * This allows the behavior to be configured by setting the appropriate nodes
+                 * on the GameObject for individual tweaks, or on the invoking Renderer node
+                 * for global changes.
+                 */
+                class SubmitterMeshToQuad extends Phaser.Renderer.WebGL.RenderNodes.SubmitterQuad {
+                    /**
+                     * 
+                     * @param manager The manager that owns this RenderNode.
+                     * @param config The configuration object for this RenderNode.
+                     */
+                    constructor(manager: Phaser.Renderer.WebGL.RenderNodes.RenderNodeManager, config?: Phaser.Types.Renderer.WebGL.RenderNodes.SubmitterQuadConfig);
+
+                    /**
+                     * The default configuration for this RenderNode.
+                     */
+                    defaultConfig: Phaser.Types.Renderer.WebGL.RenderNodes.SubmitterQuadConfig;
+
+                    /**
+                     * Processes the given GameObject and submits mesh vertex data to the appropriate
+                     * batch handler for rendering. This method iterates over the mesh indices and
+                     * vertices, checking for shared edges between triangles to combine them into quads.
+                     * If no shared edge is found, the triangle is submitted as a degenerate. The
+                     * method then caches the last triangle and continues iterating until all triangles
+                     * are processed. If a cached triangle remains at the end, it is submitted as a
+                     * degenerate.
+                     * 
+                     * The method also sets the render options for the GameObject, including the normal
+                     * map texture and rotation.
+                     * @param drawingContext The current drawing context.
+                     * @param gameObject The GameObject being rendered.
+                     * @param parentMatrix The parent matrix of the GameObject, if it is a nested game object.
+                     * @param transformerNode The transformer node used to transform the GameObject.
+                     * @param normalMap The normal map texture to use for lighting. If omitted, the normal map texture of the GameObject will be used, or the default normal map texture of the renderer.
+                     * @param normalMapRotation The rotation of the normal map texture. If omitted, the rotation of the GameObject will be used.
+                     */
+                    run(drawingContext: Phaser.Renderer.WebGL.DrawingContext, gameObject: Phaser.GameObjects.GameObject, parentMatrix?: Phaser.GameObjects.Components.TransformMatrix, transformerNode?: Phaser.Renderer.WebGL.RenderNodes.TransformerVertex, normalMap?: Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper, normalMapRotation?: number): void;
+
+                    /**
+                     * Submits a quad to the batch handler for rendering.
+                     * This is used internally by the `run` method
+                     * to submit a quad that is a combination of two triangles,
+                     * or a single triangle using a degenerate triangle to pad quad alignment.
+                     * @param a The index of the first vertex of the quad. This is the corner unique to the first triangle.
+                     * @param b The index of the second vertex of the quad. This is shared between triangles.
+                     * @param c The index of the third vertex of the quad. This is shared between triangles.
+                     * @param d The index of the fourth vertex of the quad. This is the corner unique to the second triangle.
+                     * @param texturePage The index of the texture source to use for the quad.
+                     * @param drawingContext The current drawing context.
+                     * @param gameObject The GameObject being rendered.
+                     * @param parentMatrix The parent matrix of the GameObject, if it is a nested game object.
+                     * @param transformerNode The transformer node used to transform the GameObject.
+                     * @param normalMap The normal map texture to use for lighting. If omitted, the normal map texture of the GameObject will be used, or the default normal map texture of the renderer.
+                     * @param normalMapRotation The rotation of the normal map texture. If omitted, the rotation of the GameObject will be used.
+                     */
+                    _submitQuad(a: number, b: number, c: number, d: number, texturePage: number, drawingContext: Phaser.Renderer.WebGL.DrawingContext, gameObject: Phaser.GameObjects.GameObject, parentMatrix?: Phaser.GameObjects.Components.TransformMatrix, transformerNode?: Phaser.Renderer.WebGL.RenderNodes.TransformerVertex, normalMap?: Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper, normalMapRotation?: number): void;
+
+                }
+
+                /**
                  * The SubmitterQuad RenderNode submits data for rendering a single Image-like GameObject.
                  * It uses a BatchHandler to render the image as part of a batch.
                  * 
@@ -120917,6 +122954,42 @@ declare namespace Phaser {
                      * @param element The specific element within the game object. This is used for objects that consist of multiple quads. It is unused here.
                      */
                     run(drawingContext: Phaser.Renderer.WebGL.DrawingContext, gameObject: Phaser.GameObjects.GameObject, texturerNode?: Phaser.Renderer.WebGL.RenderNodes.RenderNode, parentMatrix?: Phaser.GameObjects.Components.TransformMatrix, element?: object): void;
+
+                }
+
+                /**
+                 * A RenderNode that computes and stores the screen-space position
+                 * of a single vertex each time it is run.
+                 * 
+                 * During its `run` call, this node applies the camera view matrix (adjusted
+                 * for the game object's scroll factors), any parent container matrix, and the
+                 * game object's own position, rotation, and scale into a single final transform
+                 * matrix. It then projects the vertex position through that matrix
+                 * and writes the result back to the vertex position,
+                 * ready for consumption by the subsequent submitter node.
+                 */
+                class TransformerVertex extends Phaser.Renderer.WebGL.RenderNodes.RenderNode {
+                    /**
+                     * 
+                     * @param manager The manager that owns this RenderNode.
+                     * @param config The configuration object for this RenderNode.
+                     */
+                    constructor(manager: Phaser.Renderer.WebGL.RenderNodes.RenderNodeManager, config?: object);
+
+                    /**
+                     * Computes the final screen-space position of the given vertex
+                     * for the given GameObject and stores it in the vertex.
+                     * 
+                     * The method builds the complete transform by combining the camera view
+                     * matrix (modified by the game object's scroll factors), an optional parent
+                     * container matrix, and the game object's own position, rotation, and scale.
+                     * If vertex rounding is required, the resulting values are snapped to the nearest integer.
+                     * @param drawingContext The current drawing context.
+                     * @param gameObject The GameObject being rendered.
+                     * @param parentMatrix This transform matrix is defined if the game object is nested.
+                     * @param vertex The vertex to transform.
+                     */
+                    run(drawingContext: Phaser.Renderer.WebGL.DrawingContext, gameObject: Phaser.GameObjects.GameObject, parentMatrix?: Phaser.GameObjects.Components.TransformMatrix, vertex?: Phaser.Math.Vector2): void;
 
                 }
 
@@ -123610,6 +125683,13 @@ declare namespace Phaser {
          * This is like overlay, but with the tint color and texture color swapped.
          */
         HARD_LIGHT,
+        /**
+         * Double color multiply tint mode.
+         * The tint color is multiplied with the texture color,
+         * and the inverse of the texture color is multiplied by a second tint color.
+         * This allows control of light and dark regions separately.
+         */
+        MULTIPLY_TWO,
     }
 
     namespace Scale {
@@ -133402,6 +135482,12 @@ declare namespace Phaser {
             tint: number;
 
             /**
+             * The secondary tint to apply to this tile.
+             * Used in two-color tint modes.
+             */
+            tint2: number;
+
+            /**
              * The tint mode.
              * 
              * Available modes are:
@@ -133411,6 +135497,7 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * - Phaser.TintModes.MULTIPLY_TWO
              */
             tintMode: Phaser.TintModes;
 
@@ -136490,10 +138577,11 @@ declare namespace Phaser {
             setCullPadding(paddingX?: number, paddingY?: number): this;
 
             /**
-             * Sets an additive tint on each Tile within the given area.
+             * Sets a tint color on each Tile within the given area.
              * 
-             * The tint works by taking the pixel color values from the tileset texture, and then
-             * multiplying it by the color value of the tint.
+             * The tint works by taking the pixel color values from the tileset texture
+             * and combining it with the color value of the tint,
+             * according to the tint mode.
              * 
              * If no area values are given then all tiles will be tinted to the given color.
              * 
@@ -136511,6 +138599,25 @@ declare namespace Phaser {
             setTint(tint?: number, tileX?: number, tileY?: number, width?: number, height?: number, filteringOptions?: Phaser.Types.Tilemaps.FilteringOptions): this;
 
             /**
+             * Sets a secondary tint color on each Tile within the given area.
+             * Secondary tints are used by two-color tint modes such as MULTIPLY_TWO.
+             * 
+             * If no area values are given then all tiles will be tinted to the given color.
+             * 
+             * To remove a secondary tint call this method with either no parameters, or by passing black `0x000000` as the secondary tint color.
+             * 
+             * If a tile already has a secondary tint set then calling this method will override that.
+             * @param tint2 The secondary tint color being applied to each tile within the region. Given as a hex value, i.e. `0xff0000` for red. Set to black (`0x000000`) to reset the secondary tint. Default 0x000000.
+             * @param tileX The left most tile index (in tile coordinates) to use as the origin of the area to search.
+             * @param tileY The top most tile index (in tile coordinates) to use as the origin of the area to search.
+             * @param width How many tiles wide from the `tileX` index the area will be.
+             * @param height How many tiles tall from the `tileY` index the area will be.
+             * @param filteringOptions Optional filters to apply when getting the tiles.
+             * @returns This Tilemap Layer object.
+             */
+            setTint2(tint2?: number, tileX?: number, tileY?: number, width?: number, height?: number, filteringOptions?: Phaser.Types.Tilemaps.FilteringOptions): this;
+
+            /**
              * Sets the tint mode to use when applying the tint to the texture.
              * 
              * Available modes are:
@@ -136521,6 +138628,7 @@ declare namespace Phaser {
              * - Phaser.TintModes.SCREEN
              * - Phaser.TintModes.OVERLAY
              * - Phaser.TintModes.HARD_LIGHT
+             * - Phaser.TintModes.MULTIPLY_TWO
              * 
              * Call this method with no parameters to reset the tint mode to the default.
              * 

@@ -18491,9 +18491,14 @@ var TimeStep = new Class({
          *
          * Use it purely to _restrict_ updates in low-intensity situations only.
          *
+         * You can change the FPS limit at any time by calling
+         * `TimeStep.setFPSLimit(limit)`.
+         * This will update the `fpsLimit`, `hasFpsLimit` and `_limitRate` properties.
+         *
          * @name Phaser.Core.TimeStep#fpsLimit
          * @type {number}
          * @default 0
+         * @readonly
          * @since 3.60.0
          */
         this.fpsLimit = GetValue(config, 'limit', 0);
@@ -18508,6 +18513,7 @@ var TimeStep = new Class({
          * @name Phaser.Core.TimeStep#hasFpsLimit
          * @type {boolean}
          * @default false
+         * @readonly
          * @since 3.60.0
          */
         this.hasFpsLimit = (this.fpsLimit > 0);
@@ -18518,6 +18524,7 @@ var TimeStep = new Class({
          * @name Phaser.Core.TimeStep#_limitRate
          * @type {number}
          * @private
+         * @readonly
          * @since 3.60.0
          */
         this._limitRate = (this.hasFpsLimit) ? (1000 / this.fpsLimit) : 0;
@@ -19203,6 +19210,39 @@ var TimeStep = new Class({
     getDurationMS: function ()
     {
         return Math.round(this.lastTime - this.startTime);
+    },
+
+    /**
+     * Sets the FPS limit (`fpsLimit` property) and related properties.
+     *
+     * Use this method to set the FPS limit at runtime, rather than setting the
+     * `fpsLimit` property directly, to ensure the related properties are
+     * updated correctly. If the TimeStep is running, it will be stopped and
+     * restarted with the new FPS limit.
+     *
+     * If you just want a constant limit, use the Game Config `fps: { limit: 30 }` value instead.
+     *
+     * @method Phaser.Core.TimeStep#setFPSLimit
+     * @since 4.NEXT
+     *
+     * @param {number} limit - The FPS limit to set. Set to 0 to remove the FPS limit.
+     *
+     * @return {this} The TimeStep object.
+     */
+    setFPSLimit: function (limit)
+    {
+        this.fpsLimit = limit;
+        this.hasFpsLimit = (this.fpsLimit > 0);
+        this._limitRate = (this.hasFpsLimit) ? (1000 / this.fpsLimit) : 0;
+
+        if (this.running)
+        {
+            var step = (this.hasFpsLimit) ? this.stepLimitFPS.bind(this) : this.step.bind(this);
+            this.raf.stop();
+            this.raf.start(step, this.forceSetTimeOut, this._limitRate);
+        }
+
+        return this;
     },
 
     /**
@@ -50516,6 +50556,58 @@ var Tint = {
     tintBottomRight: 0xffffff,
 
     /**
+     * The secondary tint value being applied to the top-left vertex of the Game Object.
+     * Used in two-color tint modes.
+     * This value is interpolated from the corner to the center of the Game Object.
+     * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+     *
+     * @name Phaser.GameObjects.Components.Tint#tint2TopLeft
+     * @type {number}
+     * @default 0x000000
+     * @since 4.NEXT
+     */
+    tint2TopLeft: 0x000000,
+
+    /**
+     * The secondary tint value being applied to the top-right vertex of the Game Object.
+     * Used in two-color tint modes.
+     * This value is interpolated from the corner to the center of the Game Object.
+     * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+     *
+     * @name Phaser.GameObjects.Components.Tint#tint2TopRight
+     * @type {number}
+     * @default 0x000000
+     * @since 4.NEXT
+     */
+    tint2TopRight: 0x000000,
+
+    /**
+     * The secondary tint value being applied to the bottom-left vertex of the Game Object.
+     * Used in two-color tint modes.
+     * This value is interpolated from the corner to the center of the Game Object.
+     * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+     *
+     * @name Phaser.GameObjects.Components.Tint#tint2BottomLeft
+     * @type {number}
+     * @default 0x000000
+     * @since 4.NEXT
+     */
+    tint2BottomLeft: 0x000000,
+
+    /**
+     * The secondary tint value being applied to the bottom-right vertex of the Game Object.
+     * Used in two-color tint modes.
+     * This value is interpolated from the corner to the center of the Game Object.
+     * The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+     *
+     * @name Phaser.GameObjects.Components.Tint#tint2BottomRight
+     * @type {number}
+     * @default 0x000000
+     * @since 4.NEXT
+    */
+    tint2BottomRight: 0x000000,
+
+    /**
      * The tint mode to use when applying the tint to the texture.
      *
      * Available modes are:
@@ -50525,6 +50617,7 @@ var Tint = {
      * - Phaser.TintModes.SCREEN
      * - Phaser.TintModes.OVERLAY
      * - Phaser.TintModes.HARD_LIGHT
+     * - Phaser.TintModes.MULTIPLY_TWO
      *
      * Note that in Phaser 3, tint mode and color were set at the same time.
      * In Phaser 4 they are separate settings.
@@ -50551,6 +50644,7 @@ var Tint = {
     clearTint: function ()
     {
         this.setTint(0xffffff);
+        this.setTint2(0x000000);
         this.setTintMode(TintModes.MULTIPLY);
 
         return this;
@@ -50602,6 +50696,40 @@ var Tint = {
         this.tintTopRight = topRight;
         this.tintBottomLeft = bottomLeft;
         this.tintBottomRight = bottomRight;
+
+        return this;
+    },
+
+    /**
+     * Sets the secondary tint color on this Game Object.
+     * This is used in two-color tint modes.
+     * See {@link Phaser.GameObjects.Components.Tint#setTint} for more information.
+     *
+     * @method Phaser.GameObjects.Components.Tint#setTint2
+     * @webglOnly
+     * @since 4.NEXT
+     *
+     * @param {number} [topLeft=0xffffff] - The secondary tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object.
+     * @param {number} [topRight] - The secondary tint being applied to the top-right of the Game Object.
+     * @param {number} [bottomLeft] - The secondary tint being applied to the bottom-left of the Game Object.
+     * @param {number} [bottomRight] - The secondary tint being applied to the bottom-right of the Game Object.
+     *
+     * @return {this} This Game Object instance.
+     */
+    setTint2: function (topLeft, topRight, bottomLeft, bottomRight)
+    {
+        if (topLeft === undefined) { topLeft = 0x000000; }
+        if (topRight === undefined)
+        {
+            topRight = topLeft;
+            bottomLeft = topLeft;
+            bottomRight = topLeft;
+        }
+
+        this.tint2TopLeft = topLeft;
+        this.tint2TopRight = topRight;
+        this.tint2BottomLeft = bottomLeft;
+        this.tint2BottomRight = bottomRight;
 
         return this;
     },
@@ -50669,9 +50797,9 @@ var Tint = {
      * Does this Game Object have a tint applied?
      *
      * Returns `true` if any of the four corner tint values differ from 0xffffff,
-     * or if the `tintMode` property is set to anything other than `MULTIPLY`.
-     * Returns `false` when all four tint values are 0xffffff and the tint mode
-     * is `MULTIPLY`, which is the default untinted state.
+     * or if the `tintMode` property is set to anything other than `MULTIPLY`,
+     * or if any of the four secondary corner tint values differ from 0x000000.
+     * Returns `false` in the default untinted state.
      *
      * @name Phaser.GameObjects.Components.Tint#isTinted
      * @type {boolean}
@@ -50684,13 +50812,18 @@ var Tint = {
         get: function ()
         {
             var white = 0xffffff;
+            var black = 0x000000;
 
             return (
                 this.tintMode !== TintModes.MULTIPLY ||
                 this.tintTopLeft !== white ||
                 this.tintTopRight !== white ||
                 this.tintBottomLeft !== white ||
-                this.tintBottomRight !== white
+                this.tintBottomRight !== white ||
+                this.tint2TopLeft !== black ||
+                this.tint2TopRight !== black ||
+                this.tint2BottomLeft !== black ||
+                this.tint2BottomRight !== black
             );
         }
 
@@ -62126,6 +62259,7 @@ if (true)
 {
     GameObjects.CaptureFrame = __webpack_require__(43451);
     GameObjects.Gradient = __webpack_require__(34637);
+    GameObjects.Mesh2D = __webpack_require__(76435);
     GameObjects.Noise = __webpack_require__(35387);
     GameObjects.NoiseCell2D = __webpack_require__(51513);
     GameObjects.NoiseCell3D = __webpack_require__(15686);
@@ -62139,6 +62273,7 @@ if (true)
 
     GameObjects.Factories.CaptureFrame = __webpack_require__(20421);
     GameObjects.Factories.Gradient = __webpack_require__(69315);
+    GameObjects.Factories.Mesh2D = __webpack_require__(2317);
     GameObjects.Factories.Noise = __webpack_require__(34757);
     GameObjects.Factories.NoiseCell2D = __webpack_require__(26590);
     GameObjects.Factories.NoiseCell3D = __webpack_require__(89918);
@@ -62152,6 +62287,7 @@ if (true)
 
     GameObjects.Creators.CaptureFrame = __webpack_require__(23675);
     GameObjects.Creators.Gradient = __webpack_require__(26353);
+    GameObjects.Creators.Mesh2D = __webpack_require__(2227);
     GameObjects.Creators.Noise = __webpack_require__(39931);
     GameObjects.Creators.NoiseCell2D = __webpack_require__(98292);
     GameObjects.Creators.NoiseCell3D = __webpack_require__(97044);
@@ -64345,6 +64481,389 @@ var LightsPlugin = new Class({
 PluginCache.register('LightsPlugin', LightsPlugin, 'lights');
 
 module.exports = LightsPlugin;
+
+
+/***/ },
+
+/***/ 76435
+(module, __unused_webpack_exports, __webpack_require__) {
+
+/**
+ * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
+ * @copyright    2013-2026 Phaser Studio Inc.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
+ */
+
+var TintModes = __webpack_require__(84322);
+var DefaultMesh2DNodes = __webpack_require__(2389);
+var Class = __webpack_require__(83419);
+var Components = __webpack_require__(31401);
+var GameObject = __webpack_require__(95643);
+var Mesh2DRender = __webpack_require__(63635);
+
+/**
+ * @classdesc
+ * A Mesh2D Game Object.
+ *
+ * A Mesh2D Game Object is used for the display of 2D meshes.
+ * It is a WebGL only Game Object.
+ * It contains a number of textured triangles.
+ * Each triangle is defined by a set of three vertices,
+ * with a position and texture coordinate; and a reference to a texture.
+ *
+ * Because the triangles define their own texture coordinates,
+ * Mesh2D does not directly use frame data from the texture.
+ * However, it can copy a frame as a pair of triangles for convenience.
+ *
+ * The Mesh2D game object batches together with quads from game objects
+ * like Image, Sprite, and Text.
+ * It uses render nodes which attempt to combine triangles into quads,
+ * or inserts degenerate triangles to treat single triangles as quads.
+ * You must take care to arrange triangles to take advantage of this system.
+ *
+ * Mesh2D supports lighting. You should be careful not to distort
+ * the mesh too far, or normal maps will look weird.
+ * In particular, rotating texture coordinates will rotate the apparent light
+ * direction.
+ *
+ * This is intended to be used as a base for dealing with 2D meshes.
+ *
+ * @class Mesh2D
+ * @extends Phaser.GameObjects.GameObject
+ * @memberof Phaser.GameObjects
+ * @webglonly
+ * @constructor
+ * @since 4.NEXT
+ *
+ * @extends Phaser.GameObjects.Components.AlphaSingle
+ * @extends Phaser.GameObjects.Components.BlendMode
+ * @extends Phaser.GameObjects.Components.ComputedSize
+ * @extends Phaser.GameObjects.Components.Depth
+ * @extends Phaser.GameObjects.Components.Flip
+ * @extends Phaser.GameObjects.Components.GetBounds
+ * @extends Phaser.GameObjects.Components.Lighting
+ * @extends Phaser.GameObjects.Components.Origin
+ * @extends Phaser.GameObjects.Components.RenderNodes
+ * @extends Phaser.GameObjects.Components.ScrollFactor
+ * @extends Phaser.GameObjects.Components.TextureCrop
+ * @extends Phaser.GameObjects.Components.Transform
+ * @extends Phaser.GameObjects.Components.Visible
+ *
+ * @param {Phaser.Scene} scene - The Scene to which this Game Object belongs. A Game Object can only belong to one Scene at a time.
+ * @param {number} x - The horizontal position of this Game Object in the world.
+ * @param {number} y - The vertical position of this Game Object in the world.
+ * @param {(string|Phaser.Textures.Texture)} texture - The key, or instance of the Texture this Game Object will use to render with, as stored in the Texture Manager.
+ * @param {number[]} vertices - The vertices of the mesh. Each vertex is a sequence within the array: x, y, u, v. The array has a step of 4.
+ * @param {number[]} indices - The indices of the mesh. Each index is a sequence: a, b, c, page. The abc values index to vertices in the vertices array. The page value is the index of the texture source in the texture atlas to use for this triangle. Typically 0. The array has a step of 4.
+ * @param {boolean} [flipV=false] - Whether to flip the texture coordinates vertically. This affects texture coordinates, not the vertices. Set this property if your geometry provides texture coordinates that are opposite to GL texture expectations (which are bottom-up).
+ */
+var Mesh2D = new Class({
+    Extends: GameObject,
+
+    Mixins: [
+        Components.AlphaSingle,
+        Components.BlendMode,
+        Components.ComputedSize,
+        Components.Depth,
+        Components.Flip,
+        Components.GetBounds,
+        Components.Lighting,
+        Components.Origin,
+        Components.RenderNodes,
+        Components.ScrollFactor,
+        Components.TextureCrop,
+        Components.Transform,
+        Components.Visible,
+        Mesh2DRender
+    ],
+
+    initialize: function Mesh2D(scene, x, y, texture, vertices, indices, flipV) {
+        GameObject.call(this, scene, 'Mesh2D');
+
+        this.setTexture(texture);
+        this.setPosition(x, y);
+        this.initRenderNodes(this._defaultRenderNodesMap);
+
+        /**
+         * The vertices of the mesh.
+         * Each vertex is a sequence within the array:
+         * x, y, u, v.
+         * The array has a step of 4.
+         *
+         * - x (offset 0): The x position of the vertex.
+         * - y (offset 1): The y position of the vertex.
+         * - u (offset 2): The u texture coordinate of the vertex.
+         * - v (offset 3): The v texture coordinate of the vertex.
+         *
+         * @name Phaser.GameObjects.Mesh2D#vertices
+         * @type {number[]}
+         * @since 4.NEXT
+         */
+        this.vertices = vertices;
+
+        /**
+         * The indices of the mesh.
+         * Each index is a sequence: a, b, c, page.
+         * These index to vertices in the vertices array.
+         * The array has a step of 4.
+         *
+         * - a (offset 0): The index of the first vertex.
+         * - b (offset 1): The index of the second vertex.
+         * - c (offset 2): The index of the third vertex.
+         * - page (offset 3): The page of the triangle: which texture source
+         *   in the texture atlas is used for this triangle. Typically 0.
+         *
+         * @name Phaser.GameObjects.Mesh2D#indices
+         * @type {number[]}
+         * @since 4.NEXT
+         */
+        this.indices = indices;
+
+        /**
+         * Whether to flip the texture coordinates vertically.
+         *
+         * This affects texture coordinates, not the vertices.
+         * Set this property if your geometry provides texture coordinates
+         * that are opposite to GL texture expectations (which are bottom-up).
+         *
+         * @name Phaser.GameObjects.Mesh2D#flipV
+         * @type {boolean}
+         * @since 4.NEXT
+         * @default false
+         */
+        this.flipV = !!flipV;
+
+        this.tintMode = TintModes.MULTIPLY;
+        this.tint = 0xffffff;
+        this.tint2 = 0x000000;
+    },
+
+    /**
+     * The default render nodes for this Game Object.
+     *
+     * @name Phaser.GameObjects.Mesh2D#_defaultRenderNodesMap
+     * @type {Map<string, string>}
+     * @private
+     * @webglOnly
+     * @readonly
+     * @since 4.NEXT
+     */
+    _defaultRenderNodesMap: {
+        get: function ()
+        {
+            return DefaultMesh2DNodes;
+        }
+    },
+
+    clearTint: function ()
+    {
+        this.tintMode = TintModes.MULTIPLY;
+        this.tint = 0xffffff;
+        this.tint2 = 0x000000;
+        return this;
+    },
+
+    setTint: function (color)
+    {
+        this.tint = color;
+        return this;
+    },
+
+    setTint2: function (color)
+    {
+        this.tint2 = color;
+        return this;
+    },
+
+    setTintMode: function (mode)
+    {
+        this.tintMode = mode;
+        return this;
+    },
+
+    isTinted: function ()
+    {
+        return this.tint !== 0xffffff || this.tint2 !== 0x000000 || this.tintMode !== TintModes.MULTIPLY;
+    },
+
+    /**
+     * Sets the vertical texture flip state of this Game Object.
+     *
+     * @param {boolean} [value=false] - Whether to flip the texture coordinates vertically.
+     * @returns {this} This Game Object instance.
+     */
+    setFlipV: function (value)
+    {
+        this.flipV = !!value;
+        return this;
+    }
+});
+
+module.exports = Mesh2D;
+
+
+/***/ },
+
+/***/ 2227
+(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+/**
+ * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
+ * @copyright    2013-2026 Phaser Studio Inc.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
+ */
+
+var BuildGameObject = __webpack_require__(25305);
+var GameObjectCreator = __webpack_require__(44603);
+var GetAdvancedValue = __webpack_require__(23568);
+var Mesh2D = __webpack_require__(76435);
+
+/**
+ * Creates a new Mesh2D Game Object and returns it.
+ *
+ * Note: This method will only be available if the Mesh2D Game Object has been built into Phaser.
+ *
+ * @method Phaser.GameObjects.GameObjectCreator#mesh2d
+ * @since 4.NEXT
+ *
+ * @param {Phaser.Types.GameObjects.GameObjectConfig} config - The configuration object this Game Object will use to create itself.
+ * @param {boolean} [addToScene] - Add this Game Object to the Scene after creating it? If set this argument overrides the `add` property in the config object.
+ *
+ * @return {Phaser.GameObjects.Mesh2D} The Game Object that was created.
+ */
+GameObjectCreator.register('mesh2d', function (config, addToScene)
+{
+    if (config === undefined) { config = {}; }
+
+    var key = GetAdvancedValue(config, 'key', null);
+    var vertices = GetAdvancedValue(config, 'vertices', []);
+    var indices = GetAdvancedValue(config, 'indices', []);
+    var flipV = GetAdvancedValue(config, 'flipV', false);
+
+    var mesh2d = new Mesh2D(this.scene, 0, 0, key, vertices, indices, flipV);
+
+    if (addToScene !== undefined)
+    {
+        config.add = addToScene;
+    }
+
+    BuildGameObject(this.scene, mesh2d, config);
+
+    return mesh2d;
+});
+
+//  When registering a factory function 'this' refers to the GameObjectCreator context.
+
+
+/***/ },
+
+/***/ 2317
+(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+/**
+ * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
+ * @copyright    2013-2026 Phaser Studio Inc.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
+ */
+
+var Mesh2D = __webpack_require__(76435);
+var GameObjectFactory = __webpack_require__(39429);
+
+/**
+ * Creates a new Mesh2D Game Object and adds it to the Scene.
+ *
+ * Note: This method will only be available if the Mesh2D Game Object has been built into Phaser.
+ *
+ * @method Phaser.GameObjects.GameObjectFactory#mesh2d
+ * @since 4.NEXT
+ *
+ * @param {number} x - The horizontal position of this Game Object in the world.
+ * @param {number} y - The vertical position of this Game Object in the world.
+ * @param {(string|Phaser.Textures.Texture)} texture - The key, or instance of the Texture this Game Object will use to render with, as stored in the Texture Manager.
+ * @param {number[]} vertices - The vertices of the mesh.
+ * @param {number[]} indices - The indices of the mesh.
+ * @param {boolean} [flipV=false] - Whether to flip the texture vertically.
+ *
+ * @return {Phaser.GameObjects.Mesh2D} The Game Object that was created.
+ */
+GameObjectFactory.register('mesh2d', function (x, y, texture, vertices, indices, flipV)
+{
+    return this.displayList.add(new Mesh2D(this.scene, x, y, texture, vertices, indices, flipV));
+});
+
+//  When registering a factory function 'this' refers to the GameObjectFactory context.
+//
+//  There are several properties available to use:
+//
+//  this.scene - a reference to the Scene that owns the GameObjectFactory
+//  this.displayList - a reference to the Display List the Scene owns
+//  this.updateList - a reference to the Update List the Scene owns
+
+
+/***/ },
+
+/***/ 63635
+(module, __unused_webpack_exports, __webpack_require__) {
+
+/**
+ * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
+ * @copyright    2013-2026 Phaser Studio Inc.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
+ */
+
+var NOOP = __webpack_require__(29747);
+var renderWebGL = __webpack_require__(43909);
+var renderCanvas = NOOP;
+
+module.exports = {
+
+    renderWebGL: renderWebGL,
+    renderCanvas: renderCanvas
+
+};
+
+
+/***/ },
+
+/***/ 43909
+(module) {
+
+/**
+ * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
+ * @copyright    2013-2026 Phaser Studio Inc.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
+ */
+
+/**
+ * Renders this Game Object with the WebGL Renderer to the given Camera.
+ * The object will not render if any of its renderFlags are set or it is being actively filtered out by the Camera.
+ * This method should not be called directly. It is a utility function of the Render module.
+ *
+ * @method Phaser.GameObjects.Image#renderWebGL
+ * @since 4.NEXT
+ * @private
+ *
+ * @param {Phaser.Renderer.WebGL.WebGLRenderer} renderer - A reference to the current active WebGL renderer.
+ * @param {Phaser.GameObjects.Mesh2D} src - The Game Object being rendered in this call.
+ * @param {Phaser.Renderer.WebGL.DrawingContext} drawingContext - The current drawing context.
+ * @param {Phaser.GameObjects.Components.TransformMatrix} parentMatrix - This transform matrix is defined if the game object is nested
+ */
+var Mesh2DWebGLRenderer = function (renderer, src, drawingContext, parentMatrix)
+{
+    drawingContext.camera.addToRenderList(src);
+
+    var customRenderNodes = src.customRenderNodes;
+    var defaultRenderNodes = src.defaultRenderNodes;
+
+    (customRenderNodes.Submitter || defaultRenderNodes.Submitter).run(
+        drawingContext,
+        src,
+        parentMatrix,
+        customRenderNodes.Transformer || defaultRenderNodes.Transformer
+    );
+};
+
+module.exports = Mesh2DWebGLRenderer;
 
 
 /***/ },
@@ -79176,6 +79695,8 @@ var Rope = new Class({
          * - Phaser.TintModes.OVERLAY
          * - Phaser.TintModes.HARD_LIGHT
          *
+         * Rope does not currently support secondary tint colors or modes.
+         *
          * @name Phaser.GameObjects.Rope#tintMode
          * @type {Phaser.TintModes}
          * @default Phaser.TintModes.MULTIPLY
@@ -79464,6 +79985,8 @@ var Rope = new Class({
      * - Phaser.TintModes.HARD_LIGHT
      *
      * See the `setColors` method for details of how to color each of the vertices.
+     *
+     * Rope does not currently support secondary tint colors or modes.
      *
      * @method Phaser.GameObjects.Rope#setTintMode
      * @webglOnly
@@ -88535,6 +89058,7 @@ module.exports = EasingNaming;
  */
 
 var Class = __webpack_require__(83419);
+var MapStruct = __webpack_require__(90330);
 var Components = __webpack_require__(31401);
 var GameObject = __webpack_require__(95643);
 var SubmitterSpriteGPULayer = __webpack_require__(53384);
@@ -88641,7 +89165,6 @@ var getTint = Utils.getTintAppendFloatAlpha;
  * @extends Phaser.GameObjects.Components.Depth
  * @extends Phaser.GameObjects.Components.ElapseTimer
  * @extends Phaser.GameObjects.Components.Lighting
- * @extends Phaser.GameObjects.Components.Mask
  * @extends Phaser.GameObjects.Components.RenderNodes
  * @extends Phaser.GameObjects.Components.TextureCrop
  * @extends Phaser.GameObjects.Components.Visible
@@ -88661,7 +89184,6 @@ var SpriteGPULayer = new Class({
         Components.Depth,
         Components.ElapseTimer,
         Components.Lighting,
-        Components.Mask,
         Components.RenderNodes,
         Components.TextureCrop,
         Components.Visible,
@@ -88810,7 +89332,7 @@ var SpriteGPULayer = new Class({
         this.EASE_CODES = EasingNaming;
 
         this.setTexture(texture);
-        this.initRenderNodes(new Phaser.Structs.Map());
+        this.initRenderNodes(new MapStruct());
 
         /**
          * A texture containing the frame data for the SpriteGPULayer.
@@ -183296,7 +183818,20 @@ module.exports = {
      * @const
      * @since 4.0.0
      */
-    HARD_LIGHT: 6
+    HARD_LIGHT: 6,
+
+    /**
+     * Double color multiply tint mode.
+     * The tint color is multiplied with the texture color,
+     * and the inverse of the texture color is multiplied by a second tint color.
+     * This allows control of light and dark regions separately.
+     *
+     * @name Phaser.TintModes.MULTIPLY_TWO
+     * @type {number}
+     * @const
+     * @since 4.NEXT
+     */
+    MULTIPLY_TWO: 7
 };
 
 
@@ -185553,7 +186088,7 @@ var DrawingContext = new Class({
      */
     beginDraw: function ()
     {
-        if (this.framebuffer)
+        if (this.texture)
         {
             // Ensure the framebuffer texture is not bound to a texture unit.
             this.renderer.glTextureUnits.unbindTexture(this.texture);
@@ -190946,7 +191481,10 @@ var MakeGetTexture = __webpack_require__(33997);
 var MakeOutInverseRotation = __webpack_require__(79532);
 var MakeRotationDatum = __webpack_require__(65217);
 var MakeSmoothPixelArt = __webpack_require__(74505);
+var Utils = __webpack_require__(70554);
 var BatchHandler = __webpack_require__(13961);
+
+var getTint = Utils.getTintAppendFloatAlpha;
 
 /**
  * @classdesc
@@ -191071,7 +191609,10 @@ var BatchHandlerQuad = new Class({
                     name: 'inTexDatum'
                 },
                 {
-                    name: 'inTintEffect'
+                    name: 'inTintEffect',
+                    size: 4,
+                    type: 'UNSIGNED_BYTE',
+                    normalized: true
                 },
                 {
                     name: 'inTint',
@@ -191578,6 +192119,10 @@ var BatchHandlerQuad = new Class({
      * @param {number} tintTR - The top-right tint color.
      * @param {number} tintBR - The bottom-right tint color.
      * @param {Phaser.Types.Renderer.WebGL.RenderNodes.BatchHandlerQuadRenderOptions} renderOptions - Optional render features.
+     * @param {number} [tint2TL] - The secondary tint color for the top-left corner.
+     * @param {number} [tint2BL] - The secondary tint color for the bottom-left corner.
+     * @param {number} [tint2TR] - The secondary tint color for the top-right corner.
+     * @param {number} [tint2BR] - The secondary tint color for the bottom-right corner.
      * @param {...*} [args] - Additional arguments for subclasses.
      */
     batch: function (
@@ -191591,7 +192136,8 @@ var BatchHandlerQuad = new Class({
         texWidth, texHeight,
         tintMode,
         tintTL, tintBL, tintTR, tintBR,
-        renderOptions
+        renderOptions,
+        tint2TL, tint2BL, tint2TR, tint2BR
     )
     {
         if (this.instanceCount === 0)
@@ -191610,6 +192156,23 @@ var BatchHandlerQuad = new Class({
         // Process textures and get relevant data.
         var textureDatum = this.batchTextures(glTexture, renderOptions);
 
+        // Pack tint mode with secondary tint colors.
+        // Assign default secondary tint colors if not provided.
+        if (tint2TL === undefined)
+        {
+            tint2TL = tintMode << 24;
+            tint2BL = tint2TL;
+            tint2TR = tint2TL;
+            tint2BR = tint2TL;
+        }
+        else
+        {
+            tint2TL = getTint(tint2TL, tintMode / 255);
+            tint2BL = getTint(tint2BL, tintMode / 255);
+            tint2TR = getTint(tint2TR, tintMode / 255);
+            tint2BR = getTint(tint2BR, tintMode / 255);
+        }
+
         // Update the vertex buffer.
         var vertexOffset32 = this.instanceCount * this.floatsPerInstance;
         var vertexBuffer = this.vertexBufferLayout.buffer;
@@ -191622,7 +192185,7 @@ var BatchHandlerQuad = new Class({
         vertexViewF32[vertexOffset32++] = texX;
         vertexViewF32[vertexOffset32++] = texY + texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintMode;
+        vertexViewU32[vertexOffset32++] = tint2BL;
         vertexViewU32[vertexOffset32++] = tintBL;
 
         // Top-left
@@ -191631,7 +192194,7 @@ var BatchHandlerQuad = new Class({
         vertexViewF32[vertexOffset32++] = texX;
         vertexViewF32[vertexOffset32++] = texY;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintMode;
+        vertexViewU32[vertexOffset32++] = tint2TL;
         vertexViewU32[vertexOffset32++] = tintTL;
 
         // Bottom-right
@@ -191640,7 +192203,7 @@ var BatchHandlerQuad = new Class({
         vertexViewF32[vertexOffset32++] = texX + texWidth;
         vertexViewF32[vertexOffset32++] = texY + texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintMode;
+        vertexViewU32[vertexOffset32++] = tint2BR;
         vertexViewU32[vertexOffset32++] = tintBR;
 
         // Top-right
@@ -191649,7 +192212,157 @@ var BatchHandlerQuad = new Class({
         vertexViewF32[vertexOffset32++] = texX + texWidth;
         vertexViewF32[vertexOffset32++] = texY;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintMode;
+        vertexViewU32[vertexOffset32++] = tint2TR;
+        vertexViewU32[vertexOffset32++] = tintTR;
+
+        // Increment the instance count.
+        this.instanceCount++;
+        this.currentBatchEntry.count++;
+
+        // Check whether the batch should be rendered immediately.
+        // This guarantees that none of the arrays are full above.
+        if (this.instanceCount === this.instancesPerBatch)
+        {
+            this.run(currentContext);
+
+            // Now the batch is empty.
+        }
+    },
+
+    /**
+     * Add a quad to the batch, using explicit UV coordinates.
+     * This is intended for compatibility with mesh rendering.
+     *
+     * For compatibility with TRIANGLE_STRIP rendering,
+     * the vertices are written into the buffer in the order:
+     *
+     * - Bottom-left
+     * - Top-left
+     * - Bottom-right
+     * - Top-right
+     *
+     * @method Phaser.Renderer.WebGL.RenderNodes.BatchHandlerQuad#batch
+     * @since 4.0.0
+     * @param {Phaser.Renderer.WebGL.DrawingContext} currentContext - The current drawing context.
+     * @param {Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper} glTexture - The texture to render.
+     * @param {number} x0 - The x coordinate of the top-left corner.
+     * @param {number} y0 - The y coordinate of the top-left corner.
+     * @param {number} x1 - The x coordinate of the bottom-left corner.
+     * @param {number} y1 - The y coordinate of the bottom-left corner.
+     * @param {number} x2 - The x coordinate of the top-right corner.
+     * @param {number} y2 - The y coordinate of the top-right corner.
+     * @param {number} x3 - The x coordinate of the bottom-right corner.
+     * @param {number} y3 - The y coordinate of the bottom-right corner.
+     * @param {number} u0 - The u coordinate of the top-left corner.
+     * @param {number} v0 - The v coordinate of the top-left corner.
+     * @param {number} u1 - The u coordinate of the bottom-left corner.
+     * @param {number} v1 - The v coordinate of the bottom-left corner.
+     * @param {number} u2 - The u coordinate of the top-right corner.
+     * @param {number} v2 - The v coordinate of the top-right corner.
+     * @param {number} u3 - The u coordinate of the bottom-right corner.
+     * @param {number} v3 - The v coordinate of the bottom-right corner.
+     * @param {number} tintMode - The tint mode to use.
+     * @param {number} tintTL - The tint color for the top-left corner.
+     * @param {number} tintBL - The tint color for the bottom-left corner.
+     * @param {number} tintTR - The tint color for the top-right corner.
+     * @param {number} tintBR - The tint color for the bottom-right corner.
+     * @param {Phaser.Types.Renderer.WebGL.RenderNodes.BatchHandlerQuadRenderOptions} renderOptions - Optional render features.
+     * @param {number} [tint2TL] - The secondary tint color for the top-left corner.
+     * @param {number} [tint2BL] - The secondary tint color for the bottom-left corner.
+     * @param {number} [tint2TR] - The secondary tint color for the top-right corner.
+     * @param {number} [tint2BR] - The secondary tint color for the bottom-right corner.
+     * @param {...*} [args] - Additional arguments for subclasses.
+     */
+    batchWithUV: function(
+        currentContext,
+        glTexture,
+        x0, y0,
+        x1, y1,
+        x2, y2,
+        x3, y3,
+        u0, v0,
+        u1, v1,
+        u2, v2,
+        u3, v3,
+        tintMode,
+        tintTL, tintBL, tintTR, tintBR,
+        renderOptions,
+        tint2TL, tint2BL, tint2TR, tint2BR
+    )
+    {
+        if (this.instanceCount === 0)
+        {
+            this.manager.setCurrentBatchNode(this, currentContext);
+        }
+
+        // Check render options and run the batch if they differ.
+        this.updateRenderOptions(renderOptions);
+        if (this._renderOptionsChanged)
+        {
+            this.run(currentContext);
+            this.updateShaderConfig();
+        }
+
+        // Process textures and get relevant data.
+        var textureDatum = this.batchTextures(glTexture, renderOptions);
+
+        // Pack tint mode with secondary tint colors.
+        // Assign default secondary tint colors if not provided.
+        if (tint2TL === undefined)
+        {
+            tint2TL = tintMode << 24;
+            tint2BL = tint2TL;
+            tint2TR = tint2TL;
+            tint2BR = tint2TL;
+        }
+        else
+        {
+            tint2TL = getTint(tint2TL, tintMode / 255);
+            tint2BL = getTint(tint2BL, tintMode / 255);
+            tint2TR = getTint(tint2TR, tintMode / 255);
+            tint2BR = getTint(tint2BR, tintMode / 255);
+        }
+
+        // Update the vertex buffer.
+        var vertexOffset32 = this.instanceCount * this.floatsPerInstance;
+        var vertexBuffer = this.vertexBufferLayout.buffer;
+        var vertexViewF32 = vertexBuffer.viewF32;
+        var vertexViewU32 = vertexBuffer.viewU32;
+
+        // Bottom-left
+        vertexViewF32[vertexOffset32++] = x1;
+        vertexViewF32[vertexOffset32++] = y1;
+        vertexViewF32[vertexOffset32++] = u1;
+        vertexViewF32[vertexOffset32++] = v1;
+        vertexViewF32[vertexOffset32++] = textureDatum;
+        vertexViewU32[vertexOffset32++] = tint2BL;
+        vertexViewU32[vertexOffset32++] = tintBL;
+
+        // Top-left
+        vertexViewF32[vertexOffset32++] = x0;
+        vertexViewF32[vertexOffset32++] = y0;
+        vertexViewF32[vertexOffset32++] = u0;
+        vertexViewF32[vertexOffset32++] = v0;
+        vertexViewF32[vertexOffset32++] = textureDatum;
+        vertexViewU32[vertexOffset32++] = tint2TL;
+        vertexViewU32[vertexOffset32++] = tintTL;
+
+        // Bottom-right
+        vertexViewF32[vertexOffset32++] = x3;
+        vertexViewF32[vertexOffset32++] = y3;
+        vertexViewF32[vertexOffset32++] = u3;
+        vertexViewF32[vertexOffset32++] = v3;
+        vertexViewF32[vertexOffset32++] = textureDatum;
+        vertexViewU32[vertexOffset32++] = tint2BR;
+        vertexViewU32[vertexOffset32++] = tintBR;
+
+        // Top-right
+        vertexViewF32[vertexOffset32++] = x2;
+        vertexViewF32[vertexOffset32++] = y2;
+        vertexViewF32[vertexOffset32++] = u2;
+        vertexViewF32[vertexOffset32++] = v2;
+        vertexViewF32[vertexOffset32++] = textureDatum;
+        vertexViewU32[vertexOffset32++] = tint2TR;
         vertexViewU32[vertexOffset32++] = tintTR;
 
         // Increment the instance count.
@@ -191936,7 +192649,10 @@ var BatchHandlerStrip = new Class({
                     name: 'inTexDatum'
                 },
                 {
-                    name: 'inTintEffect'
+                    name: 'inTintEffect',
+                    size: 4,
+                    type: 'UNSIGNED_BYTE',
+                    normalized: true
                 },
                 {
                     name: 'inTint',
@@ -192093,6 +192809,8 @@ var BatchHandlerStrip = new Class({
         var e = calcMatrix.e;
         var f = calcMatrix.f;
 
+        var tintCombined = tintMode << 24;
+
         var meshVerticesLength = vertices.length;
 
         for (var i = 0; i < meshVerticesLength; i += 2)
@@ -192108,7 +192826,7 @@ var BatchHandlerStrip = new Class({
             vertexViewF32[vertexOffset32++] = uv[i];
             vertexViewF32[vertexOffset32++] = uv[i + 1];
             vertexViewF32[vertexOffset32++] = textureDatum;
-            vertexViewF32[vertexOffset32++] = tintMode;
+            vertexViewU32[vertexOffset32++] = tintCombined;
             vertexViewU32[vertexOffset32++] = getTint(
                 colors[i / 2],
                 alphas[i / 2] * alpha
@@ -192178,7 +192896,10 @@ var MakeRotationDatum = __webpack_require__(65217);
 var MakeSmoothPixelArt = __webpack_require__(74505);
 var MakeTexCoordFrameClamp = __webpack_require__(44832);
 var MakeTexCoordFrameWrap = __webpack_require__(23295);
+var Utils = __webpack_require__(70554);
 var BatchHandlerQuad = __webpack_require__(15214);
+
+var getTint = Utils.getTintAppendFloatAlpha;
 
 /**
  * @classdesc
@@ -192253,7 +192974,10 @@ var BatchHandlerTileSprite = new Class({
                     name: 'inTexDatum'
                 },
                 {
-                    name: 'inTintEffect'
+                    name: 'inTintEffect',
+                    size: 4,
+                    type: 'UNSIGNED_BYTE',
+                    normalized: true
                 },
                 {
                     name: 'inTint',
@@ -192387,6 +193111,10 @@ var BatchHandlerTileSprite = new Class({
      * @param {number} v2 - The v coordinate of the distorted top-right corner.
      * @param {number} u3 - The u coordinate of the distorted bottom-right corner.
      * @param {number} v3 - The v coordinate of the distorted bottom-right corner.
+     * @param {number} [tint2TL] - The secondary tint color for the top-left corner.
+     * @param {number} [tint2BL] - The secondary tint color for the bottom-left corner.
+     * @param {number} [tint2TR] - The secondary tint color for the top-right corner.
+     * @param {number} [tint2BR] - The secondary tint color for the bottom-right corner.
      */
     batch: function (
         drawingContext,
@@ -192400,7 +193128,8 @@ var BatchHandlerTileSprite = new Class({
         tintMode,
         tintTL, tintBL, tintTR, tintBR,
         renderOptions,
-        u0, v0, u1, v1, u2, v2, u3, v3
+        u0, v0, u1, v1, u2, v2, u3, v3,
+        tint2TL, tint2BL, tint2TR, tint2BR
     )
     {
         if (this.instanceCount === 0)
@@ -192419,6 +193148,23 @@ var BatchHandlerTileSprite = new Class({
         // Process textures and get relevant data.
         var textureDatum = this.batchTextures(glTexture, renderOptions);
 
+        // Pack tint mode with secondary tint colors.
+        // Assign default secondary tint colors if not provided.
+        if (tint2TL === undefined)
+        {
+            tint2TL = tintMode << 24;
+            tint2BL = tint2TL;
+            tint2TR = tint2TL;
+            tint2BR = tint2TL;
+        }
+        else
+        {
+            tint2TL = getTint(tint2TL, tintMode / 255);
+            tint2BL = getTint(tint2BL, tintMode / 255);
+            tint2TR = getTint(tint2TR, tintMode / 255);
+            tint2BR = getTint(tint2BR, tintMode / 255);
+        }
+
         // Update the vertex buffer.
         var vertexOffset32 = this.instanceCount * this.floatsPerInstance;
         var vertexBuffer = this.vertexBufferLayout.buffer;
@@ -192435,7 +193181,7 @@ var BatchHandlerTileSprite = new Class({
         vertexViewF32[vertexOffset32++] = texWidth;
         vertexViewF32[vertexOffset32++] = texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintMode;
+        vertexViewU32[vertexOffset32++] = tint2BL;
         vertexViewU32[vertexOffset32++] = tintBL;
 
         // Top-left
@@ -192448,7 +193194,7 @@ var BatchHandlerTileSprite = new Class({
         vertexViewF32[vertexOffset32++] = texWidth;
         vertexViewF32[vertexOffset32++] = texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintMode;
+        vertexViewU32[vertexOffset32++] = tint2TL;
         vertexViewU32[vertexOffset32++] = tintTL;
 
         // Bottom-right
@@ -192461,7 +193207,7 @@ var BatchHandlerTileSprite = new Class({
         vertexViewF32[vertexOffset32++] = texWidth;
         vertexViewF32[vertexOffset32++] = texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintMode;
+        vertexViewU32[vertexOffset32++] = tint2BR;
         vertexViewU32[vertexOffset32++] = tintBR;
 
         // Top-right
@@ -192474,7 +193220,7 @@ var BatchHandlerTileSprite = new Class({
         vertexViewF32[vertexOffset32++] = texWidth;
         vertexViewF32[vertexOffset32++] = texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintMode;
+        vertexViewU32[vertexOffset32++] = tint2TR;
         vertexViewU32[vertexOffset32++] = tintTR;
 
         // Increment the instance count.
@@ -194870,6 +195616,7 @@ var FilterWipe = __webpack_require__(99184);
 var ListCompositor = __webpack_require__(27996);
 var RebindContext = __webpack_require__(56432);
 var StrokePath = __webpack_require__(17486);
+var SubmitterMeshToQuad = __webpack_require__(68517);
 var SubmitterQuad = __webpack_require__(31029);
 var SubmitterTile = __webpack_require__(94494);
 var SubmitterTilemapGPULayer = __webpack_require__(87469);
@@ -194880,6 +195627,7 @@ var TransformerImage = __webpack_require__(86081);
 var TransformerStamp = __webpack_require__(88383);
 var TransformerTile = __webpack_require__(34454);
 var TransformerTileSprite = __webpack_require__(46211);
+var TransformerVertex = __webpack_require__(64552);
 var YieldContext = __webpack_require__(95433);
 
 /**
@@ -195027,6 +195775,7 @@ var RenderNodeManager = new Class({
             ListCompositor: ListCompositor,
             RebindContext: RebindContext,
             StrokePath: StrokePath,
+            SubmitterMeshToQuad: SubmitterMeshToQuad,
             SubmitterQuad: SubmitterQuad,
             SubmitterTile: SubmitterTile,
             SubmitterTilemapGPULayer: SubmitterTilemapGPULayer,
@@ -195037,6 +195786,7 @@ var RenderNodeManager = new Class({
             TransformerStamp: TransformerStamp,
             TransformerTile: TransformerTile,
             TransformerTileSprite: TransformerTileSprite,
+            TransformerVertex: TransformerVertex,
             YieldContext: YieldContext
         };
 
@@ -196212,6 +196962,28 @@ var DefaultImageNodes = new Map([
     [ 'BatchHandler', 'BatchHandlerQuad' ],
     [ 'Transformer', 'TransformerImage' ],
     [ 'Texturer', 'TexturerImage' ]
+]);
+
+module.exports = DefaultImageNodes;
+
+
+/***/ },
+
+/***/ 2389
+(module, __unused_webpack_exports, __webpack_require__) {
+
+/**
+ * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
+ * @copyright    2013-2026 Phaser Studio Inc.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
+ */
+
+var Map = __webpack_require__(90330);
+
+var DefaultImageNodes = new Map([
+    [ 'Submitter', 'SubmitterMeshToQuad' ],
+    [ 'BatchHandler', 'BatchHandlerQuad' ],
+    [ 'Transformer', 'TransformerVertex' ]
 ]);
 
 module.exports = DefaultImageNodes;
@@ -199412,6 +200184,7 @@ var RenderNodes = {
     RebindContext: __webpack_require__(56432),
     RenderNode: __webpack_require__(6141),
     StrokePath: __webpack_require__(17486),
+    SubmitterMeshToQuad: __webpack_require__(68517),
     SubmitterQuad: __webpack_require__(31029),
     SubmitterSpriteGPULayer: __webpack_require__(53384),
     SubmitterTile: __webpack_require__(94494),
@@ -199423,10 +200196,395 @@ var RenderNodes = {
     TransformerStamp: __webpack_require__(88383),
     TransformerTile: __webpack_require__(34454),
     TransformerTileSprite: __webpack_require__(46211),
+    TransformerVertex: __webpack_require__(64552),
     YieldContext: __webpack_require__(95433)
 };
 
 module.exports = RenderNodes;
+
+
+/***/ },
+
+/***/ 68517
+(module, __unused_webpack_exports, __webpack_require__) {
+
+/**
+ * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
+ * @copyright    2013-2026 Phaser Studio Inc.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
+ */
+
+var Vector2 = __webpack_require__(26099);
+var Class = __webpack_require__(83419);
+var Merge = __webpack_require__(46975);
+var Utils = __webpack_require__(70554);
+var SubmitterQuad = __webpack_require__(31029);
+
+var getTint = Utils.getTintAppendFloatAlpha;
+
+/**
+ * @classdesc
+ * The SubmitterMeshToQuad RenderNode submits data for rendering a Mesh GameObject.
+ * It uses a BatchHandler to render the mesh as part of a batch.
+ * It is designed to maximize batch compatibility with regular quads,
+ * by combining adjacent triangles into quads where possible.
+ *
+ * Performance-wise, this depends on the sequence of triangles in the mesh.
+ * Two sequential triangles sharing an edge will be combined into a quad,
+ * which renders as just 4 vertices instead of 6.
+ * But a triangle that can't combine will be rendered as a quad too,
+ * taking 4 vertices instead of 3.
+ * Try to arrange triangles so they can combine.
+ *
+ * This node receives the drawing context, game object, and parent matrix.
+ * It also receives the transformer node from the node that invoked it.
+ * This allows the behavior to be configured by setting the appropriate nodes
+ * on the GameObject for individual tweaks, or on the invoking Renderer node
+ * for global changes.
+ *
+ * @class SubmitterMeshToQuad
+ * @memberof Phaser.Renderer.WebGL.RenderNodes
+ * @constructor
+ * @since 4.NEXT
+ * @extends Phaser.Renderer.WebGL.RenderNodes.SubmitterQuad
+ * @param {Phaser.Renderer.WebGL.RenderNodes.RenderNodeManager} manager - The manager that owns this RenderNode.
+ * @param {Phaser.Types.Renderer.WebGL.RenderNodes.SubmitterQuadConfig} [config] - The configuration object for this RenderNode.
+ */
+var SubmitterMeshToQuad = new Class({
+    Extends: SubmitterQuad,
+
+    initialize: function SubmitterMeshToQuad (manager, config)
+    {
+        config = Merge(config || {}, this.defaultConfig);
+
+        SubmitterQuad.call(this, manager, config);
+
+        /**
+         * Temporary point used to store the transformed vertex positions.
+         *
+         * @name Phaser.Renderer.WebGL.RenderNodes.SubmitterMeshToQuad#_tempPoint
+         * @type {Phaser.Math.Vector2}
+         * @since 4.NEXT
+         * @private
+         */
+        this._tempPoint = new Vector2();
+    },
+
+    /**
+     * The default configuration for this RenderNode.
+     *
+     * @name Phaser.Renderer.WebGL.RenderNodes.SubmitterMeshToQuad#defaultConfig
+     * @type {Phaser.Types.Renderer.WebGL.RenderNodes.SubmitterQuadConfig}
+     */
+    defaultConfig: {
+        name: 'SubmitterMeshToQuad',
+        role: 'Submitter',
+        batchHandler: 'BatchHandler'
+    },
+
+    /**
+     * Processes the given GameObject and submits mesh vertex data to the appropriate
+     * batch handler for rendering. This method iterates over the mesh indices and
+     * vertices, checking for shared edges between triangles to combine them into quads.
+     * If no shared edge is found, the triangle is submitted as a degenerate. The
+     * method then caches the last triangle and continues iterating until all triangles
+     * are processed. If a cached triangle remains at the end, it is submitted as a
+     * degenerate.
+     *
+     * The method also sets the render options for the GameObject, including the normal
+     * map texture and rotation.
+     *
+     * @method Phaser.Renderer.WebGL.RenderNodes.SubmitterMeshToQuad#run
+     * @since 4.NEXT
+     * @param {Phaser.Renderer.WebGL.DrawingContext} drawingContext - The current drawing context.
+     * @param {Phaser.GameObjects.GameObject} gameObject - The GameObject being rendered.
+     * @param {Phaser.GameObjects.Components.TransformMatrix} [parentMatrix] - The parent matrix of the GameObject, if it is a nested game object.
+     * @param {Phaser.Renderer.WebGL.RenderNodes.TransformerVertex} transformerNode - The transformer node used to transform the GameObject.
+     * @param {Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper} [normalMap] - The normal map texture to use for lighting. If omitted, the normal map texture of the GameObject will be used, or the default normal map texture of the renderer.
+     * @param {number} [normalMapRotation] - The rotation of the normal map texture. If omitted, the rotation of the GameObject will be used.
+     */
+    run: function (
+        drawingContext,
+        gameObject,
+        parentMatrix,
+        transformerNode,
+        normalMap,
+        normalMapRotation
+    )
+    {
+        this.onRunBegin(drawingContext);
+
+        var cached = false;
+        var triCount = gameObject.indices.length / 4;
+
+        // First triangle vertex cache.
+        var d, e, f, firstTexturePage;
+
+        for (var i = 0; i < triCount; i++)
+        {
+            var index = i * 4;
+            var a = gameObject.indices[index];
+            var b = gameObject.indices[index + 1];
+            var c = gameObject.indices[index + 2];
+            var texturePage = gameObject.indices[index + 3];
+
+            // We could check for degenerate triangles,
+            // using either abc or the texture coordinates,
+            // but as we expect raw triangles, and there's no reason to define
+            // degenerate triangles except for purposeful topology, we don't.
+
+            if (!cached)
+            {
+                cached = true;
+
+                d = a;
+                e = b;
+                f = c;
+                firstTexturePage = texturePage;
+
+                continue;
+            }
+
+            // Compare with potential first half of quad.
+            // If the texture page is the same,
+            // and the triangles share any edge (as defined by abc and def),
+            // then we can submit a quad combining the triangles.
+            if (texturePage === firstTexturePage)
+            {
+                var sharedEdge = false;
+
+                // Whether vertices are the same.
+                var isAD = a === d;
+                var isAE = a === e;
+                var isAF = a === f;
+                var isBD = b === d;
+                var isBE = b === e;
+                var isBF = b === f;
+                var isCD = c === d;
+                var isCE = c === e;
+                var isCF = c === f;
+
+                // Shared quad.
+                var p, q, r, s;
+
+                // Possible combinations of shared edges.
+                if ((isAD && isBE) || (isAE && isBD))
+                {
+                    sharedEdge = true;
+                    p = c;
+                    q = a;
+                    r = b;
+                    s = f;
+                }
+                else if ((isAD && isBF) || (isAF && isBD))
+                {
+                    sharedEdge = true;
+                    p = c;
+                    q = a;
+                    r = b;
+                    s = e;
+                }
+                else if ((isAE && isBF) || (isAF && isBE))
+                {
+                    sharedEdge = true;
+                    p = c;
+                    q = a;
+                    r = b;
+                    s = d;
+                }
+                else if ((isAD && isCE) || (isAE && isCD))
+                {
+                    sharedEdge = true;
+                    p = b;
+                    q = a;
+                    r = c;
+                    s = f;
+                }
+                else if ((isAD && isCF) || (isAF && isCD))
+                {
+                    sharedEdge = true;
+                    p = b;
+                    q = a;
+                    r = c;
+                    s = e;
+                }
+                else if ((isAE && isCF) || (isAF && isCE))
+                {
+                    sharedEdge = true;
+                    p = b;
+                    q = a;
+                    r = c;
+                    s = d;
+                }
+                else if ((isBD && isCE) || (isBE && isCD))
+                {
+                    sharedEdge = true;
+                    p = a;
+                    q = b;
+                    r = c;
+                    s = f;
+                }
+                else if ((isBD && isCF) || (isBF && isCD))
+                {
+                    sharedEdge = true;
+                    p = a;
+                    q = b;
+                    r = c;
+                    s = e;
+                }
+                else if ((isBE && isCF) || (isBF && isCE))
+                {
+                    sharedEdge = true;
+                    p = a;
+                    q = b;
+                    r = c;
+                    s = d;
+                }
+
+                if (sharedEdge)
+                {
+                    this._submitQuad(p, q, r, s, texturePage, drawingContext, gameObject, parentMatrix, transformerNode, normalMap, normalMapRotation);
+
+                    cached = false;
+
+                    continue;
+                }
+            }
+
+            // The cached triangle cannot be linked with the current tri,
+            // so we submit it as a degenerate.
+            this._submitQuad(d, e, f, f, firstTexturePage, drawingContext, gameObject, parentMatrix, transformerNode, normalMap, normalMapRotation);
+
+            // Update the cached triangle.
+            d = a;
+            e = b;
+            f = c;
+            firstTexturePage = texturePage;
+            cached = true;
+        }
+
+        if (cached)
+        {
+            // We have a cached triangle, but it's not part of a quad.
+            // Submit it as a degenerate.
+            this._submitQuad(d, e, f, f, firstTexturePage, drawingContext, gameObject, parentMatrix, transformerNode, normalMap, normalMapRotation);
+        }
+
+        this.onRunEnd(drawingContext);
+    },
+
+    /**
+     * Submits a quad to the batch handler for rendering.
+     * This is used internally by the `run` method
+     * to submit a quad that is a combination of two triangles,
+     * or a single triangle using a degenerate triangle to pad quad alignment.
+     *
+     * @method Phaser.Renderer.WebGL.RenderNodes.SubmitterMeshToQuad#_submitQuad
+     * @since 4.NEXT
+     * @param {number} a - The index of the first vertex of the quad. This is the corner unique to the first triangle.
+     * @param {number} b - The index of the second vertex of the quad. This is shared between triangles.
+     * @param {number} c - The index of the third vertex of the quad. This is shared between triangles.
+     * @param {number} d - The index of the fourth vertex of the quad. This is the corner unique to the second triangle.
+     * @param {number} texturePage - The index of the texture source to use for the quad.
+     * @param {Phaser.Renderer.WebGL.DrawingContext} drawingContext - The current drawing context.
+     * @param {Phaser.GameObjects.GameObject} gameObject - The GameObject being rendered.
+     * @param {Phaser.GameObjects.Components.TransformMatrix} [parentMatrix] - The parent matrix of the GameObject, if it is a nested game object.
+     * @param {Phaser.Renderer.WebGL.RenderNodes.TransformerVertex} transformerNode - The transformer node used to transform the GameObject.
+     * @param {Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper} [normalMap] - The normal map texture to use for lighting. If omitted, the normal map texture of the GameObject will be used, or the default normal map texture of the renderer.
+     * @param {number} [normalMapRotation] - The rotation of the normal map texture. If omitted, the rotation of the GameObject will be used.
+     */
+    _submitQuad: function (
+        a, b, c, d,
+        texturePage,
+        drawingContext,
+        gameObject,
+        parentMatrix,
+        transformerNode,
+        normalMap,
+        normalMapRotation
+    )
+    {
+        var step = 4;
+
+        var xA = gameObject.vertices[a * step];
+        var yA = gameObject.vertices[a * step + 1];
+        var uA = gameObject.vertices[a * step + 2];
+        var vA = gameObject.vertices[a * step + 3];
+
+        var xB = gameObject.vertices[b * step];
+        var yB = gameObject.vertices[b * step + 1];
+        var uB = gameObject.vertices[b * step + 2];
+        var vB = gameObject.vertices[b * step + 3];
+
+        var xC = gameObject.vertices[c * step];
+        var yC = gameObject.vertices[c * step + 1];
+        var uC = gameObject.vertices[c * step + 2];
+        var vC = gameObject.vertices[c * step + 3];
+
+        var xD = gameObject.vertices[d * step];
+        var yD = gameObject.vertices[d * step + 1];
+        var uD = gameObject.vertices[d * step + 2];
+        var vD = gameObject.vertices[d * step + 3];
+
+        if (gameObject.flipV)
+        {
+            vA = 1 - vA;
+            vB = 1 - vB;
+            vC = 1 - vC;
+            vD = 1 - vD;
+        }
+
+        var tintEffect = gameObject.tintMode;
+        var tint = getTint(gameObject.tint, gameObject.alpha);
+        var tint2 = gameObject.tint2;
+
+        this._tempPoint.set(xA, yA);
+        transformerNode.run(drawingContext, gameObject, parentMatrix, this._tempPoint);
+        xA = this._tempPoint.x;
+        yA = this._tempPoint.y;
+        this._tempPoint.set(xB, yB);
+        transformerNode.run(drawingContext, gameObject, parentMatrix, this._tempPoint);
+        xB = this._tempPoint.x;
+        yB = this._tempPoint.y;
+        this._tempPoint.set(xC, yC);
+        transformerNode.run(drawingContext, gameObject, parentMatrix, this._tempPoint);
+        xC = this._tempPoint.x;
+        yC = this._tempPoint.y;
+        this._tempPoint.set(xD, yD);
+        transformerNode.run(drawingContext, gameObject, parentMatrix, this._tempPoint);
+        xD = this._tempPoint.x;
+        yD = this._tempPoint.y;
+
+        this.setRenderOptions(gameObject, normalMap, normalMapRotation);
+
+        (
+            gameObject.customRenderNodes[this.batchHandler] ||
+            gameObject.defaultRenderNodes[this.batchHandler]
+        ).batchWithUV(
+            drawingContext,
+            gameObject.texture.source[texturePage].glTexture,
+
+            // Combined quad in order TL, BL, TR, BR:
+            xA, yA, xB, yB, xC, yC, xD, yD,
+
+            // Texture coordinates in order TL, BL, TR, BR:
+            uA, vA, uB, vB, uC, vC, uD, vD,
+
+            tintEffect,
+
+            // Tint colors in order TL, BL, TR, BR:
+            tint, tint, tint, tint,
+
+            // Extra render options:
+            this._renderOptions,
+
+            // Secondary tint colors in order TL, BL, TR, BR:
+            tint2, tint2, tint2, tint2,
+        );
+    }
+});
+
+module.exports = SubmitterMeshToQuad;
 
 
 /***/ },
@@ -199565,7 +200723,7 @@ var SubmitterQuad = new Class({
     {
         this.onRunBegin(drawingContext);
 
-        var tintEffect, tintTopLeft, tintBottomLeft, tintTopRight, tintBottomRight;
+        var tintEffect, tintTopLeft, tintBottomLeft, tintTopRight, tintBottomRight, tint2TopLeft, tint2BottomLeft, tint2TopRight, tint2BottomRight;
 
         if (texturerNode.run)
         {
@@ -199586,6 +200744,10 @@ var SubmitterQuad = new Class({
             tintBottomLeft = tinterNode.tintBottomLeft;
             tintTopRight = tinterNode.tintTopRight;
             tintBottomRight = tinterNode.tintBottomRight;
+            tint2TopLeft = tinterNode.tint2TopLeft;
+            tint2BottomLeft = tinterNode.tint2BottomLeft;
+            tint2TopRight = tinterNode.tint2TopRight;
+            tint2BottomRight = tinterNode.tint2BottomRight;
         }
         else
         {
@@ -199594,6 +200756,10 @@ var SubmitterQuad = new Class({
             tintBottomLeft = getTint(gameObject.tintBottomLeft, gameObject._alphaBL);
             tintTopRight = getTint(gameObject.tintTopRight, gameObject._alphaTR);
             tintBottomRight = getTint(gameObject.tintBottomRight, gameObject._alphaBR);
+            tint2TopLeft = gameObject.tint2TopLeft;
+            tint2BottomLeft = gameObject.tint2BottomLeft;
+            tint2TopRight = gameObject.tint2TopRight;
+            tint2BottomRight = gameObject.tint2BottomRight;
         }
 
         var quad = transformerNode.quad;
@@ -199630,7 +200796,10 @@ var SubmitterQuad = new Class({
             tintTopLeft, tintBottomLeft, tintTopRight, tintBottomRight,
 
             // Extra render options:
-            this._renderOptions
+            this._renderOptions,
+
+            // Secondary tint colors in order TL, BL, TR, BR:
+            tint2TopLeft, tint2BottomLeft, tint2TopRight, tint2BottomRight
         );
 
         this.onRunEnd(drawingContext);
@@ -200488,7 +201657,7 @@ var SubmitterTile = new Class({
     {
         this.onRunBegin(drawingContext);
 
-        var tintEffect, tintTopLeft, tintBottomLeft, tintTopRight, tintBottomRight;
+        var tintEffect, tintTopLeft, tintBottomLeft, tintTopRight, tintBottomRight, tint2TopLeft, tint2BottomLeft, tint2TopRight, tint2BottomRight;
 
         if (texturerNode.run)
         {
@@ -200509,6 +201678,10 @@ var SubmitterTile = new Class({
             tintBottomLeft = tinterNode.tintBottomLeft;
             tintTopRight = tinterNode.tintTopRight;
             tintBottomRight = tinterNode.tintBottomRight;
+            tint2TopLeft = tinterNode.tint2TopLeft;
+            tint2BottomLeft = tinterNode.tint2BottomLeft;
+            tint2TopRight = tinterNode.tint2TopRight;
+            tint2BottomRight = tinterNode.tint2BottomRight;
         }
         else
         {
@@ -200518,6 +201691,11 @@ var SubmitterTile = new Class({
             tintBottomLeft = tint;
             tintTopRight = tint;
             tintBottomRight = tint;
+            var tint2 = 0x000000;
+            tint2TopLeft = tint2;
+            tint2BottomLeft = tint2;
+            tint2TopRight = tint2;
+            tint2BottomRight = tint2;
         }
 
         var frame = texturerNode.frame;
@@ -200561,7 +201739,10 @@ var SubmitterTile = new Class({
             u0, v1,
             u0, v0,
             u1, v1,
-            u1, v0
+            u1, v0,
+
+            // Secondary tint colors in order TL, BL, TR, BR:
+            tint2TopLeft, tint2BottomLeft, tint2TopRight, tint2BottomRight
         );
 
         this.onRunEnd(drawingContext);
@@ -200664,7 +201845,7 @@ var SubmitterTileSprite = new Class({
     {
         this.onRunBegin(drawingContext);
 
-        var tintEffect, tintTopLeft, tintBottomLeft, tintTopRight, tintBottomRight;
+        var tintEffect, tintTopLeft, tintBottomLeft, tintTopRight, tintBottomRight, tint2TopLeft, tint2BottomLeft, tint2TopRight, tint2BottomRight;
 
         if (texturerNode.run)
         {
@@ -200685,6 +201866,10 @@ var SubmitterTileSprite = new Class({
             tintBottomLeft = tinterNode.tintBottomLeft;
             tintTopRight = tinterNode.tintTopRight;
             tintBottomRight = tinterNode.tintBottomRight;
+            tint2TopLeft = tinterNode.tint2TopLeft;
+            tint2BottomLeft = tinterNode.tint2BottomLeft;
+            tint2TopRight = tinterNode.tint2TopRight;
+            tint2BottomRight = tinterNode.tint2BottomRight;
         }
         else
         {
@@ -200693,6 +201878,10 @@ var SubmitterTileSprite = new Class({
             tintBottomLeft = getTint(gameObject.tintBottomLeft, gameObject._alphaBL);
             tintTopRight = getTint(gameObject.tintTopRight, gameObject._alphaTR);
             tintBottomRight = getTint(gameObject.tintBottomRight, gameObject._alphaBR);
+            tint2TopLeft = gameObject.tint2TopLeft;
+            tint2BottomLeft = gameObject.tint2BottomLeft;
+            tint2TopRight = gameObject.tint2TopRight;
+            tint2BottomRight = gameObject.tint2BottomRight;
         }
 
         var frame = texturerNode.frame;
@@ -200740,7 +201929,10 @@ var SubmitterTileSprite = new Class({
             uvQuad[0], uvQuad[1],
             uvQuad[2], uvQuad[3],
             uvQuad[6], uvQuad[7],
-            uvQuad[4], uvQuad[5]
+            uvQuad[4], uvQuad[5],
+
+            // Secondary tint colors in order TL, BL, TR, BR:
+            tint2TopLeft, tint2BottomLeft, tint2TopRight, tint2BottomRight
         );
 
         this.onRunEnd(drawingContext);
@@ -202356,6 +203548,139 @@ module.exports = TransformerTileSprite;
 
 /***/ },
 
+/***/ 64552
+(module, __unused_webpack_exports, __webpack_require__) {
+
+/**
+ * @author       Benjamin D. Richards <benjamindrichards@gmail.com>
+ * @copyright    2013-2026 Phaser Studio Inc.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
+ */
+
+var TransformMatrix = __webpack_require__(61340);
+var Class = __webpack_require__(83419);
+var Merge = __webpack_require__(46975);
+var RenderNode = __webpack_require__(6141);
+
+/**
+ * @classdesc
+ * A RenderNode that computes and stores the screen-space position
+ * of a single vertex each time it is run.
+ *
+ * During its `run` call, this node applies the camera view matrix (adjusted
+ * for the game object's scroll factors), any parent container matrix, and the
+ * game object's own position, rotation, and scale into a single final transform
+ * matrix. It then projects the vertex position through that matrix
+ * and writes the result back to the vertex position,
+ * ready for consumption by the subsequent submitter node.
+ *
+ * @class TransformerVertex
+ * @memberof Phaser.Renderer.WebGL.RenderNodes
+ * @constructor
+ * @since 4.0.0
+ * @extends Phaser.Renderer.WebGL.RenderNodes.RenderNode
+ * @param {Phaser.Renderer.WebGL.RenderNodes.RenderNodeManager} manager - The manager that owns this RenderNode.
+ * @param {object} [config] - The configuration object for this RenderNode.
+ */
+var TransformerVertex = new Class({
+    Extends: RenderNode,
+
+    initialize: function TransformerVertex (manager, config)
+    {
+        config = Merge(config || {}, this.defaultConfig);
+
+        RenderNode.call(this, config.name, manager);
+
+        /**
+         * The matrix used internally to compute sprite transforms.
+         *
+         * @name Phaser.Renderer.WebGL.RenderNodes.TransformerVertex#_spriteMatrix
+         * @type {Phaser.GameObjects.Components.TransformMatrix}
+         * @since 4.0.0
+         * @private
+         */
+        this._spriteMatrix = new TransformMatrix();
+
+        /**
+         * The matrix used internally to compute the final transform.
+         *
+         * @name Phaser.Renderer.WebGL.RenderNodes.TransformerVertex#_calcMatrix
+         * @type {Phaser.GameObjects.Components.TransformMatrix}
+         * @since 4.0.0
+         * @private
+         */
+        this._calcMatrix = new TransformMatrix();
+    },
+
+    defaultConfig: {
+        name: 'TransformerVertex',
+        role: 'Transformer'
+    },
+
+    /**
+     * Computes the final screen-space position of the given vertex
+     * for the given GameObject and stores it in the vertex.
+     *
+     * The method builds the complete transform by combining the camera view
+     * matrix (modified by the game object's scroll factors), an optional parent
+     * container matrix, and the game object's own position, rotation, and scale.
+     * If vertex rounding is required, the resulting values are snapped to the nearest integer.
+     *
+     * @method Phaser.Renderer.WebGL.RenderNodes.TransformerVertex#run
+     * @since 4.0.0
+     * @param {Phaser.Renderer.WebGL.DrawingContext} drawingContext - The current drawing context.
+     * @param {Phaser.GameObjects.GameObject} gameObject - The GameObject being rendered.
+     * @param {Phaser.GameObjects.Components.TransformMatrix} [parentMatrix] - This transform matrix is defined if the game object is nested.
+     * @param {Phaser.Math.Vector2} vertex - The vertex to transform.
+     */
+    run: function (drawingContext, gameObject, parentMatrix, vertex)
+    {
+        this.onRunBegin(drawingContext);
+
+        var camera = drawingContext.camera;
+        var spriteMatrix = this._spriteMatrix;
+        var calcMatrix = this._calcMatrix.copyWithScrollFactorFrom(
+            camera.getViewMatrix(!drawingContext.useCanvas),
+            camera.scrollX, camera.scrollY,
+            gameObject.scrollFactorX, gameObject.scrollFactorY
+        );
+
+        if (parentMatrix)
+        {
+            calcMatrix.multiply(parentMatrix);
+        }
+
+        spriteMatrix.applyITRS(
+            gameObject.x, gameObject.y,
+            gameObject.rotation,
+            gameObject.scaleX, gameObject.scaleY
+        );
+
+        calcMatrix.multiply(spriteMatrix);
+
+        calcMatrix.transformPoint(vertex.x, vertex.y, vertex);
+
+        // Determine whether the matrix does not rotate, scale, or skew.
+        // Keyword: #OnlyTranslate
+        var cmm = calcMatrix.matrix;
+        var onlyTranslate = cmm[0] === 1 && cmm[1] === 0 && cmm[2] === 0 && cmm[3] === 1;
+
+        // Handle vertex rounding.
+        if (gameObject.willRoundVertices(camera, onlyTranslate))
+        {
+            vertex.x = Math.round(vertex.x);
+            vertex.y = Math.round(vertex.y);
+        }
+
+        this.onRunEnd(drawingContext);
+    }
+});
+
+module.exports = TransformerVertex;
+
+
+/***/ },
+
 /***/ 84547
 (module) {
 
@@ -202376,34 +203701,38 @@ module.exports = [
 module.exports = [
     'vec4 applyTint(vec4 texture)',
     '{',
+    '    float tintMode = outTintEffect.a;',
     '    vec3 unpremultTexture = texture.rgb / texture.a;',
     '    float alpha = texture.a * outTint.a;',
     '    vec3 color = vec3(unpremultTexture);',
-    '    if (outTintEffect == 0.0) {',
+    '    if (tintMode == 0.0) {',
     '        color *= outTint.bgr;',
     '    }',
-    '    else if (outTintEffect == 1.0) {',
+    '    else if (tintMode == 1.0) {',
     '        color = outTint.bgr;',
     '    }',
-    '    else if (outTintEffect == 2.0) {',
+    '    else if (tintMode == 2.0) {',
     '        color += outTint.bgr;',
     '    }',
-    '    else if (outTintEffect == 4.0) {',
+    '    else if (tintMode == 4.0) {',
     '        color = 1.0 - (1.0 - unpremultTexture) * (1.0 - outTint.bgr);',
     '    }',
-    '    else if (outTintEffect == 5.0) {',
+    '    else if (tintMode == 5.0) {',
     '        color = vec3(',
     '            unpremultTexture.r < 0.5 ? 2.0 * outTint.b * unpremultTexture.r : 1.0 - 2.0 * (1.0 - outTint.b) * (1.0 - unpremultTexture.r),',
     '            unpremultTexture.g < 0.5 ? 2.0 * outTint.g * unpremultTexture.g : 1.0 - 2.0 * (1.0 - outTint.g) * (1.0 - unpremultTexture.g),',
     '            unpremultTexture.b < 0.5 ? 2.0 * outTint.r * unpremultTexture.b : 1.0 - 2.0 * (1.0 - outTint.r) * (1.0 - unpremultTexture.b)',
     '        );',
     '    }',
-    '    else if (outTintEffect == 6.0) {',
+    '    else if (tintMode == 6.0) {',
     '        color = vec3(',
     '            outTint.b < 0.5 ? 2.0 * outTint.b * unpremultTexture.r : 1.0 - 2.0 * (1.0 - outTint.b) * (1.0 - unpremultTexture.r),',
     '            outTint.g < 0.5 ? 2.0 * outTint.g * unpremultTexture.g : 1.0 - 2.0 * (1.0 - outTint.g) * (1.0 - unpremultTexture.g),',
     '            outTint.r < 0.5 ? 2.0 * outTint.r * unpremultTexture.b : 1.0 - 2.0 * (1.0 - outTint.r) * (1.0 - unpremultTexture.b)',
     '        );',
+    '    }',
+    '    else if (tintMode == 7.0) {',
+    '        color = (1.0 - color) * outTintEffect.bgr + outTint.bgr * color;',
     '    }',
     '    return vec4(color * alpha, alpha);',
     '}',
@@ -204000,7 +205329,7 @@ module.exports = [
     'uniform vec2 uResolution;',
     'in vec2 outTexCoord;',
     'in float outTexDatum;',
-    'in float outTintEffect;',
+    'in vec4 outTintEffect;',
     'in vec4 outTint;',
     '#pragma phaserTemplate(fragmentInVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
@@ -204033,11 +205362,11 @@ module.exports = [
     'in vec2 inPosition;',
     'in vec2 inTexCoord;',
     'in float inTexDatum;',
-    'in float inTintEffect;',
+    'in vec4 inTintEffect;',
     'in vec4 inTint;',
     'out vec2 outTexCoord;',
     'out float outTexDatum;',
-    'out float outTintEffect;',
+    'out vec4 outTintEffect;',
     'out vec4 outTint;',
     '#pragma phaserTemplate(vertexOutVariables)',
     '#pragma phaserTemplate(vertexHeader)',
@@ -204047,7 +205376,7 @@ module.exports = [
     '    outTexCoord = inTexCoord;',
     '    outTexDatum = inTexDatum;',
     '    outTint = inTint;',
-    '    outTintEffect = inTintEffect;',
+    '    outTintEffect = inTintEffect * vec4(1.0, 1.0, 1.0, 255.0); // Denormalize tint mode to an integer.',
     '    #pragma phaserTemplate(vertexProcess)',
     '}',
 ].join('\n');
@@ -205243,7 +206572,7 @@ module.exports = [
     'out vec4 fragColorOutput;',
     'uniform vec2 uResolution;',
     'in vec2 outTexCoord;',
-    'in float outTintEffect;',
+    'in vec4 outTintEffect;',
     'in vec4 outTint;',
     '#pragma phaserTemplate(fragmentInVariables)',
     '#pragma phaserTemplate(fragmentHeader)',
@@ -205298,7 +206627,7 @@ module.exports = [
     'in vec4 inOriginAndTintModeAndCreationTime;',
     'in vec2 inScrollFactor;',
     'out vec2 outTexCoord;',
-    'out float outTintEffect;',
+    'out vec4 outTintEffect;',
     'out vec4 outTint;',
     '#pragma phaserTemplate(vertexOutVariables)',
     '#pragma phaserTemplate(vertexHeader)',
@@ -205814,7 +207143,7 @@ module.exports = [
     '    gl_Position = uProjectionMatrix * vec4(position.xy, 1.0, 1.0);',
     '    outTexCoord = vec2(u, 1.0 - v);',
     '    outTint = mix(vec4(1.0, 1.0, 1.0, tint.a), tint, tintBlend);',
-    '    outTintEffect = tintMode;',
+    '    outTintEffect = vec4(0.0, 0.0, 0.0, tintMode * 255.0); // Denormalize tint mode to an integer.',
     '    #pragma phaserTemplate(vertexProcess)',
     '}',
 ].join('\n');
@@ -237933,6 +239262,17 @@ var Tile = new Class({
         this.tint = 0xffffff;
 
         /**
+         * The secondary tint to apply to this tile.
+         * Used in two-color tint modes.
+         *
+         * @name Phaser.Tilemaps.Tile#tint2
+         * @type {number}
+         * @default 0x000000
+         * @since 4.NEXT
+         */
+        this.tint2 = 0x000000;
+
+        /**
          * The tint mode.
          *
          * Available modes are:
@@ -237942,6 +239282,7 @@ var Tile = new Class({
          * - Phaser.TintModes.SCREEN
          * - Phaser.TintModes.OVERLAY
          * - Phaser.TintModes.HARD_LIGHT
+         * - Phaser.TintModes.MULTIPLY_TWO
          *
          * @name Phaser.Tilemaps.Tile#tintMode
          * @type {Phaser.TintModes}
@@ -237996,6 +239337,7 @@ var Tile = new Class({
         this.visible = tile.visible;
         this.setFlip(tile.flipX, tile.flipY);
         this.tint = tile.tint;
+        this.tint2 = tile.tint2;
         this.rotation = tile.rotation;
         this.collideUp = tile.collideUp;
         this.collideDown = tile.collideDown;
@@ -242164,10 +243506,11 @@ var TilemapLayer = new Class({
     },
 
     /**
-     * Sets an additive tint on each Tile within the given area.
+     * Sets a tint color on each Tile within the given area.
      *
-     * The tint works by taking the pixel color values from the tileset texture, and then
-     * multiplying it by the color value of the tint.
+     * The tint works by taking the pixel color values from the tileset texture
+     * and combining it with the color value of the tint,
+     * according to the tint mode.
      *
      * If no area values are given then all tiles will be tinted to the given color.
      *
@@ -242201,6 +243544,41 @@ var TilemapLayer = new Class({
     },
 
     /**
+     * Sets a secondary tint color on each Tile within the given area.
+     * Secondary tints are used by two-color tint modes such as MULTIPLY_TWO.
+     *
+     * If no area values are given then all tiles will be tinted to the given color.
+     *
+     * To remove a secondary tint call this method with either no parameters, or by passing black `0x000000` as the secondary tint color.
+     *
+     * If a tile already has a secondary tint set then calling this method will override that.
+     *
+     * @method Phaser.Tilemaps.TilemapLayer#setTint2
+     * @webglOnly
+     * @since 4.NEXT
+     *
+     * @param {number} [tint2=0x000000] - The secondary tint color being applied to each tile within the region. Given as a hex value, i.e. `0xff0000` for red. Set to black (`0x000000`) to reset the secondary tint.
+     * @param {number} [tileX] - The left most tile index (in tile coordinates) to use as the origin of the area to search.
+     * @param {number} [tileY] - The top most tile index (in tile coordinates) to use as the origin of the area to search.
+     * @param {number} [width] - How many tiles wide from the `tileX` index the area will be.
+     * @param {number} [height] - How many tiles tall from the `tileY` index the area will be.
+     * @param {Phaser.Types.Tilemaps.FilteringOptions} [filteringOptions] - Optional filters to apply when getting the tiles.
+     *
+     * @return {this} This Tilemap Layer object.
+     */
+    setTint2: function (tint2, tileX, tileY, width, height, filteringOptions)
+    {
+        if (tint2 === undefined) { tint2 = 0x000000; }
+
+        var tintTile = function (tile)
+        {
+            tile.tint2 = tint2;
+        };
+
+        return this.forEachTile(tintTile, this, tileX, tileY, width, height, filteringOptions);
+    },
+
+    /**
      * Sets the tint mode to use when applying the tint to the texture.
      *
      * Available modes are:
@@ -242211,6 +243589,7 @@ var TilemapLayer = new Class({
      * - Phaser.TintModes.SCREEN
      * - Phaser.TintModes.OVERLAY
      * - Phaser.TintModes.HARD_LIGHT
+     * - Phaser.TintModes.MULTIPLY_TWO
      *
      * Call this method with no parameters to reset the tint mode to the default.
      *
@@ -243756,6 +245135,7 @@ var TilemapLayerWebGLRenderer = function (renderer, src, drawingContext, parentM
         var frameY = tileTexCoords.y;
 
         var tint = getTint(tile.tint, alpha * tile.alpha);
+        var tint2 = tile.tint2;
 
         texturerData.frame.source.glTexture = tileset.glTexture;
         texturerData.frameWidth = frameWidth;
@@ -243770,6 +245150,10 @@ var TilemapLayerWebGLRenderer = function (renderer, src, drawingContext, parentM
         tinterData.tintTopRight = tint;
         tinterData.tintBottomLeft = tint;
         tinterData.tintBottomRight = tint;
+        tinterData.tint2TopLeft = tint2;
+        tinterData.tint2TopRight = tint2;
+        tinterData.tint2BottomLeft = tint2;
+        tinterData.tint2BottomRight = tint2;
 
         submitterNode.run(
             drawingContext,

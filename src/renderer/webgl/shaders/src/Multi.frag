@@ -20,7 +20,7 @@ uniform vec2 uResolution;
 
 in vec2 outTexCoord;
 in float outTexDatum;
-in float outTintEffect;
+in vec4 outTintEffect;
 in vec4 outTint;
 
 #pragma phaserTemplate(fragmentInVariables)

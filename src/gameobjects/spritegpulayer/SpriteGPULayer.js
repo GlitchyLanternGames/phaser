@@ -5,6 +5,7 @@
  */
 
 var Class = require('../../utils/Class');
+var MapStruct = require('../../structs/Map');
 var Components = require('../components');
 var GameObject = require('../GameObject.js');
 var SubmitterSpriteGPULayer = require('../../renderer/webgl/renderNodes/submitter/SubmitterSpriteGPULayer.js');
@@ -111,7 +112,6 @@ var getTint = Utils.getTintAppendFloatAlpha;
  * @extends Phaser.GameObjects.Components.Depth
  * @extends Phaser.GameObjects.Components.ElapseTimer
  * @extends Phaser.GameObjects.Components.Lighting
- * @extends Phaser.GameObjects.Components.Mask
  * @extends Phaser.GameObjects.Components.RenderNodes
  * @extends Phaser.GameObjects.Components.TextureCrop
  * @extends Phaser.GameObjects.Components.Visible
@@ -131,7 +131,6 @@ var SpriteGPULayer = new Class({
         Components.Depth,
         Components.ElapseTimer,
         Components.Lighting,
-        Components.Mask,
         Components.RenderNodes,
         Components.TextureCrop,
         Components.Visible,
@@ -280,7 +279,7 @@ var SpriteGPULayer = new Class({
         this.EASE_CODES = EasingNaming;
 
         this.setTexture(texture);
-        this.initRenderNodes(new Phaser.Structs.Map());
+        this.initRenderNodes(new MapStruct());
 
         /**
          * A texture containing the frame data for the SpriteGPULayer.

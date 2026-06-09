@@ -50,7 +50,7 @@ in vec4 inOriginAndTintModeAndCreationTime;
 in vec2 inScrollFactor;
 
 out vec2 outTexCoord;
-out float outTintEffect;
+out vec4 outTintEffect;
 out vec4 outTint;
 
 #pragma phaserTemplate(vertexOutVariables)
@@ -651,7 +651,7 @@ void main ()
 
     outTexCoord = vec2(u, 1.0 - v);
     outTint = mix(vec4(1.0, 1.0, 1.0, tint.a), tint, tintBlend);
-    outTintEffect = tintMode;
+    outTintEffect = vec4(0.0, 0.0, 0.0, tintMode * 255.0); // Denormalize tint mode to an integer.
 
     #pragma phaserTemplate(vertexProcess)
 }

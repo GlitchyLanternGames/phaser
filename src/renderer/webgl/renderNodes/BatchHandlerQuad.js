@@ -21,7 +21,10 @@ var MakeGetTexture = require('../shaders/additionMakers/MakeGetTexture');
 var MakeOutInverseRotation = require('../shaders/additionMakers/MakeOutInverseRotation');
 var MakeRotationDatum = require('../shaders/additionMakers/MakeRotationDatum');
 var MakeSmoothPixelArt = require('../shaders/additionMakers/MakeSmoothPixelArt');
+var Utils = require('../Utils.js');
 var BatchHandler = require('./BatchHandler');
+
+var getTint = Utils.getTintAppendFloatAlpha;
 
 /**
  * @classdesc
@@ -146,7 +149,10 @@ var BatchHandlerQuad = new Class({
                     name: 'inTexDatum'
                 },
                 {
-                    name: 'inTintEffect'
+                    name: 'inTintEffect',
+                    size: 4,
+                    type: 'UNSIGNED_BYTE',
+                    normalized: true
                 },
                 {
                     name: 'inTint',
@@ -653,6 +659,10 @@ var BatchHandlerQuad = new Class({
      * @param {number} tintTR - The top-right tint color.
      * @param {number} tintBR - The bottom-right tint color.
      * @param {Phaser.Types.Renderer.WebGL.RenderNodes.BatchHandlerQuadRenderOptions} renderOptions - Optional render features.
+     * @param {number} [tint2TL] - The secondary tint color for the top-left corner.
+     * @param {number} [tint2BL] - The secondary tint color for the bottom-left corner.
+     * @param {number} [tint2TR] - The secondary tint color for the top-right corner.
+     * @param {number} [tint2BR] - The secondary tint color for the bottom-right corner.
      * @param {...*} [args] - Additional arguments for subclasses.
      */
     batch: function (
@@ -666,7 +676,8 @@ var BatchHandlerQuad = new Class({
         texWidth, texHeight,
         tintMode,
         tintTL, tintBL, tintTR, tintBR,
-        renderOptions
+        renderOptions,
+        tint2TL, tint2BL, tint2TR, tint2BR
     )
     {
         if (this.instanceCount === 0)
@@ -685,6 +696,23 @@ var BatchHandlerQuad = new Class({
         // Process textures and get relevant data.
         var textureDatum = this.batchTextures(glTexture, renderOptions);
 
+        // Pack tint mode with secondary tint colors.
+        // Assign default secondary tint colors if not provided.
+        if (tint2TL === undefined)
+        {
+            tint2TL = tintMode << 24;
+            tint2BL = tint2TL;
+            tint2TR = tint2TL;
+            tint2BR = tint2TL;
+        }
+        else
+        {
+            tint2TL = getTint(tint2TL, tintMode / 255);
+            tint2BL = getTint(tint2BL, tintMode / 255);
+            tint2TR = getTint(tint2TR, tintMode / 255);
+            tint2BR = getTint(tint2BR, tintMode / 255);
+        }
+
         // Update the vertex buffer.
         var vertexOffset32 = this.instanceCount * this.floatsPerInstance;
         var vertexBuffer = this.vertexBufferLayout.buffer;
@@ -697,7 +725,7 @@ var BatchHandlerQuad = new Class({
         vertexViewF32[vertexOffset32++] = texX;
         vertexViewF32[vertexOffset32++] = texY + texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintMode;
+        vertexViewU32[vertexOffset32++] = tint2BL;
         vertexViewU32[vertexOffset32++] = tintBL;
 
         // Top-left
@@ -706,7 +734,7 @@ var BatchHandlerQuad = new Class({
         vertexViewF32[vertexOffset32++] = texX;
         vertexViewF32[vertexOffset32++] = texY;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintMode;
+        vertexViewU32[vertexOffset32++] = tint2TL;
         vertexViewU32[vertexOffset32++] = tintTL;
 
         // Bottom-right
@@ -715,7 +743,7 @@ var BatchHandlerQuad = new Class({
         vertexViewF32[vertexOffset32++] = texX + texWidth;
         vertexViewF32[vertexOffset32++] = texY + texHeight;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintMode;
+        vertexViewU32[vertexOffset32++] = tint2BR;
         vertexViewU32[vertexOffset32++] = tintBR;
 
         // Top-right
@@ -724,7 +752,157 @@ var BatchHandlerQuad = new Class({
         vertexViewF32[vertexOffset32++] = texX + texWidth;
         vertexViewF32[vertexOffset32++] = texY;
         vertexViewF32[vertexOffset32++] = textureDatum;
-        vertexViewF32[vertexOffset32++] = tintMode;
+        vertexViewU32[vertexOffset32++] = tint2TR;
+        vertexViewU32[vertexOffset32++] = tintTR;
+
+        // Increment the instance count.
+        this.instanceCount++;
+        this.currentBatchEntry.count++;
+
+        // Check whether the batch should be rendered immediately.
+        // This guarantees that none of the arrays are full above.
+        if (this.instanceCount === this.instancesPerBatch)
+        {
+            this.run(currentContext);
+
+            // Now the batch is empty.
+        }
+    },
+
+    /**
+     * Add a quad to the batch, using explicit UV coordinates.
+     * This is intended for compatibility with mesh rendering.
+     *
+     * For compatibility with TRIANGLE_STRIP rendering,
+     * the vertices are written into the buffer in the order:
+     *
+     * - Bottom-left
+     * - Top-left
+     * - Bottom-right
+     * - Top-right
+     *
+     * @method Phaser.Renderer.WebGL.RenderNodes.BatchHandlerQuad#batch
+     * @since 4.0.0
+     * @param {Phaser.Renderer.WebGL.DrawingContext} currentContext - The current drawing context.
+     * @param {Phaser.Renderer.WebGL.Wrappers.WebGLTextureWrapper} glTexture - The texture to render.
+     * @param {number} x0 - The x coordinate of the top-left corner.
+     * @param {number} y0 - The y coordinate of the top-left corner.
+     * @param {number} x1 - The x coordinate of the bottom-left corner.
+     * @param {number} y1 - The y coordinate of the bottom-left corner.
+     * @param {number} x2 - The x coordinate of the top-right corner.
+     * @param {number} y2 - The y coordinate of the top-right corner.
+     * @param {number} x3 - The x coordinate of the bottom-right corner.
+     * @param {number} y3 - The y coordinate of the bottom-right corner.
+     * @param {number} u0 - The u coordinate of the top-left corner.
+     * @param {number} v0 - The v coordinate of the top-left corner.
+     * @param {number} u1 - The u coordinate of the bottom-left corner.
+     * @param {number} v1 - The v coordinate of the bottom-left corner.
+     * @param {number} u2 - The u coordinate of the top-right corner.
+     * @param {number} v2 - The v coordinate of the top-right corner.
+     * @param {number} u3 - The u coordinate of the bottom-right corner.
+     * @param {number} v3 - The v coordinate of the bottom-right corner.
+     * @param {number} tintMode - The tint mode to use.
+     * @param {number} tintTL - The tint color for the top-left corner.
+     * @param {number} tintBL - The tint color for the bottom-left corner.
+     * @param {number} tintTR - The tint color for the top-right corner.
+     * @param {number} tintBR - The tint color for the bottom-right corner.
+     * @param {Phaser.Types.Renderer.WebGL.RenderNodes.BatchHandlerQuadRenderOptions} renderOptions - Optional render features.
+     * @param {number} [tint2TL] - The secondary tint color for the top-left corner.
+     * @param {number} [tint2BL] - The secondary tint color for the bottom-left corner.
+     * @param {number} [tint2TR] - The secondary tint color for the top-right corner.
+     * @param {number} [tint2BR] - The secondary tint color for the bottom-right corner.
+     * @param {...*} [args] - Additional arguments for subclasses.
+     */
+    batchWithUV: function(
+        currentContext,
+        glTexture,
+        x0, y0,
+        x1, y1,
+        x2, y2,
+        x3, y3,
+        u0, v0,
+        u1, v1,
+        u2, v2,
+        u3, v3,
+        tintMode,
+        tintTL, tintBL, tintTR, tintBR,
+        renderOptions,
+        tint2TL, tint2BL, tint2TR, tint2BR
+    )
+    {
+        if (this.instanceCount === 0)
+        {
+            this.manager.setCurrentBatchNode(this, currentContext);
+        }
+
+        // Check render options and run the batch if they differ.
+        this.updateRenderOptions(renderOptions);
+        if (this._renderOptionsChanged)
+        {
+            this.run(currentContext);
+            this.updateShaderConfig();
+        }
+
+        // Process textures and get relevant data.
+        var textureDatum = this.batchTextures(glTexture, renderOptions);
+
+        // Pack tint mode with secondary tint colors.
+        // Assign default secondary tint colors if not provided.
+        if (tint2TL === undefined)
+        {
+            tint2TL = tintMode << 24;
+            tint2BL = tint2TL;
+            tint2TR = tint2TL;
+            tint2BR = tint2TL;
+        }
+        else
+        {
+            tint2TL = getTint(tint2TL, tintMode / 255);
+            tint2BL = getTint(tint2BL, tintMode / 255);
+            tint2TR = getTint(tint2TR, tintMode / 255);
+            tint2BR = getTint(tint2BR, tintMode / 255);
+        }
+
+        // Update the vertex buffer.
+        var vertexOffset32 = this.instanceCount * this.floatsPerInstance;
+        var vertexBuffer = this.vertexBufferLayout.buffer;
+        var vertexViewF32 = vertexBuffer.viewF32;
+        var vertexViewU32 = vertexBuffer.viewU32;
+
+        // Bottom-left
+        vertexViewF32[vertexOffset32++] = x1;
+        vertexViewF32[vertexOffset32++] = y1;
+        vertexViewF32[vertexOffset32++] = u1;
+        vertexViewF32[vertexOffset32++] = v1;
+        vertexViewF32[vertexOffset32++] = textureDatum;
+        vertexViewU32[vertexOffset32++] = tint2BL;
+        vertexViewU32[vertexOffset32++] = tintBL;
+
+        // Top-left
+        vertexViewF32[vertexOffset32++] = x0;
+        vertexViewF32[vertexOffset32++] = y0;
+        vertexViewF32[vertexOffset32++] = u0;
+        vertexViewF32[vertexOffset32++] = v0;
+        vertexViewF32[vertexOffset32++] = textureDatum;
+        vertexViewU32[vertexOffset32++] = tint2TL;
+        vertexViewU32[vertexOffset32++] = tintTL;
+
+        // Bottom-right
+        vertexViewF32[vertexOffset32++] = x3;
+        vertexViewF32[vertexOffset32++] = y3;
+        vertexViewF32[vertexOffset32++] = u3;
+        vertexViewF32[vertexOffset32++] = v3;
+        vertexViewF32[vertexOffset32++] = textureDatum;
+        vertexViewU32[vertexOffset32++] = tint2BR;
+        vertexViewU32[vertexOffset32++] = tintBR;
+
+        // Top-right
+        vertexViewF32[vertexOffset32++] = x2;
+        vertexViewF32[vertexOffset32++] = y2;
+        vertexViewF32[vertexOffset32++] = u2;
+        vertexViewF32[vertexOffset32++] = v2;
+        vertexViewF32[vertexOffset32++] = textureDatum;
+        vertexViewU32[vertexOffset32++] = tint2TR;
         vertexViewU32[vertexOffset32++] = tintTR;
 
         // Increment the instance count.
